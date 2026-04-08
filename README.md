@@ -79,7 +79,7 @@ cd bofip-rag
 
 # 2. Install dependencies
 python -m venv venv
-source venv/Scripts/activate    # Windows: venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
 # 3. Configure your Groq API key (free tier is enough)
@@ -163,8 +163,7 @@ bofip-rag/
 │   └── generation/                 # LLM client, prompts, faithfulness guardrail
 └── docs/
     ├── SYSTEM.md                   # Full architecture & pipeline reference
-    ├── LESSONS.md                  # 29 documented mistakes & anti-patterns
-    └── CV_PROJECT_DOSSIER.md       # Interview-ready project dossier
+    └── LESSONS.md                  # 29 documented mistakes & anti-patterns
 ```
 
 ---
