@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Data (généré par le bootstrap, jamais commit)
+data/raw/*
+data/processed/*
+data/chroma_db*/
+data/cache/
+data/eval_*.json
+data/reranker_pool_*.json
+data/retrieval_dataset_validation_*.json
+*.tgz
+*.tar.gz
+*.pkl
+
+# Garder l'arborescence vide
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Build / packaging
+dist/
+build/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Artefacts personnels / agentic
+debug_results.json
+nul
+CLAUDE.md
+MEMORY.md
+.claude/
