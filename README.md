@@ -87,7 +87,7 @@ cp .env.example .env
 # Edit .env and set GROQ_API_KEY=gsk_...
 
 # 4. Bootstrap a 500-document sample (~10 min)
-python scripts/bootstrap.py --sample 500
+python scripts/bootstrap.py --sample 100
 
 # 5. Launch the app
 streamlit run app.py
