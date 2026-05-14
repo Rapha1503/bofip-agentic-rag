@@ -70,7 +70,7 @@ def evaluate(
     k_values: list[int] | None = None,
 ) -> EvalMetrics:
     if k_values is None:
-        k_values = [1, 3, 5]
+        k_values = [1, 3, 5, 8]
 
     max_k = max(k_values)
     per_query: list[EvalResult] = []
