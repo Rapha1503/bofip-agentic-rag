@@ -13,7 +13,7 @@ from bofip_cleanroom.settings import INTERIM_DIR
 
 QUERIES_PATH = INTERIM_DIR / "eval_queries_v1.jsonl"
 GOLD_PATH = INTERIM_DIR / "passage_gold_v3.jsonl"
-LIMIT = 5
+LIMIT = 15
 
 configs = [
     ("BM25 only", dict(use_dense=False, use_chunk_dense=False, use_anchor_filter=False, use_reranker=False)),
@@ -22,7 +22,7 @@ configs = [
     ("Full (+ reranker)", dict(use_reranker=True)),
 ]
 
-rt = RagRuntime.from_local_corpus(corpus="commentary", device="cpu")
+rt = RagRuntime.from_local_corpus(corpus="commentary", device="cuda")
 
 # Load queries and gold
 query_rows = read_jsonl(QUERIES_PATH)
