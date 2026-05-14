@@ -177,6 +177,7 @@ class RagRuntime:
         use_dense: bool = True,
         use_chunk_dense: bool = True,
         use_anchor_filter: bool = True,
+        use_reranker: bool = True,
     ) -> RagResult:
         rankings, confidences = self._build_rankings(query, query)
         if source_weights is None:
@@ -233,17 +234,21 @@ class RagRuntime:
 
         candidates = direct_result.chunk_hits
 
-        reranked = self.reranker.rerank(
-            query,
-            candidates,
-            get_text=lambda hit: " > ".join(hit.chunk.section_path) + "\n" + hit.chunk.text,
-            top_k=max_chunks,
-        )
+        if use_reranker:
+            ranked = self.reranker.rerank(
+                query,
+                candidates,
+                get_text=lambda hit: " > ".join(hit.chunk.section_path) + "\n" + hit.chunk.text,
+                top_k=max_chunks,
+            )
+            ranked_items = [r.item for r in ranked]
+        else:
+            ranked_items = candidates[:max_chunks]
 
         preview_chunks = []
-        for idx, ranked in enumerate(reranked, start=1):
-            hit = ranked.item
+        for idx, hit in enumerate(ranked_items, start=1):
             doc = self.documents_by_ref[hit.boi_reference]
+            score = getattr(hit, "score", 0.0) if use_reranker else 0.0
             preview_chunks.append(
                 RagChunkHit(
                     rank=idx,
@@ -254,7 +259,7 @@ class RagRuntime:
                     chunk_kind=hit.chunk.chunk_kind,
                     text=hit.chunk.text,
                     publication_date=doc.publication_date,
-                    score=ranked.score,
+                    score=float(score),
                 )
             )
 

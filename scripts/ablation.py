@@ -16,13 +16,13 @@ GOLD_PATH = INTERIM_DIR / "passage_gold_v3.jsonl"
 LIMIT = 5
 
 configs = [
-    ("BM25 only", dict(use_dense=False, use_chunk_dense=False, use_anchor_filter=False)),
-    ("Dense only", dict(use_lexical=False)),
-    ("BM25 + Dense (no anchor)", dict(use_anchor_filter=False)),
-    ("Full (BM25+Dense+Anchor)", {}),
+    ("BM25 only", dict(use_dense=False, use_chunk_dense=False, use_anchor_filter=False, use_reranker=False)),
+    ("Dense only", dict(use_lexical=False, use_reranker=False)),
+    ("Full (no reranker)", dict(use_reranker=False)),
+    ("Full (+ reranker)", dict(use_reranker=True)),
 ]
 
-rt = RagRuntime.from_local_corpus(corpus="commentary", device="cuda")
+rt = RagRuntime.from_local_corpus(corpus="commentary", device="cpu")
 
 # Load queries and gold
 query_rows = read_jsonl(QUERIES_PATH)
