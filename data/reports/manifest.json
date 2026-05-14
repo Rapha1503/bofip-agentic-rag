@@ -1,0 +1,12 @@
+{
+  "raw_root": "C:\\Users\\rapha\\Desktop\\Document perso\\Projet compta\\bofip-rag\\data\\raw\\bofip_extracted\\BOFiP\\documents",
+  "raw_root_exists": true,
+  "parser_version": "0.1.0",
+  "chunker_version": "0.0.0",
+  "index_version": "0.0.0",
+  "benchmark_version": "0.0.0",
+  "generated_at": "2026-04-11T17:04:20.283851+00:00",
+  "content_docs_fingerprint": "05700170ecd159322ce7819b477230658aa00d2d87cb0503640794c3c25325d8",
+  "content_document_count": 6295,
+  "attachment_document_count": 141
+}

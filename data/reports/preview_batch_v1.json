@@ -1,0 +1,446 @@
+{
+  "generated_at": "2026-05-12T18:18:04.197787+00:00",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "case_count": 4,
+  "valid_count": 4,
+  "rows": [
+    {
+      "case_id": "sh001",
+      "query": "Qui est le redevable legal de la TVA lors d une vente de biens entre deux entreprises francaises ?",
+      "category": "direct",
+      "note": "TVA redevable - q001",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Le vendeur assujetti établi en France est le redevable légal de la TVA.\n\n- Le redevable de la TVA est en principe l'assujetti qui réalise l'opération imposable [2].\n- L'inversion du redevable (autoliquidation) ne s'applique que si le fournisseur n'est pas établi en France [2].\n- Aucune exception n'est mentionnée pour une vente entre deux entreprises françaises [1][2].\n\nLimites: Les extraits ne traitent pas de cas particuliers comme les ventes à distance ou importations.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Le vendeur assujetti établi en France est le redevable légal de la TVA.\",\n  \"justification_bullets\": [\n    \"Le redevable de la TVA est en principe l'assujetti qui réalise l'opération imposable [2].\",\n    \"L'inversion du redevable (autoliquidation) ne s'applique que si le fournisseur n'est pas établi en France [2].\",\n    \"Aucune exception n'est mentionnée pour une vente entre deux entreprises françaises [1][2].\"\n  ],\n  \"limits\": \"Les extraits ne traitent pas de cas particuliers comme les ventes à distance ou importations.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Le vendeur assujetti établi en France est le redevable légal de la TVA.",
+        "justification_bullets": [
+          "Le redevable de la TVA est en principe l'assujetti qui réalise l'opération imposable [2].",
+          "L'inversion du redevable (autoliquidation) ne s'applique que si le fournisseur n'est pas établi en France [2].",
+          "Aucune exception n'est mentionnée pour une vente entre deux entreprises françaises [1][2]."
+        ],
+        "limits": "Les extraits ne traitent pas de cas particuliers comme les ventes à distance ou importations."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          2
+        ],
+        "cite_count": 4,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-TVA-DECLA-10-10-20-20251022",
+          "title": "TVA - Régimes d’imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Détermination du redevable",
+          "publication_date": "2025-10-22",
+          "section_path": "II. Exceptions : destinataire des biens ou des services redevable de la taxe > A. Prestations de services ne relevant pas des règles générales de territorialité et livraisons de biens réalisées par un assujetti non établi en France > 1. Cas général",
+          "text": "Sont susceptibles d’être concernés par ce dispositif l’ensemble des clients de ces opérateurs dès lors qu’ils sont des assujettis agissant en tant que tel au sens du I-B § 210 du BOI-TVA-CHAMP-20-50-20 et sont identifiés à la TVA en France, en application de l’un des alinéas de l’ article 286 ter du CGI , et ce, qu’ils soient eux-mêmes établis ou non en France. Exemple : Une société A, établie en France, vend en France un bien meuble corporel à une société B non établie en France, laquelle revend ensuite ce bien à une société C assujettie et identifiée à la TVA en France. Le bien est directement livré par la société A à la société C. La société A est redevable de la TVA française exigible sur la, première vente réalisée au profit de la société B. La société C est légalement redevable de la TVA française exigible sur la seconde vente réalisée à son profit par la société B. La société B peut récupérer la TVA que lui facture la société A dans les conditions prévues de l’ article 242-0 M de l’annexe II au CGI à l’ article 242-0 Z decies de l’annexe II au CGI .",
+          "chunk_id": "3218-PGP__section_window__3218-pgp-paragraph-00010__3218-pgp-paragraph-00011__ii-exceptions-destinataire-des-biens-ou-des-services-redevable-de-la-taxe-a-prestations-de-services-ne-relevant-pas-des-r-gles-g-n-rales-de-territorialit-et-livraisons-de-biens-r-alis-es-par-un-assujetti-non-tabli-en-france-1-cas-g-n-ral"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-TVA-DECLA-10-10-20200323",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services",
+          "publication_date": "2020-03-23",
+          "section_path": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services",
+          "text": "Le redevable de la taxe sur la valeur ajoutée (TVA) afférente à une livraison de biens ou une prestation est en principe l'assujetti qui réalise l'opération imposable ( code général des impôts (CGI), art. 283-1-al.1 ). Toutefois, l'acquéreur des biens ou le preneur des services peut être désigné comme redevable de la taxe. En règle générale, cette inversion du redevable implique que le prestataire (ou le fournisseur) ne soit pas établi en France. Sont successivement abordées : - la notion d'assujetti établi en France pour les besoins de la détermination du redevable (section 1, BOI-TVA-DECLA-10-10-10 ) ; - la détermination du redevable (section 2, BOI-TVA-DECLA-10-10-20 ) ; - la solidarité de paiement en cas de fournisseur défaillant (section 3, BOI-TVA-DECLA-10-10-30 ).",
+          "chunk_id": "3163-PGP__section_window__3163-pgp-paragraph-00000__3163-pgp-paragraph-00005__tva-r-gimes-d-imposition-et-obligations-d-claratives-et-comptables-redevable-de-la-taxe-livraisons-de-biens-et-prestations-de-services"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+          "publication_date": "2024-07-24",
+          "section_path": "II. Importations > B. Importation réalisée dans le cadre d'une livraison autre qu'une vente à distance",
+          "text": "Exemple : Une entreprise francilienne A passe commande de marchandises auprès de son fournisseur, une entreprise B située en Californie, pour un prix de 1 000 €. Durant le transport, A décide de céder les marchandises à une entreprise lilloise C pour 2 000 €, qui elle-même les revend à une troisième entreprise D située à Paris pour 3 000 €. Les marchandises sont directement expédiées par B depuis la Californie à destination d'un entrepôt logistique situé sur la commune de Roissy-en-France. Au moment du dédouanement, la valeur transactionnelle retenue lors de la complétion de la déclaration en douane correspond au montant de la vente intervenue entre A et C, soit 2 000 €. Ainsi, C sera désignée redevable de la TVA à l'importation. lorsque le bien est acheminé dans un autre État membre de l'UE, celui qui réalise la livraison intracommunautaire subséquente (ou le transfert assimilé) (CGI, art. 293 A, 2-1°), car cette dernière est localisée en France ( CGI, art. 258, I-a ). Il s'agit nécessairement d'une personne qui dispose du bien comme un propriétaire en France. Selon les termes du contrat, il peut s'agir de l'acheteur ou du vendeur. Ainsi, si c'est l'acheteur qui est désigné redevable de la TVA due à l'importation, celui-ci réalisera, subséquemment à l'importation, un transfert assimilé à une livraison intracommunautaire de biens. S'il s'agit du vendeur, celui-ci réalisera une livraison intracommunautaire de biens.",
+          "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00050__3166-pgp-paragraph-00051__ii-importations-b-importation-r-alis-e-dans-le-cadre-d-une-livraison-autre-qu-une-vente-distance"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+          "publication_date": "2024-07-24",
+          "section_path": "II. Importations > A. Importation réalisée dans le cadre d'une vente à distance > 1. Cas généraux",
+          "text": "Il résulte des dispositions du 2° du 2 de l’ article 293 A du CGI que, lorsqu'une importation intervient dans le cadre d'une vente à distance de biens importés (VAD-BI) ( I § 20 à 80 du BOI-TVA-CHAMP-10-10-40-60 ), le redevable est, sauf exception, la personne qui réalise la livraison. Cette personne est également celle qui dispose du droit de déduire la TVA due à l'importation. Il peut s'agir soit du vendeur lui-même, soit de la personne réputée réaliser la livraison dans le cadre du schéma d'achat-revente des assujettis-facilitateurs des ventes à distance de biens importés ( II § 90 à 190 du BOI-TVA-CHAMP-10-10-40-60 ). Remarque 1 : Ce schéma d'achat-revente ne s'applique que pour les biens contenus dans des envois n'excédant pas 150 €. Remarque 2 : Lorsqu'il est recouru au guichet unique de déclaration et de paiement des VAD-BI, l'importation est exonérée ( VII § 170 et 180 du BOI-TVA-CHAMP-30-40 ). Il existe deux exceptions au principe exposé au II-A-1 § 40 , lesquelles ne concernent que des situations où le bien reste en France, c'est-à-dire n'est pas acheminé dans un autre État membre de l'UE : pour les biens contenus dans des envois dont la valeur intrinsèque ne dépasse pas 150 €, lorsque le vendeur ne recourt ni à un assujetti-facilitateur, ni au guichet unique de déclaration et de paiement des VAD-BI, ni à l'option mentionnée au II-A-1 § 60 : le redevable de la TVA à l'importation est alors le destinataire du bien ;",
+          "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00012__3166-pgp-paragraph-00017__ii-importations-a-importation-r-alis-e-dans-le-cadre-d-une-vente-distance-1-cas-g-n-raux"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+          "publication_date": "2024-07-24",
+          "section_path": "II. Importations > A. Importation réalisée dans le cadre d'une vente à distance > 1. Cas généraux",
+          "text": "pour les biens contenus dans des envois dont la valeur intrinsèque dépasse 150 €, lorsque le vendeur ne recourt pas à l'option mentionnée au II-A-1 § 60 : le redevable de la TVA à l'importation est alors l'assujetti-facilitateur n'ayant pas la qualité de fournisseur présumé au regard des règles de la TVA ou, à défaut d'un tel assujetti, le destinataire du bien. Remarque : Il peut arriver que les circonstances particulières dans lesquelles les colis sont dédouanés fassent obstacle à la désignation du destinataire comme redevable de la TVA à l'importation en désignant, en seconde intention, le vendeur comme redevable. Pour plus de précisions, il convient de se reporter au II-A-2 § 65 . Dans ces situations, la TVA due à l'importation n'est jamais déductible. Dans les deux situations exposées au II-A-1 § 50 , aux termes du 1° du II de l' article 293 A quater du CGI , le vendeur peut opter pour être redevable de la TVA sur l'importation. Dans ce cas : le vendeur se substitue, pour la déclaration et le paiement de cette TVA, à l'assujetti-facilitateur ou, à défaut d'un tel assujetti, au destinataire effectif du bien ; la livraison est relocalisée en France ; le vendeur peut déduire la TVA à l'importation au titre de la réalisation de cette livraison. Cela permet aux vendeurs qui le souhaitent d'assurer les formalités de la TVA due à l'importation pour l'ensemble de leurs ventes plutôt que d'avoir à distinguer entre les situations mentionnées au II-A-1 § 40 et celles mentionnées au II-A-1 § 50 .",
+          "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00018__3166-pgp-paragraph-00025__ii-importations-a-importation-r-alis-e-dans-le-cadre-d-une-vente-distance-1-cas-g-n-raux"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-TVA-CHAMP-20-20-10-20240724",
+          "title": "TVA - Champ d'application et territorialité - Territorialité - Lieu des livraisons de biens meubles corporels - Règles générales",
+          "publication_date": "2024-07-24",
+          "section_path": "I. Livraisons de biens en l'état, expédiés ou transportés par le vendeur, par l'acquéreur ou pour leur compte > B. Lieu de départ de l'expédition ou du transport du bien situé hors de France et lieu d'arrivée situé en France > 2. Lieu de départ situé en dehors de l'Union européenne > a. Livraison effectuée par la personne désignée redevable de la TVA à l'importation",
+          "text": "Conformément aux dispositions du 1° du V de l' article 258 du CGI , le lieu de la livraison d'un bien expédié ou transporté dont le point de départ se trouve en dehors de l'UE, est situé en France lorsque la livraison est effectuée par le vendeur ayant opté pour être redevable de la TVA à l'importation en application de l' article 293 A quater du CGI . Pour plus de précisions sur la désignation de la personne redevable à l'importation, il convient de se reporter aux II et III § 30 à 250 du BOI-TVA-DECLA-10-20 . Remarque : Il est rappelé que le redevable de la TVA à l'importation n'est pas nécessairement le redevable des droits de douane à l'importation. Tel est le cas de la livraison d'un bien expédié ou transporté à partir d'un pays ou territoire tiers par une entreprise qui l'importe en France et le livre à son client. Il en est de même en ce qui concerne les livraisons portant sur ce même bien et qui suivent celle effectuée par la personne désignée comme redevable de la TVA due à l'importation, étant entendu que le point de départ du bien est toujours situé hors de l'UE. (130)",
+          "chunk_id": "1350-PGP__section_window__1350-pgp-paragraph-00015__1350-pgp-paragraph-00019__i-livraisons-de-biens-en-l-tat-exp-di-s-ou-transport-s-par-le-vendeur-par-l-acqu-reur-ou-pour-leur-compte-b-lieu-de-d-part-de-l-exp-dition-ou-du-transport-du-bien-situ-hors-de-france-et-lieu-d-arriv-e-situ-en-france-2-lieu-de-d-part-situ-en-dehors-de-l-union-europ-enne-a-livraison-effectu-e-par-la-personne-d-sign-e-redevable-de-la-tva-l-importation"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-TVA-DECLA-10-10-30-10-20200902",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Solidarité de paiement en cas de fournisseur défaillant",
+          "publication_date": "2020-09-02",
+          "section_path": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Solidarité de paiement en cas de fournisseur défaillant",
+          "text": "Le 4 bis de l' article 283 du code général des impôts (CGI) prévoit un mécanisme de solidarité de paiement entre l'assujetti en faveur duquel a été effectuée une livraison de biens ou une prestation de services, et qui savait ou ne pouvait ignorer que tout ou partie de la taxe sur la valeur ajoutée (TVA) due sur cette livraison, sur toute livraison antérieure des mêmes biens ou sur cette prestation de services ou toute prestation antérieure ne serait pas reversée de manière frauduleuse et la personne redevable de la taxe. Exemple : Acquisition par un assujetti A établi en France auprès d'un prestataire établi dans un autre État membre de l'Union européenne (UE) de droits d'auteur, opération sur laquelle il est redevable de la taxe en application du 2 de l'article 283 du CGI. Cet assujetti A, sans avoir autoliquidé la taxe, revend ce droit sans en acquitter la taxe à un preneur B assujetti en France qui, par hypothèse, savait ou ne pouvait ignorer l'existence d'une fraude. L'administration fiscale peut mettre en œuvre les dispositions du 4 bis de l'article 283 du CGI à l'encontre de B, qui sera solidaire du paiement de la TVA sur son achat de services auprès de A.",
+          "chunk_id": "3222-PGP__section_window__3222-pgp-paragraph-00000__3222-pgp-paragraph-00002__tva-r-gimes-d-imposition-et-obligations-d-claratives-et-comptables-redevable-de-la-taxe-livraisons-de-biens-et-prestations-de-services-solidarit-de-paiement-en-cas-de-fournisseur-d-faillant"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+          "publication_date": "2024-07-24",
+          "section_path": "II. Importations > A. Importation réalisée dans le cadre d'une vente à distance > 2. Cas particulier",
+          "text": "Exemple 2 : Même situation que l'exemple 1 mais lors des opérations de dédouanement, la base d'imposition de la TVA à l'importation renseignée par la personne chargée des opérations de dédouanement n'est pas 100 € mais 40 € (le montant retenu se trouve être celui du prix auquel l'exploitant du site internet à acquis le bien auprès de son fournisseur). Dans cette hypothèse, la personne désignée redevable de la TVA à l'importation est l'exploitant du site Internet. La VAD-BI subséquente à l'opération d'importation que ce dernier réalise est localisée en France aux fins de la TVA (CGI, art. 258, V-2°). Ainsi, il lui appartient de collecter la TVA sur cette VAD-BI, de la déclarer et la reverser au Trésor public via la procédure de droit commun. Dans le même temps, l'exploitant du site internet est autorisé à porter en déduction la TVA dont il est redevable à l'importation. Destinataire Hors UE Exemple 2 Pour s'assurer du correct fonctionnement des règles de la TVA, les opérateurs économiques qui réalisent une activité d'achat-revente de biens stockés en dehors de l'Union européenne et directement expédiés à des consommateurs finaux situés en France ont dès lors une alternative : soit ils s'assurent auprès de la personne chargée de déposer la déclaration d'importation que la base d'imposition à l'importation indiquée sur la déclaration est identique à celle qui serait déterminée pour la vente à distance si cette vente était localisée en France, c'est-à-dire qu'ils lui communiquent le prix auquel ils ont revendu le biens au consommateur situé en France. Cette situation correspond à l'exemple 1 du II-A-2 § 67 ;",
+          "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00038__3166-pgp-paragraph-00043__ii-importations-a-importation-r-alis-e-dans-le-cadre-d-une-vente-distance-2-cas-particulier"
+        }
+      ]
+    },
+    {
+      "case_id": "sh002",
+      "query": "Quel est le plafond de la deduction pour epargne de precaution en agriculture ?",
+      "category": "direct",
+      "note": "DEP agricole - q013",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Le plafond de la DEP est le plus faible de trois montants, dont un plafond annuel fonction du bénéfice.\n\n- Le plafond de la DEP est limité au plus faible de trois montants [3].\n- Un plafond annuel est déterminé en fonction du bénéfice imposable, avec des formules progressives [2].\n- Pour les GAEC/EARL, les plafonds sont multipliés par le nombre d'associés dans la limite de quatre [2].\n\nLimites: La DEP ne peut excéder le bénéfice imposable et est plafonnée à 150 000 € pour certains [2].",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Le plafond de la DEP est le plus faible de trois montants, dont un plafond annuel fonction du bénéfice.\",\n  \"justification_bullets\": [\n    \"Le plafond de la DEP est limité au plus faible de trois montants [3].\",\n    \"Un plafond annuel est déterminé en fonction du bénéfice imposable, avec des formules progressives [2].\",\n    \"Pour les GAEC/EARL, les plafonds sont multipliés par le nombre d'associés dans la limite de quatre [2].\"\n  ],\n  \"limits\": \"La DEP ne peut excéder le bénéfice imposable et est plafonnée à 150 000 € pour certains [2].\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Le plafond de la DEP est le plus faible de trois montants, dont un plafond annuel fonction du bénéfice.",
+        "justification_bullets": [
+          "Le plafond de la DEP est limité au plus faible de trois montants [3].",
+          "Un plafond annuel est déterminé en fonction du bénéfice imposable, avec des formules progressives [2].",
+          "Pour les GAEC/EARL, les plafonds sont multipliés par le nombre d'associés dans la limite de quatre [2]."
+        ],
+        "limits": "La DEP ne peut excéder le bénéfice imposable et est plafonnée à 150 000 € pour certains [2]."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          2,
+          3
+        ],
+        "cite_count": 3,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-BA-BASE-30-45-20250813",
+          "title": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution (DEP)",
+          "publication_date": "2025-08-13",
+          "section_path": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution (DEP)",
+          "text": "Conformément aux dispositions de l’ article 73 du code général des impôts (CGI) , les exploitants agricoles soumis à un régime réel d’imposition peuvent pratiquer une déduction pour épargne de précaution (DEP). Le dispositif de la DEP s’applique aux exercices clos du 1 er janvier 2019 au 31 décembre 2025. La DEP, qui permet à l’exploitant agricole de déduire une certaine somme de son bénéfice imposable, s’exerce à la condition que celui-ci constitue une épargne monétaire comprise entre 50 % et 100 % du montant de la déduction pratiquée. Pour apprécier le respect de cette condition, sont assimilés à de l’épargne monétaire : les coûts d’acquisition ou de production des stocks de fourrage destiné à être consommé par les animaux de l’exploitation ; les coûts d’acquisition ou de production des stocks de produits ou d’animaux dont le cycle de rotation est supérieur à un an ; certaines créances correspondant aux fonds que l’exploitant met à la disposition de la coopérative dont il est associé ou de l’organisation de producteurs ou de l’association d’organisations de producteurs dont il est adhérent. La DEP doit être utilisée au cours des dix exercices suivant celui au cours duquel la déduction a été pratiquée pour faire face à des dépenses nécessitées par l’activité professionnelle. Conformément au 3 du I de l’article 73 du CGI, la déduction peut être cumulée avec : l’abattement sur les bénéfices de certaines entreprises implantées dans les bassins d’emploi à redynamiser, prévu à l’ article 44 duodecies du CGI ( BOI-BIC-CHAMP-80-10-50 ) ; l’abattement sur les bénéfices de certaines entreprises implantées dans les zones de restructuration de la défense, prévu à l’ article 44 terdecies du CGI ( BOI-BIC-CHAMP-80-10-60 ) ;",
+          "chunk_id": "11680-PGP__section_window__11680-pgp-paragraph-00000__11680-pgp-paragraph-00010__ba-base-d-imposition-abattements-et-d-ductions-d-duction-pour-pargne-de-pr-caution-dep"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-BA-BASE-30-45-20-20250813",
+          "title": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution - Modalités de détermination du plafond de déduction",
+          "publication_date": "2025-08-13",
+          "section_path": "II. Règles spécifiques pour les EARL et les GAEC > D. Modalités de détermination des plafonds de déduction",
+          "text": "Pour les GAEC et les EARL qui n’ont pas opté pour le régime fiscal des sociétés de capitaux, les plafonds mentionnés au 1 du I de l’ article 73 du CGI et celui de 150 000 € sont multipliés par le nombre d’associés exploitants dans la limite de quatre. Par ailleurs, les déductions sont pratiquées dans la limite du bénéfice imposable et ne peuvent donc pas conduire à la constatation ou à l’augmentation d’un déficit. Ainsi, lorsque le plafond annuel déterminé conformément aux précisions apportées au I § 1 et suivants correspond au bénéfice imposable du GAEC ou de l’EARL, aucune majoration n’est apportée en fonction du nombre d’associés exploitants. Les plafonds annuels maximum de la déduction pour épargne de précaution applicables aux GAEC et EARL sont présentés dans le tableau suivant. Bénéfice (en euros) Plafonds maximum : Exploitation individuelle Plafonds maximum : GAEC et EARL 2 associés Plafonds maximum : GAEC et EARL 3 associés Plafonds maximum : GAEC et EARL 4 associés < 32 990 € Bénéfice Bénéfice Bénéfice Bénéfice ≥ 32 990 € et < 61 092 € 32 990 € + [30 % (Bénéfice - 32 990 €)] Bénéfice Bénéfice Bénéfice ≥ 61 092 € et < 91 639 € 41 421 € + [20 % (Bénéfice - 61 092 €)] 82 842 € + [40 % (Bénéfice - 61 092 €)] Bénéfice Bénéfice ≥ 91 639 € et < 122 184 € 47 529 € + [10 % (Bénéfice - 91 639 €)] 95 058 € + [20 % (Bénéfice - 91 639 €)]",
+          "chunk_id": "11683-PGP__section_window__11683-pgp-paragraph-00041__11683-pgp-paragraph-00070__ii-r-gles-sp-cifiques-pour-les-earl-et-les-gaec-d-modalit-s-de-d-termination-des-plafonds-de-d-duction"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-BA-BASE-30-45-20-20250813",
+          "title": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution - Modalités de détermination du plafond de déduction",
+          "publication_date": "2025-08-13",
+          "section_path": "I. Montant de la déduction opérée par les exploitants agricoles, les sociétés ou les groupements autres que les groupements agricoles d’exploitation en commun (GAEC) et les entreprises agricoles à responsabilité limitée (EARL)",
+          "text": "Conformément aux dispositions du I de l’ article 73 du code général des impôts (CGI) , le plafond de la déduction pour épargne de précaution (DEP) pratiquée au titre d’un exercice est limité au plus faible des trois montants mentionnés au I § 10 à 70 .",
+          "chunk_id": "11683-PGP__section_window__11683-pgp-paragraph-00001__11683-pgp-paragraph-00001__i-montant-de-la-d-duction-op-r-e-par-les-exploitants-agricoles-les-soci-t-s-ou-les-groupements-autres-que-les-groupements-agricoles-d-exploitation-en-commun-gaec-et-les-entreprises-agricoles-responsabilit-limit-e-earl"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-BA-BASE-30-45-10-20210303",
+          "title": "BA - Base d'imposition - Abattements et déductions - Déduction pour épargne de précaution - Champ d'application",
+          "publication_date": "2021-03-03",
+          "section_path": "BA - Base d'imposition - Abattements et déductions - Déduction pour épargne de précaution - Champ d'application",
+          "text": "Actualité liée : 03/03/2021 : BA - Aménagements de la déduction pour épargne de précaution (DEP) (loi n°2020-1721 du 29 décembre 2020 de finances pour 2021, art.12)\n\nLa déduction pour épargne de précaution (DEP), prévue à l' article 73 du code général des impôts (CGI) , peut être pratiquée par les exploitants individuels et les sociétés ou groupements agricoles qui relèvent de l’impôt sur le revenu dans la catégorie des bénéfices agricoles, sous réserve d’être imposés d’après un régime réel d’imposition, qu’il s’agisse du régime réel normal ou du régime réel simplifié, applicable de plein droit ou sur option. Il est précisé que la DEP pratiquée par les sociétés ou groupements agricoles non soumis à l'impôt sur les sociétés doit l'être à leur niveau. En conséquence, un associé ne peut pas pratiquer de DEP sur la quote-part de résultat lui revenant. Sont exclues du bénéfice du dispositif les entreprises imposées selon le régime des micro-exploitations (ou « micro-BA ») ou le régime forfaitaire applicable aux exploitations forestières. La condition liée au régime d’imposition s’apprécie à la clôture de chacun des exercices au titre desquels la déduction est pratiquée. Par ailleurs, il est admis que la DEP soit pratiquée par chacun des conjoints qui gère de manière autonome une exploitation. Pour plus de précisions sur la notion d'exploitation autonome, il convient de se reporter au I-B-1-a-3° § 140 et suivants du BOI-BIC-PVMV-40-20-20-10 .",
+          "chunk_id": "11682-PGP__section_window__11682-pgp-paragraph-00000__11682-pgp-paragraph-00000__ba-base-d-imposition-abattements-et-d-ductions-d-duction-pour-pargne-de-pr-caution-champ-d-application__merge__i-exploitants-qui-peuvent-pratiquer-la-d-duction"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-BA-BASE-30-45-20-20250813",
+          "title": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution - Modalités de détermination du plafond de déduction",
+          "publication_date": "2025-08-13",
+          "section_path": "I. Montant de la déduction opérée par les exploitants agricoles, les sociétés ou les groupements autres que les groupements agricoles d’exploitation en commun (GAEC) et les entreprises agricoles à responsabilité limitée (EARL) > A. Plafond annuel déterminé en fonction du bénéfice imposable",
+          "text": "Le plafond de la déduction est ajusté prorata temporis lorsque la durée de l’exercice est inférieure ou supérieure à douze mois (début d’activité ou changement de date de clôture). Exemple : Pour un exercice de neuf mois, le plafond de la DEP pour un exploitant agricole ayant un bénéfice imposable de 55 000 € sera réduit à : (32 990 + [30 % x (55 000 - 32 990)]) x 9/12 = 29 695 €. Le plafond de la déduction est apprécié au niveau des résultats de l’exploitation individuelle, de la société ou du groupement. Pour la détermination des résultats des groupements et sociétés autres que les GAEC et les EARL, la limite est déterminée sans qu’il soit tenu compte du nombre des associés.",
+          "chunk_id": "11683-PGP__section_window__11683-pgp-paragraph-00011__11683-pgp-paragraph-00014__i-montant-de-la-d-duction-op-r-e-par-les-exploitants-agricoles-les-soci-t-s-ou-les-groupements-autres-que-les-groupements-agricoles-d-exploitation-en-commun-gaec-et-les-entreprises-agricoles-responsabilit-limit-e-earl-a-plafond-annuel-d-termin-en-fonction-du-b-n-fice-imposable"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-BA-BASE-30-45-20-20250813",
+          "title": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution - Modalités de détermination du plafond de déduction",
+          "publication_date": "2025-08-13",
+          "section_path": "III. Assiette de la déduction > B. Revenus exclus de l’assiette de la déduction > 3. Revenus provenant de la vente de biomasse ou de la production d’énergie à partir de produits ou de sous-produits majoritairement issus de l’exploitation agricole",
+          "text": "En application des dispositions du V de l’ article 73 du CGI , les exploitants titulaires de revenus provenant de la vente de biomasse ou de la production d’énergie à partir de produits ou de sous-produits majoritairement issus de l’exploitation agricole ne peuvent pas bénéficier de déductions pour épargne de précaution lorsqu’ils n’exercent aucune des activités mentionnées aux quatre premiers alinéas de l’ article 63 du CGI . En pratique, dès lors que les exploitants doivent exercer l’une de ces activités pour que la biomasse ou la production d’énergie puissent être majoritairement issues d’une exploitation agricole, ils pourront, le cas échéant, procéder à de telles déductions.",
+          "chunk_id": "11683-PGP__section_window__11683-pgp-paragraph-00153__11683-pgp-paragraph-00154__iii-assiette-de-la-d-duction-b-revenus-exclus-de-l-assiette-de-la-d-duction-3-revenus-provenant-de-la-vente-de-biomasse-ou-de-la-production-d-nergie-partir-de-produits-ou-de-sous-produits-majoritairement-issus-de-l-exploitation-agricole"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-IR-BASE-20-50-20-20170711",
+          "title": "IR - Base d'imposition - Limites de déduction des cotisations et primes d'épargne retraite",
+          "publication_date": "2017-07-11",
+          "section_path": "I. Premier terme de la différence : montant « brut » de déduction au titre de l’épargne retraite",
+          "text": "Le premier terme de la différence correspond au plafond brut de déduction au titre de l’épargne retraite dont dispose chaque membre du foyer fiscal avant prise en compte, le cas échéant, des primes ou cotisations déductibles à ce titre dans le cadre de l’activité professionnelle (régimes de retraite supplémentaire d’entreprise « article 83 », contrats Madelin, etc.). Si l’intéressé ne bénéficie dans le cadre de son activité professionnelle d’aucune déduction de cotisations de l’espèce, il s’agit alors de son plafond effectif de déduction au titre de l’épargne retraite. Le plafond brut de déduction est égal pour chaque membre du foyer fiscal à 10 % de ses revenus d’activité professionnelle, retenus dans la limite de huit fois le montant annuel du plafond de la sécurité sociale, ou, si elle est plus élevée, à une somme égale à 10 % de ce même plafond. Les revenus d’activité professionnelle pris en compte pour le calcul de ce plafond sont définis par le II de l' article 163 quatervicies du CGI . Il s’agit des revenus imposables dans les catégories des traitements et salaires (TS), des rémunérations de certains gérants et associés de sociétés (« article 62 »), des bénéfices industriels et commerciaux (BIC), des bénéfices non commerciaux (BNC) et des bénéfices agricoles (BA).",
+          "chunk_id": "1124-PGP__section_window__1124-pgp-paragraph-00020__1124-pgp-paragraph-00022__i-premier-terme-de-la-diff-rence-montant-brut-de-d-duction-au-titre-de-l-pargne-retraite"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-BA-BASE-30-45-30-20250813",
+          "title": "BA - Base d’imposition - Abattements et déductions - Déduction pour épargne de précaution - Modalités d’utilisation de la déduction",
+          "publication_date": "2025-08-13",
+          "section_path": "I. Utilisation de la déduction pour épargne de précaution > C. Exonération partielle des sommes rapportées > 3. Modalités de plafonnement de l’exonération partielle",
+          "text": "Les sommes rapportées sont exonérées d’impôt à hauteur de 30 %, dans la limite d’un plafond de 50 000 € par exercice. Ce plafond s’applique aux sommes non imposées en application de l’exonération partielle, et non au montant total des sommes rapportées. Pour les groupements agricoles d’exploitation en commun (GAEC) et les exploitations agricoles à responsabilité limitée (EARL), le plafond de l’exonération est multiplié par le nombre d’associés exploitants de la société, dans la limite de quatre.",
+          "chunk_id": "11685-PGP__section_window__11685-pgp-paragraph-00037__11685-pgp-paragraph-00038__i-utilisation-de-la-d-duction-pour-pargne-de-pr-caution-c-exon-ration-partielle-des-sommes-rapport-es-3-modalit-s-de-plafonnement-de-l-exon-ration-partielle"
+        }
+      ]
+    },
+    {
+      "case_id": "sh003",
+      "query": "Notre startup est JEI et engage des depenses de recherche. Peut-elle obtenir immediatement le remboursement de sa creance de CIR ?",
+      "category": "paraphrase",
+      "note": "JEI + CIR - cross-doc",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Oui, une JEI peut obtenir le remboursement immédiat de sa créance de CIR.\n\n- Les JEI sont explicitement listées parmi les entreprises pouvant demander le remboursement immédiat du CIR [1].\n- Le remboursement immédiat est prévu pour les JEI mentionnées à l'article 44 sexies-0 A du CGI [1][7].\n- Si la JEI a moins de deux ans, elle doit fournir des pièces justificatives attestant de la réalité des dépenses de recherche [4][6].\n\nLimites: La réponse suppose que la startup remplit les conditions JEI et respecte les obligations déclaratives.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Oui, une JEI peut obtenir le remboursement immédiat de sa créance de CIR.\",\n  \"justification_bullets\": [\n    \"Les JEI sont explicitement listées parmi les entreprises pouvant demander le remboursement immédiat du CIR [1].\",\n    \"Le remboursement immédiat est prévu pour les JEI mentionnées à l'article 44 sexies-0 A du CGI [1][7].\",\n    \"Si la JEI a moins de deux ans, elle doit fournir des pièces justificatives attestant de la réalité des dépenses de recherche [4][6].\"\n  ],\n  \"limits\": \"La réponse suppose que la startup remplit les conditions JEI et respecte les obligations déclaratives.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Oui, une JEI peut obtenir le remboursement immédiat de sa créance de CIR.",
+        "justification_bullets": [
+          "Les JEI sont explicitement listées parmi les entreprises pouvant demander le remboursement immédiat du CIR [1].",
+          "Le remboursement immédiat est prévu pour les JEI mentionnées à l'article 44 sexies-0 A du CGI [1][7].",
+          "Si la JEI a moins de deux ans, elle doit fournir des pièces justificatives attestant de la réalité des dépenses de recherche [4][6]."
+        ],
+        "limits": "La réponse suppose que la startup remplit les conditions JEI et respecte les obligations déclaratives."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          4,
+          6,
+          7
+        ],
+        "cite_count": 5,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-BIC-RICI-10-10-50-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Utilisation du crédit d’impôt",
+          "publication_date": "2025-08-13",
+          "section_path": "II. Remboursement immédiat des créances de CIR pour certaines entreprises",
+          "text": "En application des dispositions du I de l’ article 199 ter B du CGI , le CIR est imputé sur l’impôt sur les bénéfices dû par le contribuable au titre de l’année au cours de laquelle les dépenses de recherche prises en compte dans le calcul du crédit d’impôt ont été exposées. Les entreprises peuvent utiliser les créances de CIR non imputées pour le paiement de l’impôt dû au titre des trois années suivant celle au titre de laquelle elles sont constatées et demander le remboursement de la fraction non utilisée à l’expiration de cette période. Toutefois, le II de l’article 199 ter B du CGI prévoit que la créance de CIR est immédiatement remboursable lorsqu’elle est constatée par les entreprises suivantes : les entreprises nouvelles (celles-ci peuvent demander le remboursement immédiat des créances de CIR constatées au titre de l’année de création et des quatre années suivantes) répondant à certaines conditions ; les jeunes entreprises innovantes (JEI) mentionnées à l’ article 44 sexies-0 A du CGI ; les entreprises faisant l’objet d’une procédure de conciliation ou de sauvegarde, de redressement judiciaire ou de liquidation judiciaire (celles-ci peuvent demander le remboursement de leur créance non utilisée à compter de la date de la décision ou du jugement qui a ouvert ces procédures) ; les petites et moyennes entreprises (PME) au sens du droit de l’Union européenne. De plus, les entreprises créées depuis moins de deux ans qui sollicitent le remboursement immédiat de la créance de CIR doivent présenter à l’appui de leur demande les pièces justificatives attestant de la réalité des dépenses de recherche ( I-B-1 § 50 du BOI-BIC-RICI-10-10-60 ).",
+          "chunk_id": "4669-PGP__section_window__4669-pgp-paragraph-00007__4669-pgp-paragraph-00014__ii-remboursement-imm-diat-des-cr-ances-de-cir-pour-certaines-entreprises"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-BIC-RICI-10-10-60-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Obligations déclaratives et contrôle",
+          "publication_date": "2025-08-13",
+          "section_path": "I. Souscription d’une déclaration spéciale conforme à un modèle établi par l’administration > B. Cas particuliers > 1. Pièces justificatives à produire par les entreprises créées depuis moins de deux ans > a. Entreprises concernées",
+          "text": "Les entreprises concernées par cette mesure sont les entreprises créées depuis moins de deux ans à la date d’introduction de la demande de remboursement immédiat de leur créance de CIR et qui peuvent bénéficier de cette prérogative : entreprises nouvelles, jeunes entreprises innovantes (JEI), entreprises faisant l’objet d’une procédure collective, petites et moyennes entreprises (PME) au sens du droit de l’Union européenne. Pour apprécier si l’entreprise est soumise à cette obligation, il convient de prendre en compte la date de début d’activité figurant sur la déclaration d’existence souscrite par cette dernière auprès du guichet unique des formalités des entreprises, en application de l’ article 286 du CGI .",
+          "chunk_id": "4673-PGP__section_window__4673-pgp-paragraph-00025__4673-pgp-paragraph-00026__i-souscription-d-une-d-claration-sp-ciale-conforme-un-mod-le-tabli-par-l-administration-b-cas-particuliers-1-pi-ces-justificatives-produire-par-les-entreprises-cr-es-depuis-moins-de-deux-ans-a-entreprises-concern-es"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-BIC-RICI-10-10-50-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Utilisation du crédit d’impôt",
+          "publication_date": "2025-08-13",
+          "section_path": "III. Le solde excédentaire constitue une créance sur l’État > B. Utilisation de la créance > 2. Cession",
+          "text": "La créance est inaliénable et incessible, sauf dans les cas et conditions prévues de l’ article L. 214-169 du CoMoFi à l’ article L. 214-190 du CoMoFi et de l’ article L. 313-23 du CoMoFi à l’ article L. 313-35 du CoMoFi . Dans le premier cas (CoMoFi, art. L. 214-169 à CoMoFi, art. L. 214-190), la créance sur le Trésor est cédée à un organisme de titrisation. Dans le second cas (CoMoFi, art. L. 313-23 à CoMoFi, art. L. 313-35), la créance sur le Trésor est cédée à titre d’escompte ou à titre de garantie auprès d’un établissement de crédit. L’organisme de titrisation ou l’établissement de crédit auprès duquel la créance a été cédée peut bénéficier du remboursement de la créance de CIR dans les mêmes conditions que le propriétaire originel de la créance (remboursement immédiat si l’entreprise cédante est une JEI, par exemple). Un imprimé unique permet la mobilisation de la créance constituée par le crédit d’impôt restant à imputer. Il s’agit du certificat de créance. L’imprimé n° 2574-SD (CERFA n° 12487) est disponible sur impots.gouv.fr. Dès lors, l’entreprise complète les cadres I et II du formulaire unique et mentionne le détail des crédits d’impôt déjà imputés sur les acomptes de l’exercice en cours. Elle adresse deux exemplaires de ce document au service des impôts du lieu de dépôt de la déclaration de résultats ou à la direction des grandes entreprises si l’entreprise relève de cette direction.",
+          "chunk_id": "4669-PGP__section_window__4669-pgp-paragraph-00126__4669-pgp-paragraph-00130__iii-le-solde-exc-dentaire-constitue-une-cr-ance-sur-l-tat-b-utilisation-de-la-cr-ance-2-cession"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-BIC-RICI-10-10-60-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Obligations déclaratives et contrôle",
+          "publication_date": "2025-08-13",
+          "section_path": "I. Souscription d’une déclaration spéciale conforme à un modèle établi par l’administration > B. Cas particuliers > 1. Pièces justificatives à produire par les entreprises créées depuis moins de deux ans",
+          "text": "Aux termes du dernier alinéa du II de l’ article 199 ter B du CGI , les entreprises créées depuis moins de deux ans qui sollicitent le remboursement immédiat de la créance de CIR doivent présenter à l’appui de leur demande les pièces justificatives attestant de la réalité des dépenses de recherche.",
+          "chunk_id": "4673-PGP__section_window__4673-pgp-paragraph-00024__4673-pgp-paragraph-00024__i-souscription-d-une-d-claration-sp-ciale-conforme-un-mod-le-tabli-par-l-administration-b-cas-particuliers-1-pi-ces-justificatives-produire-par-les-entreprises-cr-es-depuis-moins-de-deux-ans"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-BIC-RICI-10-10-50-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Utilisation du crédit d’impôt",
+          "publication_date": "2025-08-13",
+          "section_path": "II. Remboursement immédiat des créances de CIR pour certaines entreprises > D. Entreprises nouvelles répondant à certaines conditions",
+          "text": "En application du 1° du II de l’ article 199 ter B du CGI , les entreprises nouvelles et qui remplissent certaines conditions peuvent demander le remboursement immédiat de la créance de CIR constatée au titre de l’année de création et des quatre années suivantes. S’agissant de la condition tenant au caractère nouveau de l’activité, il convient de se reporter au III de l’ article 44 sexies du CGI , ainsi qu’au I § 1 et suivants du BOI-BIC-CHAMP-80-10-10-20 . Par ailleurs, pour pouvoir bénéficier du remboursement immédiat de la créance, le capital des entreprises doit être entièrement libéré et détenu de manière continue à 50 % au moins : par des personnes physiques ; ou par une société dont le capital est détenu pour 50 % au moins par des personnes physiques ; ou par des sociétés de capital-risque, des fonds communs de placement à risques, des fonds professionnels spécialisés relevant de l’ article L. 214-37 du CoMoFi dans sa rédaction antérieure à l’ ordonnance n° 2013-676 du 25 juillet 2013 modifiant le cadre juridique de la gestion d’actifs modifiant le cadre juridique de la gestion d’actifs, des fonds professionnels de capital investissement, des sociétés de libre partenariat, des sociétés de développement régional, des sociétés financières d’innovation ou des sociétés unipersonnelles d’investissement à risque à la condition qu’il n’existe pas de lien de dépendance au sens du 12 de l’ article 39 du CGI entre les entreprises et ces dernières sociétés ou ces fonds. Remarque : Cette condition de détention de capital doit être respectée tout au long des années au cours desquelles les dépenses ouvrant droit au crédit d’impôt dont le remboursement est demandé ont été exposées. (490)",
+          "chunk_id": "4669-PGP__section_window__4669-pgp-paragraph-00099__4669-pgp-paragraph-00106__ii-remboursement-imm-diat-des-cr-ances-de-cir-pour-certaines-entreprises-d-entreprises-nouvelles-r-pondant-certaines-conditions"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-BIC-RICI-10-10-60-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Obligations déclaratives et contrôle",
+          "publication_date": "2025-08-13",
+          "section_path": "I. Souscription d’une déclaration spéciale conforme à un modèle établi par l’administration > B. Cas particuliers > 1. Pièces justificatives à produire par les entreprises créées depuis moins de deux ans > b. Pièces à produire",
+          "text": "Les entreprises créées depuis moins de deux ans doivent présenter spontanément à l’appui de leur demande de remboursement immédiat de créance de CIR des pièces permettant d’établir la réalité de l’activité de recherche qu’elles exercent. Elles peuvent ainsi joindre, à leur demande de remboursement immédiat de créance de CIR, des documents tels que contrats, factures, déclaration DADS-U ou DSN et feuilles de paie délivrées aux chercheurs et techniciens ou tout autre moyen de preuve. Il n’est, toutefois, pas exigé que l’entreprise produise l’ensemble des justificatifs relatifs aux différentes catégories de dépenses éligibles au crédit d’impôt. En revanche, lors des demandes de restitution de crédit d’impôt ayant le caractère de réclamation contentieuse l’administration des finances publiques est fondée à demander toutes pièces justificatives complémentaires aux entreprises avant remboursement des créances de CIR.",
+          "chunk_id": "4673-PGP__section_window__4673-pgp-paragraph-00027__4673-pgp-paragraph-00030__i-souscription-d-une-d-claration-sp-ciale-conforme-un-mod-le-tabli-par-l-administration-b-cas-particuliers-1-pi-ces-justificatives-produire-par-les-entreprises-cr-es-depuis-moins-de-deux-ans-b-pi-ces-produire"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-BIC-RICI-10-15-40-20250326",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt en faveur de la recherche collaborative - Utilisation du crédit d’impôt",
+          "publication_date": "2025-03-26",
+          "section_path": "II. Nature, comptabilisation et utilisation de la créance de crédit d’impôt non imputé (solde excédentaire) > B. Utilisation de la créance > 2. Cas particuliers du remboursement immédiat de la créance pour certaines entreprises",
+          "text": "Le II de l’ article 199 ter B bis du CGI prévoit que la créance de crédit d’impôt est immédiatement remboursable lorsqu’elle est constatée par les entreprises suivantes : les entreprises nouvelles sous certaines conditions ; les entreprises ayant fait l’objet d’une procédure de conciliation ou de sauvegarde, de redressement judiciaire ou de liquidation judiciaire ; les jeunes entreprises innovantes (JEI) mentionnées à l’ article 44 sexies-0 A du CGI ; les petites et moyennes entreprises (PME) au sens du droit de l’Union européenne. Les entreprises mentionnées au II-B-2 § 80 ont la possibilité de demander le remboursement immédiat de leur créance mais conservent la faculté de continuer de l’imputer sur l’impôt sur les bénéfices dû au titre des trois années suivant celle au titre de laquelle elle est constatée.",
+          "chunk_id": "13773-PGP__section_window__13773-pgp-paragraph-00020__13773-pgp-paragraph-00025__ii-nature-comptabilisation-et-utilisation-de-la-cr-ance-de-cr-dit-d-imp-t-non-imput-solde-exc-dentaire-b-utilisation-de-la-cr-ance-2-cas-particuliers-du-remboursement-imm-diat-de-la-cr-ance-pour-certaines-entreprises"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-BIC-RICI-10-10-50-20250813",
+          "title": "BIC - Réductions et crédits d’impôt - Crédits d’impôt - Crédit d’impôt recherche - Utilisation du crédit d’impôt",
+          "publication_date": "2025-08-13",
+          "section_path": "II. Remboursement immédiat des créances de CIR pour certaines entreprises > A. PME au sens du droit de l’Union européenne > 2. Portée de la mesure",
+          "text": "(150) Les entreprises qui répondent à la définition de la PME au sens indiqué au II-A-1 § 60 à 140 peuvent obtenir le remboursement immédiat de l’excédent de CIR constaté et non imputé sur l’impôt dû. À titre d’exemple, une créance de CIR relative aux dépenses exposées au titre de l’année N constatée par une société passible de l’IS qualifiée de PME au sens du droit de l’Union européenne est immédiatement remboursable en N+1 après liquidation de l’IS prévue à l’ article 1668 du CGI lorsque cette créance restituable est mentionnée sur l’imprimé de relevé de solde n° 2572-SD (CERFA n° 12404), disponible sur impots.gouv.fr. (170)",
+          "chunk_id": "4669-PGP__section_window__4669-pgp-paragraph-00044__4669-pgp-paragraph-00047__ii-remboursement-imm-diat-des-cr-ances-de-cir-pour-certaines-entreprises-a-pme-au-sens-du-droit-de-l-union-europ-enne-2-port-e-de-la-mesure"
+        }
+      ]
+    },
+    {
+      "case_id": "sh004",
+      "query": "Une association a but non lucratif qui vend des produits derives doit-elle facturer la TVA et laquelle ?",
+      "category": "cross_document",
+      "note": "Association + TVA - q031",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Oui, sous réserve de seuils et exonérations spécifiques (franchise, manifestations de bienfaisance).\n\n- Les OSBL réalisant des opérations imposables sont soumis à la TVA de droit commun [1].\n- Une franchise en base s'applique si le chiffre d'affaires annuel ne dépasse pas les seuils [2].\n- Les recettes lucratives accessoires peuvent être exonérées sous conditions de seuil [4].\n- Six manifestations de bienfaisance par an peuvent être exonérées de TVA [8].\n\nLimites: La réponse dépend du montant des recettes et du caractère lucratif ou non de l'activité.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Oui, sous réserve de seuils et exonérations spécifiques (franchise, manifestations de bienfaisance).\",\n  \"justification_bullets\": [\n    \"Les OSBL réalisant des opérations imposables sont soumis à la TVA de droit commun [1].\",\n    \"Une franchise en base s'applique si le chiffre d'affaires annuel ne dépasse pas les seuils [2].\",\n    \"Les recettes lucratives accessoires peuvent être exonérées sous conditions de seuil [4].\",\n    \"Six manifestations de bienfaisance par an peuvent être exonérées de TVA [8].\"\n  ],\n  \"limits\": \"La réponse dépend du montant des recettes et du caractère lucratif ou non de l'activité.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Oui, sous réserve de seuils et exonérations spécifiques (franchise, manifestations de bienfaisance).",
+        "justification_bullets": [
+          "Les OSBL réalisant des opérations imposables sont soumis à la TVA de droit commun [1].",
+          "Une franchise en base s'applique si le chiffre d'affaires annuel ne dépasse pas les seuils [2].",
+          "Les recettes lucratives accessoires peuvent être exonérées sous conditions de seuil [4].",
+          "Six manifestations de bienfaisance par an peuvent être exonérées de TVA [8]."
+        ],
+        "limits": "La réponse dépend du montant des recettes et du caractère lucratif ou non de l'activité."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 4,
+        "cite_ids": [
+          1,
+          2,
+          4,
+          8
+        ],
+        "cite_count": 4,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-TVA-DECLA-20-30-20-10-20220323",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Obligations et formalités déclaratives - Obligations et formalités particulières - Mesures propres à certaines entreprises - Régime applicable aux organismes sans but lucratif",
+          "publication_date": "2022-03-23",
+          "section_path": "I. Obligations générales",
+          "text": "Les OSBL qui réalisent des opérations imposables à la TVA sont normalement soumis aux mêmes obligations que les autres redevables de cette taxe. Aussi sont-ils tenus de respecter les obligations prescrites par les dispositions codifiées de l' article 286 du CGI à l' article 289 D du CGI et à l' article 290 quater du CGI , à savoir : document commun de déclaration à souscrire auprès du centre de formalités des entreprises ( I § 10 à 30 du BOI-TVA-DECLA-20-10-10-10 ), obligations d'ordre comptable ( BOI-TVA-DECLA-30-10-10 ), déclaration périodique des opérations réalisées ( BOI-TVA-DECLA-20-20-10-10 ), états récapitulatifs et déclarations européennes de services ( BOI-TVA-DECLA-20-20-40 ), observation des règles relatives à la facturation ( BOI-TVA-DECLA-30-20 ) et à la délivrance des billets d'entrée pour les manifestations de bienfaisance qu'ils organisent ( BOI-TVA-DECLA-20-30-20-30 ). Les organismes qui réalisent des opérations taxables à titre occasionnel sont toutefois dispensés de souscrire une déclaration d'existence.",
+          "chunk_id": "920-PGP__section_window__920-pgp-paragraph-00004__920-pgp-paragraph-00006__i-obligations-g-n-rales"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-TVA-DECLA-20-30-20-10-20220323",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Obligations et formalités déclaratives - Obligations et formalités particulières - Mesures propres à certaines entreprises - Régime applicable aux organismes sans but lucratif",
+          "publication_date": "2022-03-23",
+          "section_path": "II. Obligations déclaratives > A. Organismes pouvant bénéficier de la franchise en base ou d'une exonération sur leurs activités accessoires > 1. Organismes exerçant à titre principal une activité imposable",
+          "text": "Les associations dont le chiffre d'affaires de l'année précédente est inférieur ou égal aux seuils fixés par le I de l' article 293 B du CGI bénéficient de la franchise en base de droit commun prévue par les dispositions codifiées de l'article 293 B du CGI à l' article 293 G du CGI et commentées au BOI-TVA-DECLA-40-10 . Ces associations sont par conséquent dispensées de la déclaration et du paiement de la TVA en cours d'année, sauf si le montant de leurs recettes dépasse les seuils. Dans ce cas, elles se conforment aux obligations déclaratives qui tiennent compte de la permanence ou non de l'activité (résumé des obligations déclaratives des organismes sans but lucratif, BOI-ANNX-000221 ).",
+          "chunk_id": "920-PGP__section_window__920-pgp-paragraph-00008__920-pgp-paragraph-00009__ii-obligations-d-claratives-a-organismes-pouvant-b-n-ficier-de-la-franchise-en-base-ou-d-une-exon-ration-sur-leurs-activit-s-accessoires-1-organismes-exer-ant-titre-principal-une-activit-imposable"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-TVA-CHAMP-30-10-30-20-20190515",
+          "title": "TVA - Champ d'application et territorialité - Exonérations - Opérations exonérées en régime intérieur - Organismes d'utilité générale - Cas particuliers d'organismes sans but lucratif",
+          "publication_date": "2019-05-15",
+          "section_path": "XII. Mutuelles et leurs unions régies par le livre I ou le livre III du code de la mutualité > B. Critères d'appréciation de la non-lucrativité > 2. Règles spécifiques en matière de TVA > a. Opérations imposables",
+          "text": "Lorsque les activités non lucratives sont prépondérantes, les recettes des activités lucratives sont soumises de plein droit à la TVA sous réserve d'exonérations spécifiques. En effet, même lorsqu'elles ne remettent pas en cause le caractère non lucratif de la mutuelle ou de l'union, les opérations lucratives, réalisées à titre accessoire par un organisme mentionné au a ou au b du 1° du 7 de l' article 261 du CGI , sont imposées à la taxe sur la valeur ajoutée dans les conditions de droit commun. En outre, certaines opérations considérées comme non lucratives ou exonérées au regard des impôts directs peuvent néanmoins être soumises à la TVA en application de dispositions législatives expresses. Il en est ainsi, notamment, des activités d'édition et de restauration collective sous certaines conditions ( BOI-TVA-CHAMP-30-10-30-10 au II-B-2-c § 300 et suivants ). Lorsque les activités lucratives sont prépondérantes, toutes les activités sont soumises à la taxe sous réserve d'exonération spécifique.",
+          "chunk_id": "1009-PGP__section_window__1009-pgp-paragraph-00131__1009-pgp-paragraph-00135__xii-mutuelles-et-leurs-unions-r-gies-par-le-livre-i-ou-le-livre-iii-du-code-de-la-mutualit-b-crit-res-d-appr-ciation-de-la-non-lucrativit-2-r-gles-sp-cifiques-en-mati-re-de-tva-a-op-rations-imposables"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-TVA-DECLA-20-30-20-10-20220323",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Obligations et formalités déclaratives - Obligations et formalités particulières - Mesures propres à certaines entreprises - Régime applicable aux organismes sans but lucratif",
+          "publication_date": "2022-03-23",
+          "section_path": "II. Obligations déclaratives > A. Organismes pouvant bénéficier de la franchise en base ou d'une exonération sur leurs activités accessoires > 2. Organismes exerçant à titre accessoire une ou des activités imposables",
+          "text": "Une franchise particulière a été édictée par le b du 1° du 7 de l' article 261 du CGI qui exonère de la TVA les OSBL et dont la gestion est désintéressée pour leur recettes lucratives réalisées à titre accessoire et qui ne dépassent pas une limite dont le montant est actualisé annuellement. Ce seuil est défini au II-D § 340 du BOI-TVA-CHAMP-30-10-30-10 . Le bénéfice de la franchise pour l'année civile N sera acquis dès lors que le seuil de chiffre d'affaires réalisé en N-1 ne dépasse pas ce montant.",
+          "chunk_id": "920-PGP__section_window__920-pgp-paragraph-00010__920-pgp-paragraph-00010__ii-obligations-d-claratives-a-organismes-pouvant-b-n-ficier-de-la-franchise-en-base-ou-d-une-exon-ration-sur-leurs-activit-s-accessoires-2-organismes-exer-ant-titre-accessoire-une-ou-des-activit-s-imposables"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-TVA-CHAMP-30-10-30-10-20250416",
+          "title": "TVA - Champ d’application et territorialité - Exonérations - Opérations exonérées en régime intérieur - Organismes d’utilité générale - Principes généraux applicables aux organismes sans but lucratif",
+          "publication_date": "2025-04-16",
+          "section_path": "II. Organismes à caractère social ou philanthropique > F. Manifestations de bienfaisance ou de soutien > 2. Portée de l’exonération > a. Manifestations ouvrant droit à l’exonération > 3° Notion d’organisateur",
+          "text": "Les « organisateurs » des manifestations de bienfaisance ou de soutien s’entendent, toutes autres conditions remplies, des groupements sans but lucratif qui vendent au public des produits à emporter ou lui rendent des services (organisation de spectacles, jeux ou divertissements, ventes à consommer sur place, etc.) et perçoivent à ce titre des recettes auprès des personnes qui accèdent à la manifestation. Les organisateurs sont désignés sur les divers documents ou messages se rapportant à la manifestation (déclaration effectuée auprès des services préfectoraux ou en mairie quand elle est exigée, affiches, tracts, panneaux publicitaires dans la presse, annonces radiodiffusées ou télévisées, etc.). Plusieurs groupements sans but lucratif peuvent s’associer pour organiser à leur profit une manifestation de bienfaisance ou de soutien. Dans un tel cas, il convient de faire application des règles suivantes : la manifestation est portée au compte de chacun des organisateurs dont le nombre de manifestations susceptibles d’être exonérées est diminué en conséquence ; tous les organisateurs sont solidairement responsables du respect des formalités à accomplir et du paiement de la TVA exigible si la manifestation ne peut bénéficier de l’exonération. Mais ils peuvent mandater expressément l’un d’entre eux pour remplir ces obligations ; le fait qu’un seul des coorganisateurs ne remplisse pas effectivement les conditions prévues au c du 1° du 7 de l’ article 261 du CGI suffit à exclure la manifestation, dans son ensemble, du bénéfice de l’exonération quelle que soit la situation des autres organisateurs. Ne sont pas considérés comme « organisateurs » :",
+          "chunk_id": "1010-PGP__section_window__1010-pgp-paragraph-00125__1010-pgp-paragraph-00130__ii-organismes-caract-re-social-ou-philanthropique-f-manifestations-de-bienfaisance-ou-de-soutien-2-port-e-de-l-exon-ration-a-manifestations-ouvrant-droit-l-exon-ration-3-notion-d-organisateur"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-TVA-SECT-40-30-10-20120912",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Ecrits périodiques des organismes à but non lucratif",
+          "publication_date": "2012-09-12",
+          "section_path": "II. Écrits périodiques édités par les organismes à but non lucratif ne relevant pas du régime de la presse > A. Champ d'application de l'exonération",
+          "text": "En application des dispositions de l' article 298 duodecies du CGI, les ventes, commissions et courtages portant sur les écrits périodiques au sens de la loi du 29 juillet 1881 non inscrits sur les registres de la commission paritaire et les annuaires, édités par les organismes à but non lucratif, sont exonérés de la taxe dès lors que : - d'une part, la publicité et les annonces ne couvrent pas plus des deux tiers de la surface totale de la publication ; - et, d'autre part, l'ensemble des annonces ou de la publicité d'un même annonceur n'est pas, dans une même année, supérieur au dixième de la surface totale des numéros parus dans cette année. L'exonération s'applique aux associations régies par la loi de 1901 (associations simplement déclarées ou associations reconnues d'utilité publique) ou par la loi locale maintenue en vigueur dans les départements du Bas-Rhin, du Haut-Rhin et de la Moselle. Elle bénéficie notamment aux organisations politiques, syndicales, professionnelles, philosophiques ou confessionnelles qui revêtent cette forme. Elle s'étend également à tous les autres organismes légalement constitués agissant sans but lucratif, tels que : - les congrégations ; - les fondations ; - les groupements mutualistes ; - les comités d'entreprise ou d'établissement. Peuvent aussi notamment se prévaloir des dispositions de l' article 298 duodecies du CGI : - les associations folkloriques ou musicales régies par la loi de 1901 ; - les associations philatéliques dont la gestion est effectivement désintéressée ; - les associations sportives, culturelles ou socioculturelles ; - les caisses des écoles.",
+          "chunk_id": "935-PGP__section_window__935-pgp-paragraph-00033__935-pgp-paragraph-00046__ii-crits-p-riodiques-dit-s-par-les-organismes-but-non-lucratif-ne-relevant-pas-du-r-gime-de-la-presse-a-champ-d-application-de-l-exon-ration"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-TVA-DECLA-20-30-20-10-20220323",
+          "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Obligations et formalités déclaratives - Obligations et formalités particulières - Mesures propres à certaines entreprises - Régime applicable aux organismes sans but lucratif",
+          "publication_date": "2022-03-23",
+          "section_path": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Obligations et formalités déclaratives - Obligations et formalités particulières - Mesures propres à certaines entreprises - Régime applicable aux organismes sans but lucratif",
+          "text": "Actualité liée : 23/03/2022 : IS - TVA - IF - Franchise des impôts commerciaux - Mise à jour du montant de la franchise Le régime d'imposition à la taxe sur la valeur ajoutée (TVA) des organismes sans but lucratif (OSBL), qui résulte des dispositions du 9° du 4 de l' article 261 du code général des impôts (CGI) et du 1° du 7 de l'article 261 du CGI est commenté au BOI-TVA-CHAMP-30-10-30 . Par ailleurs, les dispositions relatives aux déductions sont commentées au I-B § 100 du BOI-TVA-DED-20-20 . Les développements qui suivent ne concernent que les obligations qui incombent aux divers organismes intéressés.",
+          "chunk_id": "920-PGP__section_window__920-pgp-paragraph-00000__920-pgp-paragraph-00003__tva-r-gimes-d-imposition-et-obligations-d-claratives-et-comptables-obligations-et-formalit-s-d-claratives-obligations-et-formalit-s-particuli-res-mesures-propres-certaines-entreprises-r-gime-applicable-aux-organismes-sans-but-lucratif"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-TVA-CHAMP-30-10-30-20-20190515",
+          "title": "TVA - Champ d'application et territorialité - Exonérations - Opérations exonérées en régime intérieur - Organismes d'utilité générale - Cas particuliers d'organismes sans but lucratif",
+          "publication_date": "2019-05-15",
+          "section_path": "VII. Organismes sans but lucratif organisant des spectacles tauromachiques",
+          "text": "Les organismes sans but lucratif, ainsi que les organismes permanents à caractère social des collectivités locales et des entreprises mentionnés au c du 1° du 7 de l' article 261 du CGI , bénéficient d'une exonération pour les recettes de six manifestations de bienfaisance ou de soutien organisées dans l'année à leur profit exclusif ( BOI-TVA-CHAMP-30-10-30-10 au II-F § 460 à 630 ). Les spectacles tauromachiques (corridas, novilladas, rejoneadas, férias, courses landaises ou camarguaises qui ne sont pas organisés sous l'égide de leur fédération respective, etc.) peuvent compter parmi ces manifestations exonérées. Toutefois, chaque journée au cours de laquelle est organisé un ou plusieurs spectacles tauromachiques doit être comptée pour une manifestation de bienfaisance ou de soutien. Par ailleurs, il est rappelé que : - l'exonération s'applique à six manifestations dans l'année et pas nécessairement aux six premières manifestations ; - si les organismes pouvant bénéficier de l'exonération de TVA organisent d'autres manifestations de bienfaisance ou de soutien (organisation de spectacles de variétés, bals, etc.), il est tenu compte de ces dernières pour décompter le nombre de manifestations exonérées ; - l'exonération s'applique aux recettes encaissées auprès du public (droits d'entrée au spectacle) et recettes retirées des autres opérations réalisées à cette occasion par l'organisme lui-même mais également, le cas échéant, aux subventions versées par les communes pour assurer l'équilibre financier de ces manifestations si ces subventions sont directement liées au prix d'opérations imposables ( BOI-TVA-CHAMP-30-10-30-10 au II-F-2-b § 630 ).",
+          "chunk_id": "1009-PGP__section_window__1009-pgp-paragraph-00059__1009-pgp-paragraph-00065__vii-organismes-sans-but-lucratif-organisant-des-spectacles-tauromachiques"
+        }
+      ]
+    }
+  ]
+}

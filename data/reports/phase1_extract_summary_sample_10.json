@@ -1,0 +1,127 @@
+{
+  "generated_at": "2026-04-11T17:08:49.070832+00:00",
+  "sample_size": 10,
+  "raw_root": "C:\\Users\\rapha\\Desktop\\Document perso\\Projet compta\\bofip-rag\\data\\raw\\bofip_extracted\\BOFiP\\documents",
+  "raw_docs_path": "C:\\Users\\rapha\\Desktop\\Document perso\\Projet compta\\bofip-rag-cleanroom\\data\\interim\\raw_docs_sample_10.jsonl",
+  "doc_tree_path": "C:\\Users\\rapha\\Desktop\\Document perso\\Projet compta\\bofip-rag-cleanroom\\data\\interim\\doc_tree_sample_10.jsonl",
+  "content_type_counts": {
+    "Autres annexes": 2,
+    "Barème": 2,
+    "Cartographie": 2,
+    "Commentaire": 2,
+    "Formulaire": 1,
+    "Lettre Type / Modèle": 1
+  },
+  "documents": [
+    {
+      "document_id": "2619-PGP",
+      "boi_reference": "BOI-ANNX-000098-20120912",
+      "content_type": "Autres annexes",
+      "publication_date": "2012-09-12",
+      "sections": 20,
+      "paragraphs": 73,
+      "tables": 0,
+      "internal_links": 0,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "10159-PGP",
+      "boi_reference": "BOI-BAREME-000018-20160706",
+      "content_type": "Barème",
+      "publication_date": "2016-07-06",
+      "sections": 0,
+      "paragraphs": 2,
+      "tables": 0,
+      "internal_links": 1,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "5104-PGP",
+      "boi_reference": "BOI-CARTE-000001-20130617",
+      "content_type": "Cartographie",
+      "publication_date": "2013-06-17",
+      "sections": 0,
+      "paragraphs": 0,
+      "tables": 0,
+      "internal_links": 0,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "12628-PGP",
+      "boi_reference": "BOI-AIS-MOB-10-20240710",
+      "content_type": "Commentaire",
+      "publication_date": "2024-07-10",
+      "sections": 0,
+      "paragraphs": 7,
+      "tables": 0,
+      "internal_links": 5,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "14604-PGP",
+      "boi_reference": "BOI-FORM-000098-20250723",
+      "content_type": "Formulaire",
+      "publication_date": "2025-07-23",
+      "sections": 0,
+      "paragraphs": 7,
+      "tables": 2,
+      "internal_links": 0,
+      "legal_refs": 1
+    },
+    {
+      "document_id": "13536-PGP",
+      "boi_reference": "BOI-LETTRE-000262-20220622",
+      "content_type": "Lettre Type / Modèle",
+      "publication_date": "2022-06-22",
+      "sections": 0,
+      "paragraphs": 10,
+      "tables": 0,
+      "internal_links": 0,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "2743-PGP",
+      "boi_reference": "BOI-ANNX-000099-20190619",
+      "content_type": "Autres annexes",
+      "publication_date": "2019-06-19",
+      "sections": 0,
+      "paragraphs": 4,
+      "tables": 0,
+      "internal_links": 0,
+      "legal_refs": 2
+    },
+    {
+      "document_id": "10222-PGP",
+      "boi_reference": "BOI-BAREME-000024-20160706",
+      "content_type": "Barème",
+      "publication_date": "2016-07-06",
+      "sections": 0,
+      "paragraphs": 28,
+      "tables": 0,
+      "internal_links": 10,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "5120-PGP",
+      "boi_reference": "BOI-CARTE-000002-20130617",
+      "content_type": "Cartographie",
+      "publication_date": "2013-06-17",
+      "sections": 0,
+      "paragraphs": 0,
+      "tables": 0,
+      "internal_links": 0,
+      "legal_refs": 0
+    },
+    {
+      "document_id": "13650-PGP",
+      "boi_reference": "BOI-AIS-CCN-30-40-20250409",
+      "content_type": "Commentaire",
+      "publication_date": "2025-04-09",
+      "sections": 18,
+      "paragraphs": 80,
+      "tables": 0,
+      "internal_links": 5,
+      "legal_refs": 2
+    }
+  ]
+}

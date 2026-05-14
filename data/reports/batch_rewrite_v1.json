@@ -1,0 +1,443 @@
+{
+  "generated_at": "2026-05-13T08:41:21.952616+00:00",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "case_count": 4,
+  "valid_count": 4,
+  "rows": [
+    {
+      "case_id": "cto",
+      "query": "Comment sont imposes les gains d un compte-titres ordinaire pour un resident fiscal francais ?",
+      "rewritten_query": "Comment sont imposés les gains réalisés sur un compte-titres ordinaire pour un résident fiscal français au regard du Code général des impôts (CGI) ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Les gains de cession de valeurs mobilières sont imposables en France pour les résidents fiscaux français.\n\n- Les résidents fiscaux français sont imposables sur l'ensemble de leurs revenus, y compris les gains de cession de valeurs mobilières [1].\n- Les gains de cession de titres, même déposés hors de France, sont imposables en France pour les résidents [1].\n\nLimites: Les extraits ne précisent pas le taux ni le barème applicables aux plus-values.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Les gains de cession de valeurs mobilières sont imposables en France pour les résidents fiscaux français.\",\n  \"justification_bullets\": [\n    \"Les résidents fiscaux français sont imposables sur l'ensemble de leurs revenus, y compris les gains de cession de valeurs mobilières [1].\",\n    \"Les gains de cession de titres, même déposés hors de France, sont imposables en France pour les résidents [1].\"\n  ],\n  \"limits\": \"Les extraits ne précisent pas le taux ni le barème applicables aux plus-values.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Les gains de cession de valeurs mobilières sont imposables en France pour les résidents fiscaux français.",
+        "justification_bullets": [
+          "Les résidents fiscaux français sont imposables sur l'ensemble de leurs revenus, y compris les gains de cession de valeurs mobilières [1].",
+          "Les gains de cession de titres, même déposés hors de France, sont imposables en France pour les résidents [1]."
+        ],
+        "limits": "Les extraits ne précisent pas le taux ni le barème applicables aux plus-values."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 2,
+        "cite_ids": [
+          1
+        ],
+        "cite_count": 2,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-RPPM-PVBMI-10-30-20-20191220",
+          "title": "RPPM - Plus-values sur biens meubles incorporels - Champ d'application - Personnes imposables - Règles de territorialité",
+          "publication_date": "2019-12-20",
+          "section_path": "I. Personnes physiques fiscalement domiciliées en France",
+          "text": "Sous réserve, le cas échéant, des conventions fiscales internationales applicables, les personnes, fiscalement domiciliées en France au sens de l' article 4 B du code général des impôts (CGI) , sont imposables à raison de l'ensemble de leurs revenus ( CGI, art. 4 A ). Les gains retirés de la cession à titre onéreux de valeurs mobilières et de droits sociaux ainsi que les distributions entrant dans le champ d'application de l' article 150-0 A du CGI sont donc imposables en France, y compris lorsque ces opérations affectent des titres déposés hors de France.",
+          "chunk_id": "7050-PGP__section_window__7050-pgp-paragraph-00002__7050-pgp-paragraph-00002__i-personnes-physiques-fiscalement-domicili-es-en-france"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-30-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (champ d’application et modalités d’imposition)",
+          "publication_date": "2025-08-12",
+          "section_path": "II. Modalités d’imposition",
+          "text": "La retenue à la source prévue à l’ article 182 A ter du CGI constitue une modalité particulière de paiement de l’impôt sur le revenu dû, à raison des gains et avantages définis au I de l’article 182 A ter du CGI, par les personnes qui ne sont pas fiscalement domiciliées en France lors du fait générateur de l’imposition de ces gains et avantages. (260) Les modalités d’imposition des gains salariaux résultant de l’acquisition de titres à des conditions préférentielles différent selon que les titres ont été acquis : dans le cadre de dispositifs répondant aux conditions posées par le code de commerce ou le code général des impôts (plans d’options sur titres, d’actions gratuites ou BSPCE « qualifiés ») ; ou dans le cadre de dispositifs ne répondant pas à ces conditions (« dispositifs innommés » d’actionnariat salarié et plans non qualifiés).",
+          "chunk_id": "3979-PGP__section_window__3979-pgp-paragraph-00044__3979-pgp-paragraph-00048__ii-modalit-s-d-imposition"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-30-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (champ d’application et modalités d’imposition)",
+          "publication_date": "2025-08-12",
+          "section_path": "I. Champ d’application",
+          "text": "Sont soumis à la retenue à la source prévue à l’ article 182 A ter du code général des impôts (CGI) les gains et avantages salariaux de source française résultant, pour les personnes physiques non fiscalement domiciliées en France, de l’attribution de titres à des conditions préférentielles.",
+          "chunk_id": "3979-PGP__section_window__3979-pgp-paragraph-00001__3979-pgp-paragraph-00001__i-champ-d-application"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-40-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (modalités pratiques)",
+          "publication_date": "2025-08-12",
+          "section_path": "II. Imputation et régularisation de la retenue > B. Dispositifs légaux d’actionnariat salarié imposés aux taux proportionnels > 2. Options sur titres attribuées jusqu’au 27 septembre 2012 > b. Option pour l’imposition selon les règles des traitements et salaires l’année qui suit le fait générateur de l’imposition",
+          "text": "Le bénéficiaire peut opter pour l’imposition à l’impôt sur le revenu selon les règles applicables aux traitements et salaires l’année qui suit le fait générateur de l’imposition. Cette option se matérialise sur la déclaration d’ensemble des revenus au titre de l’année de cession des titres, déposée au service des impôts des non-résidents, par la mention, dans la case permettant de les imposer selon les règles des traitements et salaires, du montant total des gains provenant de la levée d’options sur titres réalisés au cours de l’année. L’impôt sur le revenu au barème progressif est alors établi dans les conditions prévues à l’ article 197 A du CGI . Dans le cas où le montant de la retenue à la source excède le montant de l’impôt sur le revenu ainsi calculé, cet excédent est remboursable dans les conditions prévues à l’ article 197 B du CGI .",
+          "chunk_id": "3923-PGP__section_window__3923-pgp-paragraph-00044__3923-pgp-paragraph-00047__ii-imputation-et-r-gularisation-de-la-retenue-b-dispositifs-l-gaux-d-actionnariat-salari-impos-s-aux-taux-proportionnels-2-options-sur-titres-attribu-es-jusqu-au-27-septembre-2012-b-option-pour-l-imposition-selon-les-r-gles-des-traitements-et-salaires-l-ann-e-qui-suit-le-fait-g-n-rateur-de-l-imposition"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-RPPM-PVBMI-10-30-20-20191220",
+          "title": "RPPM - Plus-values sur biens meubles incorporels - Champ d'application - Personnes imposables - Règles de territorialité",
+          "publication_date": "2019-12-20",
+          "section_path": "II. Personnes physiques n'ayant pas leur domicile fiscal en France > A. Principe : non imposition des plus-values et distributions",
+          "text": "Aux termes de l' article 244 bis C du CGI , les dispositions de l' article 150-0 A du CGI ne s'appliquent pas en principe aux gains réalisés à l'occasion de cessions à titre onéreux de valeurs mobilières ou de droits sociaux effectuées par les personnes qui ne sont pas fiscalement domiciliées en France au sens de l' article 4 B du CGI ainsi qu'aux gains réalisés par ces mêmes personnes lors du rachat par une société émettrice de ses propres titres. De même, les dispositions de l'article 150-0 A du CGI ne s'appliquent pas non plus aux gains réalisés par une personne physique non résidente de France à l'occasion de la cession ou du rachat de parts d'un fonds commun de placement à risques (FCPR), d'un fonds professionnel spécialisé relevant de l' article L. 214-37 du code monétaire et financier (CoMoFi) , dans sa rédaction antérieure à l' ordonnance n° 2013-676 du 25 juillet 2013 modifiant le cadre juridique de la gestion d'actifs ou d'un fonds professionnel de capital investissement (FPCI) ainsi que les gains retirés de la dissolution de tels fonds.",
+          "chunk_id": "7050-PGP__section_window__7050-pgp-paragraph-00003__7050-pgp-paragraph-00004__ii-personnes-physiques-n-ayant-pas-leur-domicile-fiscal-en-france-a-principe-non-imposition-des-plus-values-et-distributions"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-30-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (champ d’application et modalités d’imposition)",
+          "publication_date": "2025-08-12",
+          "section_path": "I. Champ d’application > C. Gains et avantages réalisés par des personnes physiques non fiscalement domiciliées en France",
+          "text": "La retenue à la source prévue à l’ article 182 A ter du CGI est due lorsqu’au titre de l’année au cours de laquelle intervient le fait générateur de la retenue, le bénéficiaire des avantages et gains définis au I-A § 10 à 140 n’a pas son domicile fiscal en France au sens de l’ article 4 B du CGI . Pour plus de précisions sur l’appréciation de la domiciliation fiscale, il convient de se reporter au BOI-IR-CHAMP-10 . En cas de transfert du domicile fiscal entre la France et l’étranger l’année au cours de laquelle intervient le fait générateur de la retenue à la source, il convient de se placer à la date de ce fait générateur pour savoir si la condition d’absence de domiciliation fiscale en France est respectée. Ainsi, lorsqu’au cours de la même année : le bénéficiaire s’installe en France, il est soumis à la retenue à la source prévue à l’article 182 A ter du CGI à raison des gains pour lesquels le fait générateur est intervenu avant le transfert de son domicile en France ; le bénéficiaire transfère son domicile fiscal hors de France, il est soumis à la retenue à la source prévue à l’article 182 A ter du CGI à raison des gains pour lesquels le fait générateur est intervenu après le transfert de son domicile fiscal. Bien entendu, le bénéficiaire est soumis à l’impôt sur le revenu dans les conditions définies à l’ article 167 du CGI à raison des gains pour lesquels le fait générateur est intervenu pendant la période au cours de laquelle son domicile fiscal est situé en France.",
+          "chunk_id": "3979-PGP__section_window__3979-pgp-paragraph-00037__3979-pgp-paragraph-00043__i-champ-d-application-c-gains-et-avantages-r-alis-s-par-des-personnes-physiques-non-fiscalement-domicili-es-en-france"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-30-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (champ d’application et modalités d’imposition)",
+          "publication_date": "2025-08-12",
+          "section_path": "I. Champ d’application > A. Gains et avantages salariaux résultant de l’attribution de titres à des conditions préférentielles > 2. Dispositifs innommés d’actionnariat salarié et plans non qualifiés",
+          "text": "La retenue à la source prévue à l’ article 182 A ter du CGI est également applicable aux avantages salariaux de source française résultant de l’attribution de titres à des conditions préférentielles à des personnes non domiciliées en France. Il s’agit des gains résultant de l’attribution de titres à des salariés ou des dirigeants ès qualités à des conditions préférentielles en dehors de tout dispositif légal d’actionnariat salarié au regard de la législation française. Sont notamment concernés les avantages résultant des attributions d’options sur titres ou d’actions gratuites lorsque ces attributions ne respectent pas les conditions prévues par le code de commerce (« plans non qualifiés »). D’une manière générale, il s’agit des avantages résultant de dispositifs qui consistent, pour une société ou un groupe de sociétés, à offrir à un salarié ou à un dirigeant dont la rémunération est imposable dans la catégorie des traitements et salaires ou dans celle de l’ article 62 du CGI la possibilité d’acheter ou de revendre des titres d’une société à des conditions préférentielles en contrepartie de l’exécution d’un contrat de travail ou de l’exercice de fonctions dirigeantes et qui sont imposables à l’impôt sur le revenu selon les règles des traitements et salaires. Pour plus de précisions sur ces opérations sur titres hors dispositifs légaux d’actionnariat salarié, il convient de se reporter au BOI-RSA-ES-20-10-20-50 .",
+          "chunk_id": "3979-PGP__section_window__3979-pgp-paragraph-00023__3979-pgp-paragraph-00026__i-champ-d-application-a-gains-et-avantages-salariaux-r-sultant-de-l-attribution-de-titres-des-conditions-pr-f-rentielles-2-dispositifs-innomm-s-d-actionnariat-salari-et-plans-non-qualifi-s"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-40-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (modalités pratiques)",
+          "publication_date": "2025-08-12",
+          "section_path": "II. Imputation et régularisation de la retenue > A. Dispositions générales > 3. Taux majoré",
+          "text": "En application du V de l’ article 182 A ter du CGI , lorsque les avantages ou gains sont réalisés par des personnes domiciliées dans un État ou territoire non coopératif au sens de l’ article 238-0 A du CGI autre que ceux mentionnés au 2° du 2 bis du même article 238-0 A du CGI, ils sont soumis à la retenue à la source à un taux majoré fixé à 75 %. Cette retenue est libératoire de l’impôt sur le revenu et n’est pas remboursable. Le taux majoré ne s’applique pas lorsque le débiteur apporte la preuve que ces avantages ou gains correspondent à des opérations réelles qui ont principalement un objet et un effet autres que de permettre leur localisation dans un tel État ou territoire non coopératif. Remarque : Pour plus de précisions sur les États ou territoires non coopératifs, il convient de se reporter au BOI-INT-DG-20-50 .",
+          "chunk_id": "3923-PGP__section_window__3923-pgp-paragraph-00027__3923-pgp-paragraph-00029__ii-imputation-et-r-gularisation-de-la-retenue-a-dispositions-g-n-rales-3-taux-major"
+        }
+      ]
+    },
+    {
+      "case_id": "integration",
+      "query": "Quelles sont les conditions pour qu une societe puisse former un groupe d integration fiscale ?",
+      "rewritten_query": "Quelles sont les conditions légales et réglementaires, telles que prévues par le Code Général des Impôts (CGI), notamment à l’article 223 A et suivants, auxquelles une société doit satisfaire pour constituer un groupe d’intégration fiscale, c’est-à-dire un groupe fiscal intégré au sens de l’impôt sur les sociétés (IS) ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Les sociétés doivent être soumises à l'IS de droit commun et détenir 95% du capital des filiales.\n\n- Seules les sociétés soumises à l'IS dans les conditions de droit commun peuvent faire partie du groupe [1].\n- La société mère doit détenir directement ou indirectement 95% ou plus du capital des filiales de manière continue [3].\n- Les sociétés exonérées d'IS ne peuvent pas faire partie d'un groupe [1].\n\nLimites: Les extraits ne couvrent pas toutes les conditions (ex: durée d'exercice, option).",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Les sociétés doivent être soumises à l'IS de droit commun et détenir 95% du capital des filiales.\",\n  \"justification_bullets\": [\n    \"Seules les sociétés soumises à l'IS dans les conditions de droit commun peuvent faire partie du groupe [1].\",\n    \"La société mère doit détenir directement ou indirectement 95% ou plus du capital des filiales de manière continue [3].\",\n    \"Les sociétés exonérées d'IS ne peuvent pas faire partie d'un groupe [1].\"\n  ],\n  \"limits\": \"Les extraits ne couvrent pas toutes les conditions (ex: durée d'exercice, option).\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Les sociétés doivent être soumises à l'IS de droit commun et détenir 95% du capital des filiales.",
+        "justification_bullets": [
+          "Seules les sociétés soumises à l'IS dans les conditions de droit commun peuvent faire partie du groupe [1].",
+          "La société mère doit détenir directement ou indirectement 95% ou plus du capital des filiales de manière continue [3].",
+          "Les sociétés exonérées d'IS ne peuvent pas faire partie d'un groupe [1]."
+        ],
+        "limits": "Les extraits ne couvrent pas toutes les conditions (ex: durée d'exercice, option)."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          3
+        ],
+        "cite_count": 3,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-IS-GPE-10-10-10-20120912",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Entreprises éligibles - Régime fiscal, forme et nature des activités des sociétés concernées",
+          "publication_date": "2012-09-12",
+          "section_path": "I. Régime fiscal des sociétés concernées",
+          "text": "En application des dispositions du quatrième alinéa de l' article 223 A du code général des impôts (CGI) seules peuvent faire partie du groupe les sociétés dont les résultats sont soumis à l'impôt sur les sociétés dans les conditions de droit commun ou selon les modalités prévues aux articles 214 du CGI . Cette condition concerne à la fois la société mère et les filiales membres du groupe. Les sociétés concernées doivent, en application du principe de territorialité de l'impôt sur les sociétés, être soumises à cet impôt : - au taux de droit commun mentionné au deuxième alinéa de l' article 219-I du CGI ; - sur la totalité des résultats de leurs exploitations françaises. Par ailleurs, l' article 223 A du CGI ouvre la possibilité d'option pour le régime de groupe, sous certaines conditions, aux sociétés coopératives admises au régime de déduction des ristournes prévu à l' articles 214 du CGI (cf. BOI-IS-GPE-10-30-40 ). L'article 223 A a également été étendu à d'autres situations évoquées au BOI-IS-GPE-10-30 . Les sociétés exonérées d'impôt sur les sociétés, pour la totalité ou pour une partie de leurs résultats, ne peuvent pas faire partie d'un groupe. Il en est ainsi notamment : - des entreprises exonérées d'impôt sur les sociétés ou bénéficiant de régimes d'imposition particuliers en application des articles 206-5 du CG I, 207 du CGI , 208 du CGI , 208 A du CGI , 208 B du CGI , 1655 ter du CGI ou 239 octies du CGI ; - des sociétés nouvelles qui bénéficient du régime d'exonération et d'abattement sur les bénéfices prévu à l' article 44 sexies et suivants du CGI ;",
+          "chunk_id": "5702-PGP__section_window__5702-pgp-paragraph-00000__5702-pgp-paragraph-00009__i-r-gime-fiscal-des-soci-t-s-concern-es"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-IS-GPE-10-30-20-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Sociétés et organismes du secteur des assurances",
+          "publication_date": "2015-05-06",
+          "section_path": "I. Conditions relatives à la personne morale tête du groupe > E. Situation des entités sous-combinantes",
+          "text": "Le rescrit n° 2012/31 a précisé, au regard du régime de groupe, la situation des sous-groupes combinés du secteur des assurances, sans liens capitalistiques. RES N° 2012/31 (FE) du 24 avril 2012 : Régime de groupe – intégration fiscale d'un sous-groupe combiné – groupes du secteur des assurances, sans liens capitalistiques. Question : Une entité sous-combinante peut-elle former un groupe fiscal avec les entités membres de son périmètre de combinaison comptable ? Réponse : Conformément au 2 ème alinéa de l' article 223 A du CGI , lorsqu'une personne morale soumise à l'impôt sur les sociétés (IS) dans les conditions de droit commun établit des comptes combinés en application de l' article L. 212-7 du code de la mutualité en tant qu'entreprise combinante, elle peut se constituer seule redevable de l'IS dû sur l'ensemble des résultats du groupe formé par elle-même, les personnes morales soumises à l'IS dans les conditions de droit commun dénuées de capital qui sont membres du périmètre de combinaison et qui ont avec elle, en vertu d'un accord, soit une direction commune, soit des services communs assez étendus pour engendrer un comportement commercial, technique ou financier commun, soit des liens importants et durables en vertu de dispositions réglementaires, statutaires ou contractuelles, et les sociétés dont elle et les personnes morales combinées détiennent 95 % au moins du capital, directement ou indirectement.",
+          "chunk_id": "5057-PGP__section_window__5057-pgp-paragraph-00070__5057-pgp-paragraph-00074__i-conditions-relatives-la-personne-morale-t-te-du-groupe-e-situation-des-entit-s-sous-combinantes"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-IS-GPE-10-30-20-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Sociétés et organismes du secteur des assurances",
+          "publication_date": "2015-05-06",
+          "section_path": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Sociétés et organismes du secteur des assurances",
+          "text": "Les dispositions du premier alinéa du I de l' article 223 A du code général des impôts (CGI) prévoient la faculté, pour une société soumise à l'impôt sur les sociétés, d'opter pour se constituer seule redevable de l'impôt dû par elle et les filiales dont elle détient, directement ou indirectement, 95 % ou plus du capital de manière continue au cours de l'exercice. L' article 88 de la loi n° 2006-1771 du 30 décembre 2006 de finances rectificative pour 2006 a étendu cette possibilité aux personnes morales dénuées de capital qui sont incluses dans un périmètre de combinaison comptable, lorsque la société mère du groupe est l'entité combinante et que ce périmètre est établi selon les dispositions légales et réglementaires en matière d'assurance (code des assurances, code de la mutualité et code de la sécurité sociale). Dans les développements suivants, l'expression « groupe combiné » renvoie au groupe formé en application du quatrième alinéa du I de l'article 223 A du CGI.",
+          "chunk_id": "5057-PGP__section_window__5057-pgp-paragraph-00000__5057-pgp-paragraph-00002__is-r-gime-fiscal-des-groupes-de-soci-t-s-formation-du-groupe-cas-particuliers-soci-t-s-et-organismes-du-secteur-des-assurances"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-IS-GPE-10-30-20-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Sociétés et organismes du secteur des assurances",
+          "publication_date": "2015-05-06",
+          "section_path": "I. Conditions relatives à la personne morale tête du groupe > C. Assujettissement à l'impôt sur les sociétés dans les conditions de droit commun",
+          "text": "Par ailleurs, dans la mesure où la possibilité d'opter pour le régime de groupe prévu au quatrième alinéa du I de l' article 223 A du CGI est offerte aux entreprises d'assurances, y compris mutuelles et institutions de prévoyance, et où le 2 de l' article 207 du CGI , issu de l' article 88 de la loi n°2006-1771 du 30 décembre 2006 definances rectificative pour 2006 , prévoit, pour ces mêmes entreprises, une exonération des résultats provenant de l'exploitation de contrats dits « responsables et solidaires », il est précisé que l'application de ce dispositif d'exonération ne remet pas en cause la possibilité, pour les entreprises concernées, de former ou d'appartenir à un groupe au sens du deuxième alinéa de l'article 223 A du CGI. Il est souligné que les dispositions du 2 de l'article 207 du CGI sont abrogées à compter du 30 décembre 2011. Avec l'entrée en fiscalité des mutuelles et leurs unions régies par les livres I et III du Code de la mutualité, le régime fiscal applicable (inclusion ou non dans le champ des impôts commerciaux IS, IFA, CET, TVA) est désormais déterminé à partir d'une analyse du caractère lucratif ou non de leur activité. Dès lors que ces mutuelles et leurs unions exercent des activités non lucratives ou lucratives exonérées prépondérantes et constituent un secteur distinct dit « lucratif » seul soumis à l'impôt sur les sociétés, elle ne remplissent pas cette condition de soumission à l'impôt sur les sociétés dans les conditions de droit commun. En conséquence, ces mutuelles et unions ne peuvent en principe pas devenir membres d'un groupe fiscal ou constituer un tel groupe.",
+          "chunk_id": "5057-PGP__section_window__5057-pgp-paragraph-00040__5057-pgp-paragraph-00041__i-conditions-relatives-la-personne-morale-t-te-du-groupe-c-assujettissement-l-imp-t-sur-les-soci-t-s-dans-les-conditions-de-droit-commun"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-IS-GPE-50-10-20-20200415",
+          "title": "IS - Régime fiscal des groupes de sociétés - Opérations de restructurations du groupe - Absorption de la société mère, ou de l'entité mère non résidente, ou absorption d'une société étrangère entraînant la cessation du groupe - Création d'un nouveau groupe",
+          "publication_date": "2020-04-15",
+          "section_path": "I. Conditions de constitution d'un nouveau groupe",
+          "text": "Dans les développements suivants, l'expression « groupe vertical » renvoie à un groupe formé en application du premier alinéa du I de l' article 223 A du code général des impôts (CGI) . L'expression « groupe horizontal » renvoie à un groupe formé en application du deuxième alinéa du I de l'article 223 A du CGI, et défini, ainsi que les notions d' « entité mère non résidente » et de « société étrangère », au BOI-IS-GPE-10-30-50 . La société absorbante peut constituer un groupe, dans les conditions prévues au I de l'article 223 A du CGI, avec les sociétés du groupe formé en application du premier, deuxième, quatrième ou cinquième alinéa du I de l'article 223 A du CGI par la société mère absorbée, dès le début de l'exercice au cours duquel la fusion est intervenue. Elle peut également, si elle est déjà mère d'un groupe, élargir celui-ci à ces sociétés. Lorsque l'opération consiste en l'absorption de l'entité mère non résidente d'un groupe horizontal, ou en l'absorption d'une société étrangère entraînant la cessation du groupe, un nouveau groupe peut être constitué avec les sociétés du groupe qui cesse, en application du premier, deuxième, quatrième ou cinquième alinéa du I de l'article 223 A du CGI, dès le début de l'exercice au cours duquel la fusion est intervenue. Ce nouveau groupe est constitué par la société absorbante lorsqu'elle est soumise à l'impôt sur le sociétés, ou, lorsque la société absorbante est une société qui remplit les conditions pour être entité mère non résidente ou pour être société étrangère, par une société qui remplit, avant ou du fait de la fusion, les conditions pour être société mère.",
+          "chunk_id": "5760-PGP__section_window__5760-pgp-paragraph-00000__5760-pgp-paragraph-00002__i-conditions-de-constitution-d-un-nouveau-groupe"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-IS-GPE-50-10-20-20200415",
+          "title": "IS - Régime fiscal des groupes de sociétés - Opérations de restructurations du groupe - Absorption de la société mère, ou de l'entité mère non résidente, ou absorption d'une société étrangère entraînant la cessation du groupe - Création d'un nouveau groupe",
+          "publication_date": "2020-04-15",
+          "section_path": "I. Conditions de constitution d'un nouveau groupe > C. Cas de l'acquisition de 95 % du capital d'une société mère d'un groupe suivi de l'absorption de la société mère par la société acquéreuse",
+          "text": "Si la société acquéreuse absorbe la société mère, après avoir acquis au moins 95 % de son capital, l'opération peut bénéficier du dispositif prévu au c du 6 de l' article 223 L du CGI . Le dispositif permet, si les conditions fixées par les articles 223 A et suivants du CGI sont remplies et dès lors que la société absorbée est demeurée, en application du d du 6 de l'article 223 L du CGI, société mère de son groupe fiscal, la formation d'un groupe fiscal dès l'ouverture de l'exercice en cours au moment de la fusion. Dans cette hypothèse, les sociétés parties à l'opération sont dispensées d'indiquer à l'administration les modalités de l'opération et ses justifications juridiques, économiques ou sociales ( BOI-IS-GPE-50-20-10 ). Ces règles s'appliquent également : - lorsqu'une société soumise à l'impôt sur les sociétés acquiert au moins 95 % du capital de l'entité mère non résidente d'un groupe horizontal, ou d'une société étrangère, qu'elle absorbe au cours du même exercice dans les conditions précisées au I-A-2-b § 46 ; - lorsqu'une société soumise à l'impôt sur les sociétés acquiert au moins 95 % du capital de l'entité mère non résidente d'un groupe horizontal, ou d'une société étrangère, qu'elle absorbe au cours du même exercice dans les conditions précisées au I-A-2-b § 46 ; - lorsqu'une société ou un établissement stable, remplissant les conditions pour être entité mère non résidente ou société étrangère, acquiert au moins 95 % du capital de l'entité mère non résidente d'un groupe horizontal, ou d'une société étrangère, qu'elle absorbe au cours du même exercice dans les conditions précisées au I-A-2-b § 46 .",
+          "chunk_id": "5760-PGP__section_window__5760-pgp-paragraph-00041__5760-pgp-paragraph-00047__i-conditions-de-constitution-d-un-nouveau-groupe-c-cas-de-l-acquisition-de-95-du-capital-d-une-soci-t-m-re-d-un-groupe-suivi-de-l-absorption-de-la-soci-t-m-re-par-la-soci-t-acqu-reuse"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-IS-GPE-10-30-50-20200415",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Groupe horizontal",
+          "publication_date": "2020-04-15",
+          "section_path": "I. Conditions relatives aux sociétés membres du groupe horizontal et à la chaîne de détention étrangère > A. Principe général",
+          "text": "Une personne morale soumise à l'impôt sur les sociétés peut, sous certaines conditions, se constituer seule redevable de l'impôt sur les sociétés dû par elle et le groupe qu'elle forme au sens du deuxième alinéa du I de l' article 223 A du CGI , lorsque son capital est détenu, de manière continue au cours de l’exercice, à 95 % au moins par une société ou un établissement stable désigné « entité mère non résidente », directement ou indirectement par l'intermédiaire de sociétés ou d'établissements stables désignés « sociétés étrangères ». Ainsi, à la différence d'un groupe vertical formé en application du premier alinéa du I de l'article 223 A du CGI, la formation d'un groupe horizontal permet, sous conditions, d'intégrer dans le groupe de la société mère certaines sociétés qu'elle ne détient pas à 95 % au moins directement ou indirectement. Les sociétés du groupe, l'entité mère non résidente et les sociétés étrangères doivent ouvrir et clore à la même date des exercices d'une durée de douze mois. Cela étant, lorsque la législation de l’État d'implantation de l'entité mère non résidente ou d'une société étrangère ne lui permet pas de satisfaire cette condition, son respect n'est pas requis pour la société concernée. En revanche, dans le cas où la divergence dans les dates d'ouverture et de clôture résulterait d'un choix de l'entité mère non résidente ou de la société étrangère, non imposé par la législation de son État d'implantation, le non respect de cette condition l'empêcherait de revêtir la qualité d'entité mère non résidente ou de société étrangère.",
+          "chunk_id": "10058-PGP__section_window__10058-pgp-paragraph-00002__10058-pgp-paragraph-00004__i-conditions-relatives-aux-soci-t-s-membres-du-groupe-horizontal-et-la-cha-ne-de-d-tention-trang-re-a-principe-g-n-ral"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-IS-GPE-50-10-20-20200415",
+          "title": "IS - Régime fiscal des groupes de sociétés - Opérations de restructurations du groupe - Absorption de la société mère, ou de l'entité mère non résidente, ou absorption d'une société étrangère entraînant la cessation du groupe - Création d'un nouveau groupe",
+          "publication_date": "2020-04-15",
+          "section_path": "I. Conditions de constitution d'un nouveau groupe > A. Conditions relatives à la société absorbante et à la société qui se constitue société mère suite à l'absorption > 1. Absorption de la société mère d'un groupe vertical",
+          "text": "La société absorbante doit remplir avant ou du fait de la fusion les conditions prévues aux premier et troisième alinéas du I de l' article 223 A du CGI pour être société mère d'un groupe, c'est-à-dire être soumise à l'impôt sur les sociétés dans les conditions de droit commun et ne pas être détenue à 95 % au moins par une autre personne morale passible de cet impôt, dans les conditions notamment commentées au BOI-IS-GPE-10-10 . Elle peut donc bénéficier du dispositif si elle est déjà mère d'un groupe ou si elle en remplit les conditions avant la fusion, mais également si l'opération a pour effet de lui faire remplir les conditions pour être société mère au sens du I de l'article 223 A du CGI. Dans cette dernière situation, la baisse du taux de détention sous le seuil de 95 % doit être la conséquence directe de la fusion et ne pas résulter d'un événement dissociable de l'opération de fusion (cession par exemple). Remarque : En ce qui concerne l'absorption de la société mère par une autre société du groupe qui exerce l'une des options mentionnées aux premier, deuxième, quatrième ou avant-dernier alinéa du I de l' article 223 A du CGI ou au premier alinéa du I de l'article 223 A bis du CGI, ou par une société intermédiaire ou par une société étrangère du même groupe, ou par l'entité mère non résidente détenant directement ou indirectement la société mère dans le cas d'une intégration horizontale, il convient de se reporter au II-A § 104 et 107 du BOI-IS-GPE-40-10 .",
+          "chunk_id": "5760-PGP__section_window__5760-pgp-paragraph-00003__5760-pgp-paragraph-00005__i-conditions-de-constitution-d-un-nouveau-groupe-a-conditions-relatives-la-soci-t-absorbante-et-la-soci-t-qui-se-constitue-soci-t-m-re-suite-l-absorption-1-absorption-de-la-soci-t-m-re-d-un-groupe-vertical"
+        }
+      ]
+    },
+    {
+      "case_id": "ir_bareme",
+      "query": "Comment fonctionne le bareme progressif de l impot sur le revenu pour un celibataire sans enfant ?",
+      "rewritten_query": "Comment s'applique le barème progressif de l'impôt sur le revenu (IR), prévu à l'article 197 du Code général des impôts (CGI), pour un contribuable célibataire, veuf, divorcé ou séparé, sans personne à charge, au titre de l'impôt sur le revenu des personnes physiques ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Le barème progressif s'applique au revenu par part, puis multiplié par le nombre de parts.\n\n- Le revenu imposable est divisé par le nombre de parts (1 part pour un célibataire) [2].\n- Le barème progressif est appliqué au revenu par part [5].\n- L'impôt brut est obtenu en multipliant le résultat par le nombre de parts [5].\n\nLimites: Les tranches et taux du barème ne sont pas détaillés dans les extraits.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Le barème progressif s'applique au revenu par part, puis multiplié par le nombre de parts.\",\n  \"justification_bullets\": [\n    \"Le revenu imposable est divisé par le nombre de parts (1 part pour un célibataire) [2].\",\n    \"Le barème progressif est appliqué au revenu par part [5].\",\n    \"L'impôt brut est obtenu en multipliant le résultat par le nombre de parts [5].\"\n  ],\n  \"limits\": \"Les tranches et taux du barème ne sont pas détaillés dans les extraits.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Le barème progressif s'applique au revenu par part, puis multiplié par le nombre de parts.",
+        "justification_bullets": [
+          "Le revenu imposable est divisé par le nombre de parts (1 part pour un célibataire) [2].",
+          "Le barème progressif est appliqué au revenu par part [5].",
+          "L'impôt brut est obtenu en multipliant le résultat par le nombre de parts [5]."
+        ],
+        "limits": "Les tranches et taux du barème ne sont pas détaillés dans les extraits."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          2,
+          5
+        ],
+        "cite_count": 3,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-IR-LIQ-20-20-30-20250414",
+          "title": "IR - Liquidation - Calcul de l’impôt - Corrections affectant le montant de l’impôt brut - Décote prévue au 4 du I de l’article 197 du code général des impôts",
+          "publication_date": "2025-04-14",
+          "section_path": "I. Champ d’application",
+          "text": "La décote s’applique à tous les contribuables, quelles que soient leur situation et leurs charges de famille, lorsque leur cotisation d’impôt brut est inférieure aux montants dont les coefficients et les plafonds sont mentionnés au a du 4 du I de l’ article 197 du code général des impôts (CGI) . Pour l’imposition des revenus de 2024, cette décote est accordée aux contribuables dont la cotisation d’impôt brut est inférieure à 1 965 € pour les contribuables célibataires, divorcés ou veufs et à 3 249 € pour les contribuables soumis à imposition commune (soit respectivement 1/45,25 % de 889 € et 1/45,25 % de 1 470 € ). La décote s’applique sur le montant des droits directement obtenu par application du barème progressif (y compris l’impôt relatif aux revenus et plus-values imposés selon un système de quotient) après application éventuelle du plafonnement des effets du quotient familial mais avant prise en compte des réductions d’impôt. En revanche, la décote ne s’applique pas à l’impôt sur le revenu calculé suivant un taux proportionnel (impôt sur plus-values professionnelles à long terme, par exemple). Dans les départements d’outre-mer, la décote est calculée sur l’impôt brut déterminé après application des réductions de 30 % ou 40 % prévues au 3 de l’article 197 du CGI ( BOI-IR-LIQ-20-30-10 ).",
+          "chunk_id": "2495-PGP__section_window__2495-pgp-paragraph-00001__2495-pgp-paragraph-00005__i-champ-d-application"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-IR-LIQ-20190301",
+          "title": "IR - Liquidation",
+          "publication_date": "2019-03-01",
+          "section_path": "IR - Liquidation",
+          "text": "L'impôt sur le revenu est caractérisé, notamment, par le fait qu'il est fortement personnalisé, c'est à dire que son montant est proportionné à la faculté contributive de chaque redevable. En particulier, il est tenu compte, pour le calculer : - de la situation et des charges de famille du contribuable par le jeu du quotient familial, ou accessoirement par un abattement sur le revenu imposable (cas des enfants à charge qui ont fondé un foyer distinct) ; - de l'importance du revenu par l'application d'un barème progressif par tranches. L' article 193 du code général des impôts (CGI) prévoit que le revenu imposable est, pour le calcul de l'impôt sur le revenu, divisé en un certain nombre de parts, fixé d'après la situation et les charges de famille du contribuable. La prise en compte de la situation et des charges de famille des contribuables s'opère essentiellement par le système du quotient familial qui consiste à diviser le revenu imposable par un nombre de parts fixé eu égard à la situation de famille des intéressés et, le cas échéant, au nombre de personnes considérées comme à leur charge au sens de la loi fiscale. En général, le célibataire bénéficie d'une part, le ménage sans enfant de deux parts et une demi-part supplémentaire est ajoutée par enfant à charge. Toutefois, des demi-parts supplémentaires sont prévues dans certains cas, notamment pour les personnes seules, pour les personnes invalides, pour les anciens combattants, pour les enfants infirmes ou pour les enfants à charge à partir du troisième. Remarque : La prise en compte de certains enfants ayant fondé un foyer distinct s'effectue par application d'un abattement.",
+          "chunk_id": "6515-PGP__section_window__6515-pgp-paragraph-00000__6515-pgp-paragraph-00007__ir-liquidation"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-IR-LIQ-20-20-30-20250414",
+          "title": "IR - Liquidation - Calcul de l’impôt - Corrections affectant le montant de l’impôt brut - Décote prévue au 4 du I de l’article 197 du code général des impôts",
+          "publication_date": "2025-04-14",
+          "section_path": "II. Calcul de la décote",
+          "text": "Le montant de la décote est égal à la différence entre le plafond applicable en fonction de la situation familiale du contribuable, défini au a du 4 du I de l’ article 197 du CGI (889 € pour les contribuables célibataires, divorcés ou veufs et 1 470 € pour les contribuables soumis à imposition commune pour l’imposition des revenus de 2024) et un pourcentage du montant de l’impôt brut résultant du barème ( 45,25 % pour l’imposition des revenus de 2024).",
+          "chunk_id": "2495-PGP__section_window__2495-pgp-paragraph-00006__2495-pgp-paragraph-00006__ii-calcul-de-la-d-cote"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-IR-LIQ-20-30-20120912",
+          "title": "IR – Liquidation - Modalités particulières d'imposition",
+          "publication_date": "2012-09-12",
+          "section_path": "IR – Liquidation - Modalités particulières d'imposition",
+          "text": "Sous réserve du cas de certains revenus ou profits soumis à un taux proportionnel, l'impôt sur le revenu, impôt unique, est calculé suivant le système du quotient familial qui consiste à diviser le revenu imposable du contribuable en un certain nombre de parts fixé d'après la situation de famille de l'intéressé et le nombre des personnes à charge. Le tarif progressif établi en fonction des tranches de revenu s'applique alors sur la fraction du revenu imposable correspondant à une part (cf. BOI-IR-LIQ-20-10 et BOI-IR-LIQ-20-20 ). Mais cette règle générale comporte des dérogations et des régimes spéciaux peuvent trouver à s'appliquer. Ainsi, les contribuables domiciliés dans les départements d'outre-mer et les contribuables domiciliés en France et disposant de revenus réalisés dans les départements d'outre-mer connaissent des modalités particulières d'imposition, conformément au 3 du I de l'article 197 du code général des impôts (CGI) . En ce qui concerne les revenus exceptionnels et les revenus différés, ils sont imposés selon le système du quotient ( article 163-0 A du CGI ). Enfin, l'impôt sur le revenu peut être calculé selon la règle du « taux effectif », en tenant compte non seulement des revenus assujettis à l'impôt sur le revenu en France, mais aussi des revenus exonérés ou exclusivement imposables à l'étranger ( article 197 C du CGI ). Le présent chapitre comporte trois sections : les départements d'outre-mer (section 1- BOI-IR-LIQ-20-30-10 ) ; l'imposition des revenus exceptionnels ou différés selon le système du quotient (section 2- BOI-IR-LIQ-20-30-20 ) ; et la calcul de l'impôt selon la règle du « taux effectif » (section 3- BOI-IR-LIQ-20-30-30 ).",
+          "chunk_id": "4615-PGP__section_window__4615-pgp-paragraph-00000__4615-pgp-paragraph-00008__ir-liquidation-modalit-s-particuli-res-d-imposition"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-IR-LIQ-20190301",
+          "title": "IR - Liquidation",
+          "publication_date": "2019-03-01",
+          "section_path": "IR - Liquidation",
+          "text": "Le barème progressif de l'impôt est ensuite appliqué au revenu par part. Enfin le montant de l'impôt brut est déterminé en multipliant le résultat ainsi obtenu par le nombre de parts. Dans certains cas, des corrections affectent le montant de l'impôt brut ( BOI-IR-LIQ-20-20 ) et des règles particulières d'imposition ( BOI-IR-LIQ-20-30 ) sont appliquées. Ainsi la progressivité de l'impôt est, d'une part, d'autant plus atténuée que le revenu a été divisé en un plus grand nombre de parts, selon l’importance des charges de famille. D'autre part, la progressivité de l'impôt est d'autant plus marquée que le revenu imposé est plus élevé. La présente division comporte deux titres : - détermination du quotient familial (titre 1, BOI-IR-LIQ-10 ) ; - calcul du quotient familial (titre 2, BOI-IR-LIQ-10-20 ).",
+          "chunk_id": "6515-PGP__section_window__6515-pgp-paragraph-00008__6515-pgp-paragraph-00013__ir-liquidation"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-IR-LIQ-20-20-20-20250414",
+          "title": "IR - Liquidation - Calcul de l’impôt - Corrections affectant le montant de l’impôt brut - Plafonnement des effets du quotient familial",
+          "publication_date": "2025-04-14",
+          "section_path": "III. Niveau du plafonnement > B. Plafonnements spécifiques > 2. Avantage de quotient familial pour les personnes célibataires, veuves ou divorcées qui vivent effectivement seules et qui n’ont pas de charges de famille",
+          "text": "En application des dispositions des a, b et e du 1 de l’ article 195 du CGI , les personnes célibataires, veuves ou divorcées qui vivent effectivement seules ( II-B-2 § 150 à 170 du BOI-IR-LIQ-10-20-20-10 ) et qui n’ont pas de charges de famille sont imposées à l’impôt sur le revenu en fonction d’une part et demie de quotient familial au lieu d’une part : lorsqu’elles ont un ou plusieurs enfants majeurs ou faisant l’objet d’une imposition distincte dont elles ont supporté à titre exclusif ou principal la charge pendant au moins cinq années au cours desquelles elles vivaient seules (CGI, art. 195, 1-a) ; lorsqu’elles ont eu un ou plusieurs enfants qui sont morts, à condition que l’un d’entre eux ait atteint l’âge de seize ans ou soit décédé par suite de faits de guerre et qu’elles aient supporté à titre exclusif ou principal la charge de l’un de ces enfants pendant au moins cinq années au cours desquelles elles vivaient seules (CGI, art. 195, 1-b) ; lorsqu’elles ont adopté un enfant, à la condition que, si l’adoption a eu lieu alors que l’enfant était âgé de plus de dix ans, cet enfant ait été à la charge de l’adoptant comme enfant recueilli, dans les conditions prévues à l’ article 196 du CGI , depuis l’âge de dix ans. Cette disposition n’est pas applicable si l’enfant adopté est décédé avant d’avoir atteint l’âge de seize ans ou si l’enfant adopté n’a pas été à la charge exclusive ou principale des contribuables pendant au moins cinq années au cours desquelles ceux-ci vivaient seuls (CGI, art. 195, 1-e).",
+          "chunk_id": "2494-PGP__section_window__2494-pgp-paragraph-00032__2494-pgp-paragraph-00035__iii-niveau-du-plafonnement-b-plafonnements-sp-cifiques-2-avantage-de-quotient-familial-pour-les-personnes-c-libataires-veuves-ou-divorc-es-qui-vivent-effectivement-seules-et-qui-n-ont-pas-de-charges-de-famille"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-IR-LIQ-10-10-10-30-20240618",
+          "title": "IR - Liquidation - Détermination du quotient familial - Prise en compte de la situation et des charges de famille - Personnes à charge - Personnes titulaires de la carte mobilité inclusion portant la mention « invalidité » vivant sous le toit du contribuable",
+          "publication_date": "2024-06-18",
+          "section_path": "III. Détermination du quotient familial",
+          "text": "Les personnes invalides mentionnées à l' article 196 A bis du CGI sont assimilées à des enfants à charge pour le calcul du nombre de parts de quotient familial du contribuable en application du dernier alinéa du I de l' article 194 du CGI . Ne pouvant être comptées à charge que si elles possèdent la carte mobilité inclusion portant la mention « invalidité », ces personnes ouvrent droit à une part supplémentaire de quotient familial, soit une demi-part en tant que personne à charge et une demi-part en tant que personne invalide. Les personnes ainsi recueillies sont prises en compte pour l'attribution de la demi-part supplémentaire de quotient familial prévue en faveur des contribuables ayant au moins trois enfants à charge. Le premier alinéa du 2 du I de l' article 197 du CGI prévoit un plafonnement général des effets du quotient familial. Cette mesure s'applique à la réduction d'impôt procurée par chacune des demi-parts résultant de la prise en compte des personnes invalides. La demi-part attribuée au titre de l'invalidité bénéficie, le cas échéant, de la réduction d'impôt complémentaire prévue au quatrième alinéa du 2 du I de l'article 197 du CGI ( BOI-IR-LIQ-20-20-20 ). En revanche, les contribuables célibataires ou divorcés qui vivent seuls et supportent effectivement la charge d'une personne mentionnée à l' article 196 A bis du CGI , à l'exclusion de tout enfant, ne sont pas concernés par le plafonnement spécifique correspondant à la part accordée au titre du premier enfant à charge ( III-B-1 § 60 à 80 du BOI-IR-LIQ-20-20-20 ).",
+          "chunk_id": "1032-PGP__section_window__1032-pgp-paragraph-00014__1032-pgp-paragraph-00018__iii-d-termination-du-quotient-familial"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-IR-LIQ-20-20-20-20250414",
+          "title": "IR - Liquidation - Calcul de l’impôt - Corrections affectant le montant de l’impôt brut - Plafonnement des effets du quotient familial",
+          "publication_date": "2025-04-14",
+          "section_path": "III. Niveau du plafonnement > B. Plafonnements spécifiques > 2. Avantage de quotient familial pour les personnes célibataires, veuves ou divorcées qui vivent effectivement seules et qui n’ont pas de charges de famille",
+          "text": "L’avantage maximal en impôt procuré par la demi-part supplémentaire aux contribuables mentionnés au III-B-2 § 90 est fixé à 1 069 € au titre de l’imposition des revenus de l’année 2024 ( CGI, art. 197, I-2-al. 3 ). (110) Le plafonnement général mentionné au III-A § 40 s’applique en revanche lorsque les contribuables remplissent les conditions pour bénéficier d’une demi-part supplémentaire de quotient familial à un autre titre (ancien combattant ou invalidité). Dans cette situation, il appartient à la personne de faire valoir sa situation d’invalide ou d’ancien combattant en cochant la ou les cases prévues à cet effet sur la déclaration d’ensemble de ses revenus.",
+          "chunk_id": "2494-PGP__section_window__2494-pgp-paragraph-00036__2494-pgp-paragraph-00038__iii-niveau-du-plafonnement-b-plafonnements-sp-cifiques-2-avantage-de-quotient-familial-pour-les-personnes-c-libataires-veuves-ou-divorc-es-qui-vivent-effectivement-seules-et-qui-n-ont-pas-de-charges-de-famille"
+        }
+      ]
+    },
+    {
+      "case_id": "dictionnaire",
+      "query": "je suis une entreprise francaise, je vend un abonnement a un dictionnaire en ligne a un client particulier non assujetti resident en Martinique. Quel taux de TVA appliquer sur ma facture ?",
+      "rewritten_query": "En tant qu'entreprise établie en France métropolitaine, vous facturez un abonnement à un dictionnaire en ligne à un client particulier, personne physique non assujettie à la taxe sur la valeur ajoutée (TVA), résidant en Martinique. Conformément aux dispositions du Code général des impôts (CGI), notamment les articles 256 et suivants relatifs au territoire d’application de la TVA, et compte tenu du régime fiscal applicable aux départements d’outre-mer (DOM), quel est le taux de TVA à appliquer sur la facture émise à ce client ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] TVA française au taux de 8,5% (taux normal Martinique) car prestation de services B2C.\n\n- La Martinique applique la TVA avec un taux normal de 8,5% [1].\n- Pour les prestations de services, la Martinique n'est pas un territoire tiers [2].\n- Le prestataire est établi en France métropolitaine, donc pas d'autoliquidation [2].\n\nLimites: Ne couvre pas les éventuelles exonérations spécifiques aux dictionnaires en ligne.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"TVA française au taux de 8,5% (taux normal Martinique) car prestation de services B2C.\",\n  \"justification_bullets\": [\n    \"La Martinique applique la TVA avec un taux normal de 8,5% [1].\",\n    \"Pour les prestations de services, la Martinique n'est pas un territoire tiers [2].\",\n    \"Le prestataire est établi en France métropolitaine, donc pas d'autoliquidation [2].\"\n  ],\n  \"limits\": \"Ne couvre pas les éventuelles exonérations spécifiques aux dictionnaires en ligne.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "TVA française au taux de 8,5% (taux normal Martinique) car prestation de services B2C.",
+        "justification_bullets": [
+          "La Martinique applique la TVA avec un taux normal de 8,5% [1].",
+          "Pour les prestations de services, la Martinique n'est pas un territoire tiers [2].",
+          "Le prestataire est établi en France métropolitaine, donc pas d'autoliquidation [2]."
+        ],
+        "limits": "Ne couvre pas les éventuelles exonérations spécifiques aux dictionnaires en ligne."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          2
+        ],
+        "cite_count": 3,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-TVA-GEO-20-10-20190605",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution - Taux applicables en Guadeloupe, en Martinique et à La Réunion",
+          "publication_date": "2019-06-05",
+          "section_path": "I. Niveau des taux de la TVA",
+          "text": "Les collectivités d'outre-mer relevant de l' article 73 de la Constitution du 4 octobre 1958 où s'applique la TVA sont la Guadeloupe, la Martinique et La Réunion. Les taux de TVA applicables dans les collectivités d'outre-mer listées au I § 1 comprennent, d'une part, des taux principaux de TVA, à savoir un taux normal de 8,5 % et un taux réduit de 2,1 %, et d'autre part, des taux particuliers.",
+          "chunk_id": "343-PGP__section_window__343-pgp-paragraph-00000__343-pgp-paragraph-00001__i-niveau-des-taux-de-la-tva"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-TVA-GEO-20-40-20240724",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution - Opérations réalisées entre la métropole et les collectivités d'outre-mer et entre ces collectivités",
+          "publication_date": "2024-07-24",
+          "section_path": "I. Principes",
+          "text": "(1) Les précisions qui suivent concernent les collectivités d'outre-mer régies par l' article 73 de la Constitution du 4 octobre 1958 et où s'applique la taxe sur la valeur ajoutée (TVA) : la Guadeloupe et la Martinique, au sein du marché unique antillais, ainsi que La Réunion. La TVA est applicable dans ces collectivités dans les mêmes conditions que sur le territoire de la France métropolitaine, sous réserve d'aménagements spécifiques ( BOI-TVA-GEO-20 ). En ce qui concerne les échanges avec et entre ces collectivités d'outre-mer, des règles particulières s'appliquent : en matière d'expédition ou de transport de biens, ces collectivités d'outre-mer sont considérées comme des territoires tiers ( code général des impôts [CGI], art. 294, 2 et 3 ) ; en matière de prestations de services, ces collectivités d'outre-mer ne sont pas considérées comme des territoires tiers. Pour la définition des territoires tiers, il convient de se reporter au II-C § 150 et suivants du BOI-TVA-CHAMP-20-10 . Ainsi, les dispositions du code général des impôts qui désignent l'acquéreur, le preneur ou le destinataire comme redevables de la taxe lorsque le fournisseur ou le prestataire n'est pas établi en France (régimes d'autoliquidation prévus à l' article 283-0 et suivants du CGI ) ne sont pas applicables aux prestations de services réalisées dans le cadre des relations entre la métropole et ces collectivités.",
+          "chunk_id": "792-PGP__section_window__792-pgp-paragraph-00001__792-pgp-paragraph-00008__i-principes"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-TVA-GEO-20-10-20190605",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution - Taux applicables en Guadeloupe, en Martinique et à La Réunion",
+          "publication_date": "2019-06-05",
+          "section_path": "I. Niveau des taux de la TVA > A. Taux principaux de la TVA",
+          "text": "Aux termes des a et b du 1° de l' article 296 du code général des impôts (CGI) , les taux de TVA applicables dans les collectivités de Guadeloupe, de Martinique et de La Réunion sont les suivants : - taux réduit : 2,1 % ; - taux normal : 8,5 %. Le champ d'application de ces taux étant identique à celui de la métropole, il convient donc de se reporter sur ce point au BOI-TVA-LIQ .",
+          "chunk_id": "343-PGP__section_window__343-pgp-paragraph-00002__343-pgp-paragraph-00005__i-niveau-des-taux-de-la-tva-a-taux-principaux-de-la-tva"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-TVA-GEO-20-20230118",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution",
+          "publication_date": "2023-01-18",
+          "section_path": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution",
+          "text": "Les collectivités d'outre-mer régies par l' article 73 de la Constitution du 4 octobre 1958 sont le département de Mayotte, la Guadeloupe, la Martinique, la Guyane et La Réunion. La taxe sur la valeur ajoutée (TVA) est en principe applicable dans ces collectivités dans les mêmes conditions que dans les départements de la métropole. Cependant, les dispositions de l' article 294 du code général des impôts (CGI) à l' article 296 ter du CGI apportent des aménagements aux règles générales et prévoient des mesures spécifiques pour ces collectivités d'outre-mer. Aux termes du 1 de l'article 294 du CGI, la TVA n'est provisoirement pas applicable dans les collectivités de Guyane et de Mayotte. En conséquence, les opérations territorialisées dans ces collectivités, qu'il s'agissent des livraisons de biens, des prestations de services ou des importations ne sont pas soumises à la TVA et aucune obligation de déclaration ou de paiement ne s'impose à ce titre. En revanche, la TVA est applicable dans les collectivités de Guadeloupe, de Martinique et de La Réunion. Sauf exceptions, les règles applicables sont les mêmes que celles régissant la TVA en métropole. Les exceptions comprennent, d'une part, des mesures d'allégement (taux et régimes d'exonération particuliers) et, d'autre part, le traitement des échanges avec les autres territoires (métropole, autres territoires ultramarins, territoires des autres États membres de l'Union Européenne [UE]). Le traitement particuliers des échanges est une conséquence de la différence entre, d'une part, le territoire national d'application de la TVA et, d'autre part, la fraction du territoire national où s'applique la TVA harmonisée au niveau européen ( BOI-TVA-CHAMP-20-10 ).",
+          "chunk_id": "341-PGP__section_window__341-pgp-paragraph-00000__341-pgp-paragraph-00004__tva-r-gimes-territoriaux-r-gime-applicable-dans-les-collectivit-s-d-outre-mer-relevant-de-l-article-73-de-la-constitution"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-TVA-CHAMP-20-70-20240724",
+          "title": "TVA - Champ d'application et territorialité - Territorialité - Précisions relatives à certaines opérations réalisées par des assujettis non établis en France",
+          "publication_date": "2024-07-24",
+          "section_path": "I. Principes",
+          "text": "D'une manière générale, les assujettis établis hors de France qui effectuent des opérations dont le lieu est situé en France en application des règles de territorialité prévues de l' article 258 du code général des impôts (CGI) à l' article 259 D du CGI sont soumis à la taxe sur la valeur ajoutée (TVA) dans les mêmes conditions que les assujettis établis en France réalisant les mêmes opérations. Toutefois, aux termes du deuxième alinéa du 1 et du 2 de l' article 283 du CGI , lorsque la livraison de biens ou la prestation de services est effectuée par un assujetti qui n'est pas établi en France, la taxe est due par le client identifié à la TVA en France. Aux fins de la TVA, une personne est considérée comme étant établie en France lorsqu'elle y dispose du siège de son activité économique, d'un établissement stable, de son domicile ou d'une résidence habituelle. Pour la définition de ces différentes notions, il convient de se reporter aux II et III § 100 à 190 du BOI-TVA-CHAMP-20-50-10 .",
+          "chunk_id": "1542-PGP__section_window__1542-pgp-paragraph-00001__1542-pgp-paragraph-00003__i-principes"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-TVA-GEO-20-10-20190605",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution - Taux applicables en Guadeloupe, en Martinique et à La Réunion",
+          "publication_date": "2019-06-05",
+          "section_path": "I. Niveau des taux de la TVA > B. Taux particuliers de la TVA > 3. Publications de presse",
+          "text": "Le régime des publications françaises en provenance ou à destination de Guadeloupe, de Martinique et de La Réunion est exposé au BOI-TVA-LIQ-40 , auquel il convient de se reporter. Il est cependant précisé que le taux de la TVA applicable aux opérations portant sur les publications qui remplissent les conditions prévues par l' article 72 de l'annexe III au CGI ou par l' article 73 de l'annexe III au CGI ainsi qu'aux services de presse en ligne qui remplissent les conditions prévues par l' article 1 du décret n° 2009-1340 du 29 octobre 2009 pris pour application de l'article 1er de la loi n° 86-897 du 1er août 1986 portant réforme du régime juridique de la presse , est fixé à 1,05 % en Guadeloupe, en Martinique et à La Réunion ( CGI, art. 298 septies ).",
+          "chunk_id": "343-PGP__section_window__343-pgp-paragraph-00010__343-pgp-paragraph-00011__i-niveau-des-taux-de-la-tva-b-taux-particuliers-de-la-tva-3-publications-de-presse"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-TVA-GEO-20-10-20190605",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution - Taux applicables en Guadeloupe, en Martinique et à La Réunion",
+          "publication_date": "2019-06-05",
+          "section_path": "I. Niveau des taux de la TVA > B. Taux particuliers de la TVA > 2. Ventes d'animaux vivants de boucherie et de charcuterie à des non assujettis",
+          "text": "Aux termes du b de l'article l' article 296 bis du CGI , la TVA est perçue, en Guadeloupe, en Martinique et à La Réunion, au taux de 1,75 % pour les opérations visées à l' article 281 sexies du CGI , à savoir les ventes d'animaux vivants de boucherie et de charcuterie faites à des personnes non assujetties à la TVA.",
+          "chunk_id": "343-PGP__section_window__343-pgp-paragraph-00009__343-pgp-paragraph-00009__i-niveau-des-taux-de-la-tva-b-taux-particuliers-de-la-tva-2-ventes-d-animaux-vivants-de-boucherie-et-de-charcuterie-des-non-assujettis"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-TVA-GEO-20-10-20190605",
+          "title": "TVA - Régimes territoriaux - Régime applicable dans les collectivités d'outre-mer relevant de l'article 73 de la Constitution - Taux applicables en Guadeloupe, en Martinique et à La Réunion",
+          "publication_date": "2019-06-05",
+          "section_path": "I. Niveau des taux de la TVA > B. Taux particuliers de la TVA > 1. Premières représentations de certains spectacles",
+          "text": "Aux termes du a de l' article 296 bis du CGI , la TVA est perçue en Guadeloupe, en Martinique et à La Réunion, au taux de 1,05 % pour les opérations visées à l' article 281 quater du CGI . Il ressort des dispositions de l'article 281 quater du CGI et de l' article 89 ter de l'annexe III au CGI que le taux de 1,05 % s'applique aux recettes afférentes aux entrées des 140 premières représentations théâtrales d'œuvres dramatiques, lyriques, musicales ou chorégraphiques nouvellement créées ou d'œuvres classiques faisant l'objet d'une nouvelle mise en scène, de spectacles de cirque comportant exclusivement des créations originales conçues et produites par l'entreprise et faisant appel aux services réguliers d'un groupe de musiciens, de spectacles donnés par un artiste de variétés ou un groupe musical (l'artiste peut présenter des œuvres appartenant déjà à son répertoire dès lors qu'elles font l'objet d'un nouvel arrangement musical ou, le cas échéant, scénique) ainsi que de spectacles donnés dans des théâtres de chansonniers (si le spectacle présenté ne comporte que des œuvres nouvelles et est conçu autour d'un thème central). Le régime des premières représentations en cause, et en particulier l'ensemble des conditions à satisfaire pour qu'il trouve à s'appliquer est exposé au BOI-TVA-LIQ-40 .",
+          "chunk_id": "343-PGP__section_window__343-pgp-paragraph-00006__343-pgp-paragraph-00008__i-niveau-des-taux-de-la-tva-b-taux-particuliers-de-la-tva-1-premi-res-repr-sentations-de-certains-spectacles"
+        }
+      ]
+    }
+  ]
+}

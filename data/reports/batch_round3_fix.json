@@ -1,0 +1,274 @@
+{
+  "generated_at": "2026-05-14T16:30:04.068300+00:00",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "case_count": 2,
+  "valid_count": 1,
+  "rows": [
+    {
+      "case_id": "r08_tva_presse",
+      "query": "Je publie un magazine d information politique qui parait tous les trimestres. Quel taux de TVA s applique a la vente de ce magazine ?",
+      "rewritten_query": "Quel est le taux de taxe sur la valeur ajoutée (TVA) applicable à la vente d’un magazine d’information politique paraissant à périodicité trimestrielle, au regard des dispositions du Code général des impôts (CGI), notamment de l’article 278 bis et de l’article 298 septies, ainsi que de la réglementation relative à la presse imprimée ?",
+      "category": "tva_sect",
+      "note": "TVA presse taux super reduit 2.1%",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[PARTIAL] Sous réserve de l'obtention du certificat CPPAP, le taux de 2,1% s'applique aux publications de presse.\n  Axes manquants: Conditions pour bénéficier du taux réduit de presse\n\n- [1] Les publications de presse remplissant les conditions des articles 72 et 73 de l'annexe III du CGI et ayant obtenu le certificat d'inscription CPPAP bénéficient du taux de 2,1%.\n- [4] Le taux de 2,1% s'applique aux ventes de publications de presse (article 298 septies du CGI).\n- Axe manquant : Les extraits ne précisent pas si un magazine d'information politique trimestriel remplit les conditions d'éligibilité (périodicité, contenu, etc.) pour obtenir le certificat CPPAP.\n\nLimites: La réponse dépend de l'obtention du certificat CPPAP, non vérifié dans les extraits. Sans ce certificat, le taux normal de 20% s'applique.",
+      "raw": "{\n  \"answer_status\": \"partial\",\n  \"axes_requis\": [\n    \"Nature du bien (publication périodique d'information politique)\",\n    \"Conditions pour bénéficier du taux réduit de presse\",\n    \"Taux de TVA applicable\"\n  ],\n  \"axes_couverts\": [\n    \"Nature du bien (publication périodique d'information politique)\",\n    \"Taux de TVA applicable\"\n  ],\n  \"axes_manquants\": [\n    \"Conditions pour bénéficier du taux réduit de presse\"\n  ],\n  \"conclusion\": \"Sous réserve de l'obtention du certificat CPPAP, le taux de 2,1% s'applique aux publications de presse.\",\n  \"justification_bullets\": [\n    \"[1] Les publications de presse remplissant les conditions des articles 72 et 73 de l'annexe III du CGI et ayant obtenu le certificat d'inscription CPPAP bénéficient du taux de 2,1%.\",\n    \"[4] Le taux de 2,1% s'applique aux ventes de publications de presse (article 298 septies du CGI).\",\n    \"Axe manquant : Les extraits ne précisent pas si un magazine d'information politique trimestriel remplit les conditions d'éligibilité (périodicité, contenu, etc.) pour obtenir le certificat CPPAP.\"\n  ],\n  \"limits\": \"La réponse dépend de l'obtention du certificat CPPAP, non vérifié dans les extraits. Sans ce certificat, le taux normal de 20% s'applique.\"\n}",
+      "structured": {
+        "answer_status": "partial",
+        "axes_requis": [
+          "Nature du bien (publication périodique d'information politique)",
+          "Conditions pour bénéficier du taux réduit de presse",
+          "Taux de TVA applicable"
+        ],
+        "axes_couverts": [
+          "Nature du bien (publication périodique d'information politique)",
+          "Taux de TVA applicable"
+        ],
+        "axes_manquants": [
+          "Conditions pour bénéficier du taux réduit de presse"
+        ],
+        "conclusion": "Sous réserve de l'obtention du certificat CPPAP, le taux de 2,1% s'applique aux publications de presse.",
+        "justification_bullets": [
+          "[1] Les publications de presse remplissant les conditions des articles 72 et 73 de l'annexe III du CGI et ayant obtenu le certificat d'inscription CPPAP bénéficient du taux de 2,1%.",
+          "[4] Le taux de 2,1% s'applique aux ventes de publications de presse (article 298 septies du CGI).",
+          "Axe manquant : Les extraits ne précisent pas si un magazine d'information politique trimestriel remplit les conditions d'éligibilité (périodicité, contenu, etc.) pour obtenir le certificat CPPAP."
+        ],
+        "limits": "La réponse dépend de l'obtention du certificat CPPAP, non vérifié dans les extraits. Sans ce certificat, le taux normal de 20% s'applique."
+      },
+      "validation": {
+        "valid": true,
+        "status": "partial",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          4
+        ],
+        "cite_count": 2,
+        "errors": [],
+        "axes_requis": [
+          "Nature du bien (publication périodique d'information politique)",
+          "Conditions pour bénéficier du taux réduit de presse",
+          "Taux de TVA applicable"
+        ],
+        "axes_manquants": [
+          "Conditions pour bénéficier du taux réduit de presse"
+        ]
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-TVA-SECT-40-10-10-20120912",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Définitions des publications de presse",
+          "publication_date": "2012-09-12",
+          "section_path": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Définitions des publications de presse",
+          "text": "Le régime de la TVA applicable aux publications de presse est codifié sous les articles 298 septies à 298 terdecies du code général des impôts (CGI) . Il s'applique aux publications qui remplissent les conditions prévues aux articles 72 et 73 de l'annexe III du CGI et pour lesquelles les éditeurs ont obtenu le certificat d'inscription sur les registres de la commission paritaire des publications et agences de presse et l'agrément de l'administrateur des finances publiques territorialement compétent. Ne sont pas concernées par cette étude, les publications périodiques non reconnues comme publications de presse qui sont imposables selon les règles de droit commun ; le taux normal leur est applicable à moins qu'elles répondent à la définition fiscale du livre, auquel cas elles bénéficient du taux réduit ( art. 278 bis-6° du CGI) (cf BOI-TVA-LIQ-30-10-40 ). En effet, les livres et les publications périodiques ayant le caractère de livres ne bénéficient pas du régime spécial de la presse. Par ailleurs, relèvent du taux normal celles qui ont fait l'objet d'au moins deux des interdictions prévues par l' article 14 de la loi n° 49-956 du 16 juillet 1949 modifié.",
+          "chunk_id": "918-PGP__section_window__918-pgp-paragraph-00000__918-pgp-paragraph-00003__tva-r-gimes-sectoriels-r-gime-de-la-presse-r-gime-applicable-aux-publications-de-presse-d-finitions-des-publications-de-presse"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-TVA-SECT-40-10-20-20240724",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Opérations portant sur les publications de presse",
+          "publication_date": "2024-07-24",
+          "section_path": "VI. Importations",
+          "text": "Les présentes dispositions sont applicables aux publications périodiques.\n\nL' article 298 octies du CGI prévoit que les travaux de composition et d'impression des écrits périodiques sont soumis au taux réduit de 10 % de la TVA. La TVA à l'importation est assise sur la valeur de ces travaux effectués par l'imprimeur étranger, majorée le cas échéant de la valeur des fournitures, telles que le papier. Le taux réduit de 10 % est applicable quel que soit le régime fiscal de la publication périodique qui a fait l'objet de ces travaux. Sont également passibles du taux réduit de 2,1 %, les travaux de composition et d'impression effectués en France métropolitaine, en Guadeloupe, en Martinique ou à La Réunion, afférents à des publications périodiques éditées et importées dans l'un de ces trois autres territoires ( CGI, art. 296, 1°-a ).",
+          "chunk_id": "995-PGP__section_window__995-pgp-paragraph-00066__995-pgp-paragraph-00066__vi-importations__merge__vi-importations-a-importation-des-publications-p-riodiques-dit-es-en-france-et-imprim-es-l-tranger"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-TVA-SECT-40-40-20181205",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux services de presse en ligne",
+          "publication_date": "2018-12-05",
+          "section_path": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux services de presse en ligne",
+          "text": "Le deuxième alinéa de l' article 298 septies du code général des impôts (CGI) prévoit que le taux de 2,10% de la TVA s'applique aux services de presse en ligne.\n\nConstitue un service de presse en ligne, au sens du deuxième alinéa de l' article 1er de la loi n° 86-897 du 1er août 1986 portant réforme du régime de la presse , tout service de communication au public en ligne édité à titre professionnel par une personne physique ou morale qui a la maitrise éditoriale de son contenu, consistant en la production et la mise à disposition du public d'un contenu original, d'intérêt général, renouvelé régulièrement, composé d'informations présentant un lien avec l'actualité et ayant fait l'objet d'un traitement à caractère journalistique, qui ne constitue pas un outil de promotion ou un accessoire d'une activité industrielle ou commerciale.",
+          "chunk_id": "9291-PGP__section_window__9291-pgp-paragraph-00000__9291-pgp-paragraph-00000__tva-r-gimes-sectoriels-r-gime-de-la-presse-r-gime-applicable-aux-services-de-presse-en-ligne__merge__i-d-finition-des-services-de-presse-en-ligne"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-TVA-SECT-40-10-10-20120912",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Définitions des publications de presse",
+          "publication_date": "2012-09-12",
+          "section_path": "II. Conditions pour bénéficier des avantages fiscaux > A. Publications dites « de l'article 72 » > 4. Conditions relatives à la vente > f. Publications sous forme de cahiers",
+          "text": "Le régime applicable aux publications vendues sous la forme de cahiers a fait l'objet de la solution suivante : RES N° 2003/21 (TCA) OBJET : Taxe sur la valeur ajoutée (TVA). Taux réduit de 2,10 %. Critères d'admission des publications au régime de la presse. L' article 298 septies du code général des impôts (CGI) soumet au taux de TVA de 2,10 % les ventes, commissions et courtages portant sur les publications de presse, leurs suppléments et hors-séries, qui remplissent les conditions prévues à l'article 72 de l'annexe III au même code. Pour l'appréciation de ces dispositions, la Commission paritaire des publications et agences de presse (C.P.P.A.P.) considère que la présentation en plusieurs cahiers constitue un aménagement de forme qui ne s'oppose pas au bénéfice de ces avantages. Pour être inscrite au registre de la commission paritaire, une publication présentée en cahiers doit remplir les conditions suivantes. « 1. Elle doit comporter dans le premier fascicule un sommaire général détaillé permettant de vérifier que la publication est proposée au public avec l'ensemble des cahiers qui la composent. Le sommaire indique donc le nombre de cahiers constitutifs de la publication et, pour chacun d'eux, le nombre de pages. 2. Chaque cahier doit reprendre en première page le titre de la publication ainsi que le numéro et la date de parution de celle-ci.",
+          "chunk_id": "918-PGP__section_window__918-pgp-paragraph-00163__918-pgp-paragraph-00170__ii-conditions-pour-b-n-ficier-des-avantages-fiscaux-a-publications-dites-de-l-article-72-4-conditions-relatives-la-vente-f-publications-sous-forme-de-cahiers"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-TVA-LIQ-20230628",
+          "title": "TVA - Liquidation - Taux",
+          "publication_date": "2023-06-28",
+          "section_path": "TVA - Liquidation - Taux",
+          "text": "La présente division commente l'ensemble des dispositions relatives aux divers taux de taxe sur la valeur ajoutée (TVA) visés à l' article 278 du code général des impôts (CGI) , de l' article 278 bis du CGI à l' article 279 bis du CGI et de l' article 281 quater du CGI à l' article 281 octies du CGI . Sont traités successivement : les généralités sur les taux de TVA (titre 1, BOI-TVA-LIQ-10 ) ; le taux normal (titre 2, BOI-TVA-LIQ-20 ) ; les taux réduits (titre 3, BOI-TVA-LIQ-30 ) ; les taux particuliers (titre 4, BOI-TVA-LIQ-40 ) ; les conditions de mise en œuvre des taux de TVA de 5,5 %, 10 % et 20 % (titre 5, BOI-TVA-LIQ-50 ). Des dispositions particulières sont par ailleurs prévues pour certaines activités ( BOI-TVA-SECT ) ou pour les opérations réalisées dans les départements de Corse et d'outre-mer ( BOI-TVA-GEO ).",
+          "chunk_id": "1379-PGP__section_window__1379-pgp-paragraph-00000__1379-pgp-paragraph-00007__tva-liquidation-taux"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-TVA-SECT-40-10-20-20240724",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Opérations portant sur les publications de presse",
+          "publication_date": "2024-07-24",
+          "section_path": "VI. Importations > B. Importation en France métropolitaine des publications périodiques éditées et imprimées à l'étranger > 2. Abonnements souscrits auprès d'un intermédiaire établi en France > b. Les revues sont directement adressées de l’étranger à l'abonné",
+          "text": "Ce flux remplit les conditions de qualification de vente à distance de biens importés de territoire tiers ou de pays tiers (« VAD-BI »). Sur ce point, il convient de se reporter au I § 20 à 80 du BOI-TVA-CHAMP-10-10-40-60 , dont les règles de territorialité sont étudiées au II § 50 à 70 du BOI-TVA-CHAMP-20-20-30 . L'abonné en tant que destinataire de la marchandise sera désigné redevable de la TVA due à l’importation ( CGI, art. 293 A, 2-2°-c ). Concrètement, le représentant en douane enregistré (RDE), chargé des formalités de dédouanement, réalisera l’avance des montants de TVA dus par l’abonné auprès du service des douanes avant de se faire rembourser ces montants auprès de l’abonné, lors de la livraison de la revue. À cette fin, le RDE peut se prévaloir du régime particulier prévu à l’ article 298 sexdecies I du CGI pour la déclaration et le paiement de la TVA à l'importation en ce qui concerne des biens expédiés ou transportés à destination de la France. Remarque : Conformément au 3° du II de l’article 298 sexdecies I du CGI et par dérogation aux dispositions de l' article 278-0 bis du CGI à l' article 281 octies du CGI , l'importation des biens réalisées dans le cadre du régime particulier de l’article 298 sexdecies I du CGI est soumise au taux normal de 20 % de la TVA prévu à l' article 278 du CGI ( IV § 390 du BOI-TVA-LIQ-20-10 ).",
+          "chunk_id": "995-PGP__section_window__995-pgp-paragraph-00078__995-pgp-paragraph-00080__vi-importations-b-importation-en-france-m-tropolitaine-des-publications-p-riodiques-dit-es-et-imprim-es-l-tranger-2-abonnements-souscrits-aupr-s-d-un-interm-diaire-tabli-en-france-b-les-revues-sont-directement-adress-es-de-l-tranger-l-abonn"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-TVA-SECT-40-10-30-20130621",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Modalités d'imposition et de déclaration de la taxe portant sur les publications de presse",
+          "publication_date": "2013-06-21",
+          "section_path": "I. Base d'imposition > A. Principe",
+          "text": "Conformément à l' article 298 undecies du code général des impôts (CGI) , les éditeurs doivent acquitter la TVA sur l'intégralité du prix de vente au public. Cette règle de détermination de la base d'imposition s'applique, aux termes de cet article, même lorsque les publications sont diffusées et vendues au numéro par l'intermédiaire des mandataires faisant partie du système particulier du groupage et de distribution de la presse, dont la rémunération, constituée par une partie du prix de vente au public fixé par l'éditeur, est expressément dispensée du paiement de la TVA ( BOI-TVA-SECT-40-20-20 au III § 210 et suivants ). La base imposable comprend les subventions perçues par l'éditeur lorsqu'elles constituent un complément direct du prix ou sont destinées à compenser globalement l'insuffisance des recettes d'exploitation de l'entreprise. Toutefois, il est précisé que les aides accordées aux quotidiens d'information politique, instituées par le décret n° 86-616 du 12 mars 1986 instituant une aide aux quotidiens nationaux d'information politique et générale à faibles ressources publicitaires et le décret n° 89-528 du 28 juillet 1989 instituant une aide aux quotidiens régionaux, départementaux et locaux d'information politique et générale à faibles ressources de petites annonces sont non imposables et peuvent ne pas figurer au dénominateur du coefficient de taxation prévu par le III de l' article 206 de l'annexe II du CGI .",
+          "chunk_id": "993-PGP__section_window__993-pgp-paragraph-00001__993-pgp-paragraph-00004__i-base-d-imposition-a-principe"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-TVA-SECT-40-10-10-20120912",
+          "title": "TVA - Régimes sectoriels - Régime de la presse - Régime applicable aux publications de presse - Définitions des publications de presse",
+          "publication_date": "2012-09-12",
+          "section_path": "II. Conditions pour bénéficier des avantages fiscaux > A. Publications dites « de l'article 72 » > 4. Conditions relatives à la vente > d. Produits composites > 1° Principe d’imposition des produits composites",
+          "text": "Les entreprises, qui commercialisent pour un prix global et forfaitaire des produits ou services relevant de taux de TVA différents, sont en principe tenues de répartir leurs recettes par catégories d’opérations pour soumettre chacune d’entre elles au taux qui lui est propre ( CGI, art. 268 bis ). Pour répondre aux exigences des dispositions des articles 268 bis et 298 septies du CGI , et 73-0 A de l'annexe III du CGI , cette ventilation doit traduire la réalité économique des opérations imposables. Elle peut s’opérer selon toute méthode sous la responsabilité des entreprises (prix de revient ou valeur de marché des composants du produit global majorés d’une quote-part de la marge commerciale déterminée en fonction de la part relative du prix de revient (ou d’achat) du « produit plus » par rapport au prix de vente hors taxes (HT) global). Sont imposés dans ces conditions les produits composites présentés comme la réunion de plusieurs biens ou services, le prix de vente constituant la contre-valeur effective de chaque élément fourni ( CE 5 juin 2002 n° 232 392 2ème et 3ème sous-sections, Société Havas Interactive , s’agissant d’un livre accompagné d’un compact-disc. Il peut s’agir également d’une publication accompagnée d’un DVD moyennant un supplément de prix). Aux termes de l’ article 298 septies du CGI , seules les publications répondant aux conditions prévues aux articles 72 et 73 de l’annexe III du CGI sont soumises au taux particulier de la TVA. Lorsqu’elles sont assorties de biens ou services, le certificat d’inscription au registre de la Commission paritaire des publications et agences de presse (CPPAP) susceptible d’ouvrir droit au bénéfice de ce taux n’est valable que pour la partie imprimée.",
+          "chunk_id": "918-PGP__section_window__918-pgp-paragraph-00118__918-pgp-paragraph-00122__ii-conditions-pour-b-n-ficier-des-avantages-fiscaux-a-publications-dites-de-l-article-72-4-conditions-relatives-la-vente-d-produits-composites-1-principe-d-imposition-des-produits-composites"
+        }
+      ]
+    },
+    {
+      "case_id": "r09_fonds_commerce",
+      "query": "Je rachete le fonds de commerce d une boulangerie pour 150 000 euros. Quels sont les droits d enregistrement a payer et comment sont-ils calcules ?",
+      "rewritten_query": "Dans le cadre de l'acquisition d'un fonds de commerce de boulangerie pour un prix stipulé de 150 000 euros, quels sont les droits d'enregistrement exigibles en application du Code général des impôts (CGI), et selon quelles modalités de calcul ces droits sont-ils déterminés, notamment au regard des articles 719, 720, 726 et suivants du CGI, ainsi que des éventuelles taxes additionnelles (taxe de publicité foncière, contribution pour le développement de l'apprentissage, taxe additionnelle à la taxe de publicité foncière) ?",
+      "category": "enr_mutation",
+      "note": "ENR cession fonds commerce droits mutation",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[PARTIAL] Sous réserve du taux des droits d'enregistrement, les taxes additionnelles sont dues sur la cession de fonds de commerce.\n  Axes manquants: taux des droits d'enregistrement\n\n- [1] La cession de fonds de commerce est soumise aux droits d'enregistrement, sauf si soumise à TVA (marchandises neuves).\n- [6] Les taxes additionnelles communale et départementale s'appliquent aux mutations de fonds de commerce établis sur le territoire.\n- [5] Les ventes de marchandises neuves corrélatives à la cession d'un fonds sont exonérées de droits proportionnels si soumises à TVA.\n- Le taux des droits d'enregistrement (proportionnel ou fixe) n'est pas précisé dans les extraits fournis.\n\nLimites: Les extraits ne fournissent pas le taux des droits d'enregistrement applicable à la cession de fonds de commerce.",
+      "raw": "{\n  \"answer_status\": \"partial\",\n  \"axes_requis\": [\"nature de l'opération\", \"taux des droits d'enregistrement\", \"taxes additionnelles\", \"exonérations\"],\n  \"axes_couverts\": [\"nature de l'opération\", \"taxes additionnelles\", \"exonérations\"],\n  \"axes_manquants\": [\"taux des droits d'enregistrement\"],\n  \"conclusion\": \"Sous réserve du taux des droits d'enregistrement, les taxes additionnelles sont dues sur la cession de fonds de commerce.\",\n  \"justification_bullets\": [\n    \"[1] La cession de fonds de commerce est soumise aux droits d'enregistrement, sauf si soumise à TVA (marchandises neuves).\",\n    \"[6] Les taxes additionnelles communale et départementale s'appliquent aux mutations de fonds de commerce établis sur le territoire.\",\n    \"[5] Les ventes de marchandises neuves corrélatives à la cession d'un fonds sont exonérées de droits proportionnels si soumises à TVA.\",\n    \"Le taux des droits d'enregistrement (proportionnel ou fixe) n'est pas précisé dans les extraits fournis.\"\n  ],\n  \"limits\": \"Les extraits ne fournissent pas le taux des droits d'enregistrement applicable à la cession de fonds de commerce.\"\n}",
+      "structured": {
+        "answer_status": "partial",
+        "axes_requis": [
+          "nature de l'opération",
+          "taux des droits d'enregistrement",
+          "taxes additionnelles",
+          "exonérations"
+        ],
+        "axes_couverts": [
+          "nature de l'opération",
+          "taxes additionnelles",
+          "exonérations"
+        ],
+        "axes_manquants": [
+          "taux des droits d'enregistrement"
+        ],
+        "conclusion": "Sous réserve du taux des droits d'enregistrement, les taxes additionnelles sont dues sur la cession de fonds de commerce.",
+        "justification_bullets": [
+          "[1] La cession de fonds de commerce est soumise aux droits d'enregistrement, sauf si soumise à TVA (marchandises neuves).",
+          "[6] Les taxes additionnelles communale et départementale s'appliquent aux mutations de fonds de commerce établis sur le territoire.",
+          "[5] Les ventes de marchandises neuves corrélatives à la cession d'un fonds sont exonérées de droits proportionnels si soumises à TVA.",
+          "Le taux des droits d'enregistrement (proportionnel ou fixe) n'est pas précisé dans les extraits fournis."
+        ],
+        "limits": "Les extraits ne fournissent pas le taux des droits d'enregistrement applicable à la cession de fonds de commerce."
+      },
+      "validation": {
+        "valid": false,
+        "status": "partial",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 4,
+        "cite_ids": [
+          1,
+          5,
+          6
+        ],
+        "cite_count": 3,
+        "errors": [
+          "bullet 4 no citation (partial allows missing cites only on gap bullets)"
+        ],
+        "axes_requis": [
+          "nature de l'opération",
+          "taux des droits d'enregistrement",
+          "taxes additionnelles",
+          "exonérations"
+        ],
+        "axes_manquants": [
+          "taux des droits d'enregistrement"
+        ]
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-ENR-DG-60-10-20-20160406",
+          "title": "ENR - Dispositions générales - Taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière - Champ d'application matériel",
+          "publication_date": "2016-04-06",
+          "section_path": "I. Taxes instituées au profit des communes ou des fonds de péréquation et au profit des départements",
+          "text": "Les taxes instituées par l' article 1584 du code général des impôts (CGI) , par l' article 1595 bis du CGI , au profit des communes ou des fonds de péréquation et par l' article 1595 du CGI au profit des départements sont des taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière (qui sont, pour leur part, perçus pour le compte de l'État ou des départements) et exigibles sur les mutations à titre onéreux. Elles ne trouvent pas à s'appliquer : - aux mutations soumises à la taxe sur la valeur ajoutée (TVA) (opérations concourant à la production ou à la livraison d'immeubles visés à l' article 257 du CGI ; ventes de marchandises neuves corrélatives à la cession ou à l'apport en société d'un fonds de commerce régies par l' article 723 du CGI ) ; - aux mutations soumises à la taxe sur la valeur ajoutée (TVA) (opérations concourant à la production ou à la livraison d'immeubles visés à l' article 257 du CGI ; ventes de marchandises neuves corrélatives à la cession ou à l'apport en société d'un fonds de commerce régies par l' article 723 du CGI ) ; - aux mutations exonérées de droits d'enregistrement ou de taxe de publicité foncière ; - aux mutations exonérées de droits d'enregistrement ou de taxe de publicité foncière ; - aux mutations passibles de la taxe de publicité foncière au taux de 0,70 % ou au taux de 0,60 % prévu par l' article 791 du CGI ;",
+          "chunk_id": "774-PGP__section_window__774-pgp-paragraph-00000__774-pgp-paragraph-00006__i-taxes-institu-es-au-profit-des-communes-ou-des-fonds-de-p-r-quation-et-au-profit-des-d-partements"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-ENR-PTG-10-10-20200630",
+          "title": "ENR - Partages purs et simples",
+          "publication_date": "2020-06-30",
+          "section_path": "I. Champ d'application du droit de partage ou de la taxe de publicité foncière > B. Exceptions > 1. Partage de fonds communs de placement et parts de fonds de placement immobilier",
+          "text": "En application de l' article 749 du CGI , les rachats de parts de fonds communs de placement (FCP) et parts de fonds de placement immobilier (FPI) ainsi que la répartition des actifs de ces fonds entre les porteurs, après dissolution du fonds, sont exonérés du droit d'enregistrement ou de la taxe de publicité foncière prévus à l' article 746 du CGI . Il est admis, par ailleurs, que l'exonération du droit se double d'une dispense de la formalité dans les cas où elle serait normalement obligatoire. Lorsque le porteur des parts d'un fonds de placement immobilier se trouve dans l'un des cas mentionnés aux a et b de l' article 730 quinquies du CGI , un droit d'enregistrement au taux fixé au 2° du I de l 'article 726 du CGI est applicable. Toutefois, ce droit d'enregistrement ne s'applique pas lorsque le porteur qui demande le rachat de parts est lui-même un organisme de placement collectif immobilier (CGI, art. 749, al. 2).",
+          "chunk_id": "817-PGP__section_window__817-pgp-paragraph-00003__817-pgp-paragraph-00005__i-champ-d-application-du-droit-de-partage-ou-de-la-taxe-de-publicit-fonci-re-b-exceptions-1-partage-de-fonds-communs-de-placement-et-parts-de-fonds-de-placement-immobilier"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-ENR-DG-60-10-10-20180502",
+          "title": "ENR - Dispositions générales - Champ d'application personnel des taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière",
+          "publication_date": "2018-05-02",
+          "section_path": "ENR - Dispositions générales - Champ d'application personnel des taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière",
+          "text": "L' article 1584 du code général des impôts (CGI) et l' article 1595 bis du CGI prévoient la perception d'une taxe additionnelle aux droits d'enregistrement ou à la taxe de publicité foncière exigibles sur les mutations à titre onéreux au profit : - des communes de plus de 5 000 habitants, ainsi que de celles d'une population inférieure classées comme stations de tourisme au sens de l' article L. 133-13 du code du tourisme ; - des communes de plus de 5 000 habitants, ainsi que de celles d'une population inférieure classées comme stations de tourisme au sens de l' article L. 133-13 du code du tourisme ; - d'un fonds de péréquation départemental, dans toutes les communes dont la population n'excède pas 5 000 habitants autres que les communes classées comme stations de tourisme au sens de l'article L. 133-13 du code du tourisme. - d'un fonds de péréquation départemental, dans toutes les communes dont la population n'excède pas 5 000 habitants autres que les communes classées comme stations de tourisme au sens de l'article L. 133-13 du code du tourisme. Les communes concernées sont, non seulement les collectivités du territoire métropolitain, mais aussi celles des départements d'outre-mer (Guadeloupe, Guyane, Mayotte, Martinique et Réunion). De même, l' article 1595 du CGI prévoit qu'une taxe additionnelle exigible sur les mutations à titre onéreux est perçue au profit des départements métropolitains, mais aussi d'outre-mer (Guadeloupe, Guyane, Mayotte, Martinique et Réunion).",
+          "chunk_id": "6663-PGP__section_window__6663-pgp-paragraph-00000__6663-pgp-paragraph-00006__enr-dispositions-g-n-rales-champ-d-application-personnel-des-taxes-additionnelles-aux-droits-d-enregistrement-ou-la-taxe-de-publicit-fonci-re"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-ENR-DG-50-20-10-20160203",
+          "title": "ENR - Dispositions générales - Paiement des droits - Principes généraux du paiement des droits d'enregistrement et de la taxe de publicité foncière",
+          "publication_date": "2016-02-03",
+          "section_path": "I. Principe du paiement au comptant des droits d'enregistrement et de la taxe de publicité foncière",
+          "text": "En vertu des dispositions de l’ article 1701 du code général des impôts (CGI) , les droits appliqués aux actes et ceux des mutations par décès sont payés avant l’exécution de la formalité de l’enregistrement, de la publicité foncière ou de la formalité unique, aux taux et quotités fixés par la loi. Le paiement de l’impôt est donc préalable à l’accomplissement de la formalité de l’enregistrement. Les assujettis doivent, sous peine de refus de la formalité, acquitter la totalité des droits réclamés par le comptable. Il existe toutefois des dérogations à la règle du paiement immédiat de l’impôt, notamment dans les cas de paiements fractionnés ou différés prévus aux articles 1717 et suivants du CGI .",
+          "chunk_id": "1337-PGP__section_window__1337-pgp-paragraph-00000__1337-pgp-paragraph-00003__i-principe-du-paiement-au-comptant-des-droits-d-enregistrement-et-de-la-taxe-de-publicit-fonci-re"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-ENR-AVS-40-10-20120912",
+          "title": "ENR - Droits dus sur les actes relatifs à la vie des sociétés et assimilés – Régimes spéciaux - Opérations assujetties à la TVA",
+          "publication_date": "2012-09-12",
+          "section_path": "II. Marchandises neuves dépendant d'un fonds de commerce",
+          "text": "Les ventes de marchandises neuves corrélatives à la cession ou à l'apport en société d'un fonds de commerce sont exonérées de tout droit proportionnel d'enregistrement lorsqu'elles donnent lieu à la perception de la TVA ou en sont dispensées en application de l' article 257 bis du CGI ( CGI, art. 723 ). Cette disposition est également applicable à l'apport pur et simple en société de marchandises neuves, corrélatif à la cession ou à l'apport à la même société de fonds de commerce dont ces marchandises dépendent. Il est rappelé que les apports de meubles ou d'immeubles qui entrent dans le champ d'application de la TVA sont : - s'ils sont effectués lors de la constitution de la société, exonérés de droits d'enregistrement ; - s'ils sont effectués à l'occasion d'une augmentation de capital, enregistrés moyennant le paiement du droit fixe prévu au I de l'article 810 du CGI .",
+          "chunk_id": "3358-PGP__section_window__3358-pgp-paragraph-00009__3358-pgp-paragraph-00012__ii-marchandises-neuves-d-pendant-d-un-fonds-de-commerce"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-ENR-DG-60-10-20-20160406",
+          "title": "ENR - Dispositions générales - Taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière - Champ d'application matériel",
+          "publication_date": "2016-04-06",
+          "section_path": "I. Taxes instituées au profit des communes ou des fonds de péréquation et au profit des départements",
+          "text": "- d'immeubles et de droits immobiliers situés sur le territoire de la commune au profit de laquelle la taxe est perçue ou sur le territoire du département, pour la taxe départementale ; toutefois, aucune taxe additionnelle n'est perçue lorsque la mutation est soumise au droit proportionnel de 0,60 % ( CGI, art. 791 ) ou de 0,70 %. En outre, la taxe additionnelle prévue à l' article 1595 du CGI au profit du conseil départemental n'est pas due lorsque la mutation donne elle-même lieu au versement de la taxe de publicité foncière ou des droits d'enregistrement au profit du conseil départemental. Ainsi, la taxe additionnelle départementale prévue à l'article 1595 du CGI n'est due en ce qui concerne les mutations immobilières qu'à raison des apports d'immeubles passibles de droit d'enregistrement ou de taxe de publicité foncière proportionnels ( CGI, art. 810, III et CGI, art. 683 bis ) ; - d'offices ministériels ayant leur siège dans la commune ou dans le département, pour la taxe départementale ; - d'offices ministériels ayant leur siège dans la commune ou dans le département, pour la taxe départementale ; - de fonds de commerce ou de clientèle établis sur le territoire des communes intéressées ou du département, pour la taxe départementale ; - de fonds de commerce ou de clientèle établis sur le territoire des communes intéressées ou du département, pour la taxe départementale ;",
+          "chunk_id": "774-PGP__section_window__774-pgp-paragraph-00015__774-pgp-paragraph-00019__i-taxes-institu-es-au-profit-des-communes-ou-des-fonds-de-p-r-quation-et-au-profit-des-d-partements"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-ENR-DG-60-10-20-20160406",
+          "title": "ENR - Dispositions générales - Taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière - Champ d'application matériel",
+          "publication_date": "2016-04-06",
+          "section_path": "I. Taxes instituées au profit des communes ou des fonds de péréquation et au profit des départements",
+          "text": "En outre, la taxe additionnelle départementale prévue à l 'article 1595 du CGI n'est pas due lorsque les droits d'enregistrement ou la taxe de publicité foncière est perçue au profit des conseils départementaux en application de l' article 1594 A du CGI . Sous ces réserves et compte tenu des exonérations commentées ci-après, ces taxes additionnelles sont dues à raison des mutations à titre onéreux : - d'immeubles et de droits immobiliers situés sur le territoire de la commune au profit de laquelle la taxe est perçue ou sur le territoire du département, pour la taxe départementale ; toutefois, aucune taxe additionnelle n'est perçue lorsque la mutation est soumise au droit proportionnel de 0,60 % ( CGI, art. 791 ) ou de 0,70 %. En outre, la taxe additionnelle prévue à l' article 1595 du CGI au profit du conseil départemental n'est pas due lorsque la mutation donne elle-même lieu au versement de la taxe de publicité foncière ou des droits d'enregistrement au profit du conseil départemental. Ainsi, la taxe additionnelle départementale prévue à l'article 1595 du CGI n'est due en ce qui concerne les mutations immobilières qu'à raison des apports d'immeubles passibles de droit d'enregistrement ou de taxe de publicité foncière proportionnels ( CGI, art. 810, III et CGI, art. 683 bis ) ;",
+          "chunk_id": "774-PGP__section_window__774-pgp-paragraph-00012__774-pgp-paragraph-00014__i-taxes-institu-es-au-profit-des-communes-ou-des-fonds-de-p-r-quation-et-au-profit-des-d-partements"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-ENR-DG-60-10-10-20180502",
+          "title": "ENR - Dispositions générales - Champ d'application personnel des taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière",
+          "publication_date": "2018-05-02",
+          "section_path": "ENR - Dispositions générales - Champ d'application personnel des taxes additionnelles aux droits d'enregistrement ou à la taxe de publicité foncière",
+          "text": "L' article 1599 sexies du CGI prévoit la perception au profit de la région d'Ile-de-France d'une taxe additionnelle aux droits d'enregistrement ou à la taxe de publicité foncière exigibles sur les mutations à titre onéreux, autres que celles mentionnées au A de l' article 1594 F quinquies du CGI , de locaux à usage de bureaux, de locaux commerciaux et de locaux de stockage mentionnés à l' article L. 520-1 du code de l'urbanisme .",
+          "chunk_id": "6663-PGP__section_window__6663-pgp-paragraph-00007__6663-pgp-paragraph-00007__enr-dispositions-g-n-rales-champ-d-application-personnel-des-taxes-additionnelles-aux-droits-d-enregistrement-ou-la-taxe-de-publicit-fonci-re"
+        }
+      ]
+    }
+  ]
+}

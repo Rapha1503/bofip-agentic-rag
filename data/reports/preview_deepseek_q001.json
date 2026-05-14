@@ -1,0 +1,141 @@
+{
+  "generated_at": "2026-05-11T21:52:11.834120+00:00",
+  "query": "Qui est le redevable legal de la TVA lors d une vente de biens entre deux entreprises francaises ?",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "answer_contract_version": "v2_structured_json",
+  "answer_text": "Conclusion: Le redevable légal de la TVA est en principe le vendeur assujetti qui réalise la livraison.\n\nJustification:\n- Le redevable de la TVA est en principe l'assujetti qui réalise l'opération imposable [2].\n- L'acquéreur peut être redevable en cas d'inversion, mais cela implique que le fournisseur ne soit pas établi en France [2].\n- Pour une vente entre deux entreprises françaises, le vendeur établi en France est donc le redevable [2].\n\nLimites: Les extraits ne traitent pas spécifiquement des ventes domestiques, mais le principe général s'applique.",
+  "raw_answer_text": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Le redevable légal de la TVA est en principe le vendeur assujetti qui réalise la livraison.\",\n  \"justification_bullets\": [\n    \"Le redevable de la TVA est en principe l'assujetti qui réalise l'opération imposable [2].\",\n    \"L'acquéreur peut être redevable en cas d'inversion, mais cela implique que le fournisseur ne soit pas établi en France [2].\",\n    \"Pour une vente entre deux entreprises françaises, le vendeur établi en France est donc le redevable [2].\"\n  ],\n  \"limits\": \"Les extraits ne traitent pas spécifiquement des ventes domestiques, mais le principe général s'applique.\"\n}",
+  "structured_answer": {
+    "answer_status": "supported",
+    "conclusion": "Le redevable légal de la TVA est en principe le vendeur assujetti qui réalise la livraison.",
+    "justification_bullets": [
+      "Le redevable de la TVA est en principe l'assujetti qui réalise l'opération imposable [2].",
+      "L'acquéreur peut être redevable en cas d'inversion, mais cela implique que le fournisseur ne soit pas établi en France [2].",
+      "Pour une vente entre deux entreprises françaises, le vendeur établi en France est donc le redevable [2]."
+    ],
+    "limits": "Les extraits ne traitent pas spécifiquement des ventes domestiques, mais le principe général s'applique."
+  },
+  "answer_validation": {
+    "valid": true,
+    "answer_status": "supported",
+    "has_conclusion": true,
+    "has_justification": true,
+    "has_limits": true,
+    "bullet_count": 3,
+    "citation_ids": [
+      2
+    ],
+    "citation_count": 3,
+    "with_any_citation": true,
+    "errors": [],
+    "warnings": [],
+    "parsed_from": "json"
+  },
+  "stage1_hits": [
+    {
+      "rank": 1,
+      "score": 0.13085518766245616,
+      "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations"
+    },
+    {
+      "rank": 2,
+      "score": 0.12233370923567363,
+      "boi_reference": "BOI-TVA-DECLA-10-10-20-20251022",
+      "title": "TVA - Régimes d’imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Détermination du redevable"
+    },
+    {
+      "rank": 3,
+      "score": 0.11554967833187044,
+      "boi_reference": "BOI-TVA-DECLA-10-10-20200323",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services"
+    },
+    {
+      "rank": 4,
+      "score": 0.09614369806483264,
+      "boi_reference": "BOI-TVA-CHAMP-20-20-10-20240724",
+      "title": "TVA - Champ d'application et territorialité - Territorialité - Lieu des livraisons de biens meubles corporels - Règles générales"
+    },
+    {
+      "rank": 5,
+      "score": 0.09427382624802969,
+      "boi_reference": "BOI-TVA-DECLA-10-10-30-10-20200902",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Solidarité de paiement en cas de fournisseur défaillant"
+    }
+  ],
+  "stage2_chunks": [
+    {
+      "rank": 1,
+      "boi_reference": "BOI-TVA-DECLA-10-10-20-20251022",
+      "title": "TVA - Régimes d’imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Détermination du redevable",
+      "publication_date": "2025-10-22",
+      "section_path": "II. Exceptions : destinataire des biens ou des services redevable de la taxe > A. Prestations de services ne relevant pas des règles générales de territorialité et livraisons de biens réalisées par un assujetti non établi en France > 1. Cas général",
+      "text": "Sont susceptibles d’être concernés par ce dispositif l’ensemble des clients de ces opérateurs dès lors qu’ils sont des assujettis agissant en tant que tel au sens du I-B § 210 du BOI-TVA-CHAMP-20-50-20 et sont identifiés à la TVA en France, en application de l’un des alinéas de l’ article 286 ter du CGI , et ce, qu’ils soient eux-mêmes établis ou non en France. Exemple : Une société A, établie en France, vend en France un bien meuble corporel à une société B non établie en France, laquelle revend ensuite ce bien à une société C assujettie et identifiée à la TVA en France. Le bien est directement livré par la société A à la société C. La société A est redevable de la TVA française exigible sur la, première vente réalisée au profit de la société B. La société C est légalement redevable de la TVA française exigible sur la seconde vente réalisée à son profit par la société B. La société B peut récupérer la TVA que lui facture la société A dans les conditions prévues de l’ article 242-0 M de l’annexe II au CGI à l’ article 242-0 Z decies de l’annexe II au CGI .",
+      "chunk_id": "3218-PGP__section_window__3218-pgp-paragraph-00010__3218-pgp-paragraph-00011__ii-exceptions-destinataire-des-biens-ou-des-services-redevable-de-la-taxe-a-prestations-de-services-ne-relevant-pas-des-r-gles-g-n-rales-de-territorialit-et-livraisons-de-biens-r-alis-es-par-un-assujetti-non-tabli-en-france-1-cas-g-n-ral"
+    },
+    {
+      "rank": 2,
+      "boi_reference": "BOI-TVA-DECLA-10-10-20200323",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services",
+      "publication_date": "2020-03-23",
+      "section_path": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services",
+      "text": "Le redevable de la taxe sur la valeur ajoutée (TVA) afférente à une livraison de biens ou une prestation est en principe l'assujetti qui réalise l'opération imposable ( code général des impôts (CGI), art. 283-1-al.1 ). Toutefois, l'acquéreur des biens ou le preneur des services peut être désigné comme redevable de la taxe. En règle générale, cette inversion du redevable implique que le prestataire (ou le fournisseur) ne soit pas établi en France. Sont successivement abordées : - la notion d'assujetti établi en France pour les besoins de la détermination du redevable (section 1, BOI-TVA-DECLA-10-10-10 ) ; - la détermination du redevable (section 2, BOI-TVA-DECLA-10-10-20 ) ; - la solidarité de paiement en cas de fournisseur défaillant (section 3, BOI-TVA-DECLA-10-10-30 ).",
+      "chunk_id": "3163-PGP__section_window__3163-pgp-paragraph-00000__3163-pgp-paragraph-00005__tva-r-gimes-d-imposition-et-obligations-d-claratives-et-comptables-redevable-de-la-taxe-livraisons-de-biens-et-prestations-de-services"
+    },
+    {
+      "rank": 3,
+      "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+      "publication_date": "2024-07-24",
+      "section_path": "II. Importations > B. Importation réalisée dans le cadre d'une livraison autre qu'une vente à distance",
+      "text": "Exemple : Une entreprise francilienne A passe commande de marchandises auprès de son fournisseur, une entreprise B située en Californie, pour un prix de 1 000 €. Durant le transport, A décide de céder les marchandises à une entreprise lilloise C pour 2 000 €, qui elle-même les revend à une troisième entreprise D située à Paris pour 3 000 €. Les marchandises sont directement expédiées par B depuis la Californie à destination d'un entrepôt logistique situé sur la commune de Roissy-en-France. Au moment du dédouanement, la valeur transactionnelle retenue lors de la complétion de la déclaration en douane correspond au montant de la vente intervenue entre A et C, soit 2 000 €. Ainsi, C sera désignée redevable de la TVA à l'importation. lorsque le bien est acheminé dans un autre État membre de l'UE, celui qui réalise la livraison intracommunautaire subséquente (ou le transfert assimilé) (CGI, art. 293 A, 2-1°), car cette dernière est localisée en France ( CGI, art. 258, I-a ). Il s'agit nécessairement d'une personne qui dispose du bien comme un propriétaire en France. Selon les termes du contrat, il peut s'agir de l'acheteur ou du vendeur. Ainsi, si c'est l'acheteur qui est désigné redevable de la TVA due à l'importation, celui-ci réalisera, subséquemment à l'importation, un transfert assimilé à une livraison intracommunautaire de biens. S'il s'agit du vendeur, celui-ci réalisera une livraison intracommunautaire de biens.",
+      "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00050__3166-pgp-paragraph-00051__ii-importations-b-importation-r-alis-e-dans-le-cadre-d-une-livraison-autre-qu-une-vente-distance"
+    },
+    {
+      "rank": 4,
+      "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+      "publication_date": "2024-07-24",
+      "section_path": "II. Importations > A. Importation réalisée dans le cadre d'une vente à distance > 1. Cas généraux",
+      "text": "Il résulte des dispositions du 2° du 2 de l’ article 293 A du CGI que, lorsqu'une importation intervient dans le cadre d'une vente à distance de biens importés (VAD-BI) ( I § 20 à 80 du BOI-TVA-CHAMP-10-10-40-60 ), le redevable est, sauf exception, la personne qui réalise la livraison. Cette personne est également celle qui dispose du droit de déduire la TVA due à l'importation. Il peut s'agir soit du vendeur lui-même, soit de la personne réputée réaliser la livraison dans le cadre du schéma d'achat-revente des assujettis-facilitateurs des ventes à distance de biens importés ( II § 90 à 190 du BOI-TVA-CHAMP-10-10-40-60 ). Remarque 1 : Ce schéma d'achat-revente ne s'applique que pour les biens contenus dans des envois n'excédant pas 150 €. Remarque 2 : Lorsqu'il est recouru au guichet unique de déclaration et de paiement des VAD-BI, l'importation est exonérée ( VII § 170 et 180 du BOI-TVA-CHAMP-30-40 ). Il existe deux exceptions au principe exposé au II-A-1 § 40 , lesquelles ne concernent que des situations où le bien reste en France, c'est-à-dire n'est pas acheminé dans un autre État membre de l'UE : pour les biens contenus dans des envois dont la valeur intrinsèque ne dépasse pas 150 €, lorsque le vendeur ne recourt ni à un assujetti-facilitateur, ni au guichet unique de déclaration et de paiement des VAD-BI, ni à l'option mentionnée au II-A-1 § 60 : le redevable de la TVA à l'importation est alors le destinataire du bien ;",
+      "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00012__3166-pgp-paragraph-00017__ii-importations-a-importation-r-alis-e-dans-le-cadre-d-une-vente-distance-1-cas-g-n-raux"
+    },
+    {
+      "rank": 5,
+      "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+      "publication_date": "2024-07-24",
+      "section_path": "II. Importations > A. Importation réalisée dans le cadre d'une vente à distance > 1. Cas généraux",
+      "text": "pour les biens contenus dans des envois dont la valeur intrinsèque dépasse 150 €, lorsque le vendeur ne recourt pas à l'option mentionnée au II-A-1 § 60 : le redevable de la TVA à l'importation est alors l'assujetti-facilitateur n'ayant pas la qualité de fournisseur présumé au regard des règles de la TVA ou, à défaut d'un tel assujetti, le destinataire du bien. Remarque : Il peut arriver que les circonstances particulières dans lesquelles les colis sont dédouanés fassent obstacle à la désignation du destinataire comme redevable de la TVA à l'importation en désignant, en seconde intention, le vendeur comme redevable. Pour plus de précisions, il convient de se reporter au II-A-2 § 65 . Dans ces situations, la TVA due à l'importation n'est jamais déductible. Dans les deux situations exposées au II-A-1 § 50 , aux termes du 1° du II de l' article 293 A quater du CGI , le vendeur peut opter pour être redevable de la TVA sur l'importation. Dans ce cas : le vendeur se substitue, pour la déclaration et le paiement de cette TVA, à l'assujetti-facilitateur ou, à défaut d'un tel assujetti, au destinataire effectif du bien ; la livraison est relocalisée en France ; le vendeur peut déduire la TVA à l'importation au titre de la réalisation de cette livraison. Cela permet aux vendeurs qui le souhaitent d'assurer les formalités de la TVA due à l'importation pour l'ensemble de leurs ventes plutôt que d'avoir à distinguer entre les situations mentionnées au II-A-1 § 40 et celles mentionnées au II-A-1 § 50 .",
+      "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00018__3166-pgp-paragraph-00025__ii-importations-a-importation-r-alis-e-dans-le-cadre-d-une-vente-distance-1-cas-g-n-raux"
+    },
+    {
+      "rank": 6,
+      "boi_reference": "BOI-TVA-CHAMP-20-20-10-20240724",
+      "title": "TVA - Champ d'application et territorialité - Territorialité - Lieu des livraisons de biens meubles corporels - Règles générales",
+      "publication_date": "2024-07-24",
+      "section_path": "I. Livraisons de biens en l'état, expédiés ou transportés par le vendeur, par l'acquéreur ou pour leur compte > B. Lieu de départ de l'expédition ou du transport du bien situé hors de France et lieu d'arrivée situé en France > 2. Lieu de départ situé en dehors de l'Union européenne > a. Livraison effectuée par la personne désignée redevable de la TVA à l'importation",
+      "text": "Conformément aux dispositions du 1° du V de l' article 258 du CGI , le lieu de la livraison d'un bien expédié ou transporté dont le point de départ se trouve en dehors de l'UE, est situé en France lorsque la livraison est effectuée par le vendeur ayant opté pour être redevable de la TVA à l'importation en application de l' article 293 A quater du CGI . Pour plus de précisions sur la désignation de la personne redevable à l'importation, il convient de se reporter aux II et III § 30 à 250 du BOI-TVA-DECLA-10-20 . Remarque : Il est rappelé que le redevable de la TVA à l'importation n'est pas nécessairement le redevable des droits de douane à l'importation. Tel est le cas de la livraison d'un bien expédié ou transporté à partir d'un pays ou territoire tiers par une entreprise qui l'importe en France et le livre à son client. Il en est de même en ce qui concerne les livraisons portant sur ce même bien et qui suivent celle effectuée par la personne désignée comme redevable de la TVA due à l'importation, étant entendu que le point de départ du bien est toujours situé hors de l'UE. (130)",
+      "chunk_id": "1350-PGP__section_window__1350-pgp-paragraph-00015__1350-pgp-paragraph-00019__i-livraisons-de-biens-en-l-tat-exp-di-s-ou-transport-s-par-le-vendeur-par-l-acqu-reur-ou-pour-leur-compte-b-lieu-de-d-part-de-l-exp-dition-ou-du-transport-du-bien-situ-hors-de-france-et-lieu-d-arriv-e-situ-en-france-2-lieu-de-d-part-situ-en-dehors-de-l-union-europ-enne-a-livraison-effectu-e-par-la-personne-d-sign-e-redevable-de-la-tva-l-importation"
+    },
+    {
+      "rank": 7,
+      "boi_reference": "BOI-TVA-DECLA-10-10-30-10-20200902",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Solidarité de paiement en cas de fournisseur défaillant",
+      "publication_date": "2020-09-02",
+      "section_path": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Livraisons de biens et prestations de services - Solidarité de paiement en cas de fournisseur défaillant",
+      "text": "Le 4 bis de l' article 283 du code général des impôts (CGI) prévoit un mécanisme de solidarité de paiement entre l'assujetti en faveur duquel a été effectuée une livraison de biens ou une prestation de services, et qui savait ou ne pouvait ignorer que tout ou partie de la taxe sur la valeur ajoutée (TVA) due sur cette livraison, sur toute livraison antérieure des mêmes biens ou sur cette prestation de services ou toute prestation antérieure ne serait pas reversée de manière frauduleuse et la personne redevable de la taxe. Exemple : Acquisition par un assujetti A établi en France auprès d'un prestataire établi dans un autre État membre de l'Union européenne (UE) de droits d'auteur, opération sur laquelle il est redevable de la taxe en application du 2 de l'article 283 du CGI. Cet assujetti A, sans avoir autoliquidé la taxe, revend ce droit sans en acquitter la taxe à un preneur B assujetti en France qui, par hypothèse, savait ou ne pouvait ignorer l'existence d'une fraude. L'administration fiscale peut mettre en œuvre les dispositions du 4 bis de l'article 283 du CGI à l'encontre de B, qui sera solidaire du paiement de la TVA sur son achat de services auprès de A.",
+      "chunk_id": "3222-PGP__section_window__3222-pgp-paragraph-00000__3222-pgp-paragraph-00002__tva-r-gimes-d-imposition-et-obligations-d-claratives-et-comptables-redevable-de-la-taxe-livraisons-de-biens-et-prestations-de-services-solidarit-de-paiement-en-cas-de-fournisseur-d-faillant"
+    },
+    {
+      "rank": 8,
+      "boi_reference": "BOI-TVA-DECLA-10-20-20240724",
+      "title": "TVA - Régimes d'imposition et obligations déclaratives et comptables - Redevable de la taxe - Acquisitions intracommunautaires de biens et importations",
+      "publication_date": "2024-07-24",
+      "section_path": "II. Importations > A. Importation réalisée dans le cadre d'une vente à distance > 2. Cas particulier",
+      "text": "Exemple 2 : Même situation que l'exemple 1 mais lors des opérations de dédouanement, la base d'imposition de la TVA à l'importation renseignée par la personne chargée des opérations de dédouanement n'est pas 100 € mais 40 € (le montant retenu se trouve être celui du prix auquel l'exploitant du site internet à acquis le bien auprès de son fournisseur). Dans cette hypothèse, la personne désignée redevable de la TVA à l'importation est l'exploitant du site Internet. La VAD-BI subséquente à l'opération d'importation que ce dernier réalise est localisée en France aux fins de la TVA (CGI, art. 258, V-2°). Ainsi, il lui appartient de collecter la TVA sur cette VAD-BI, de la déclarer et la reverser au Trésor public via la procédure de droit commun. Dans le même temps, l'exploitant du site internet est autorisé à porter en déduction la TVA dont il est redevable à l'importation. Destinataire Hors UE Exemple 2 Pour s'assurer du correct fonctionnement des règles de la TVA, les opérateurs économiques qui réalisent une activité d'achat-revente de biens stockés en dehors de l'Union européenne et directement expédiés à des consommateurs finaux situés en France ont dès lors une alternative : soit ils s'assurent auprès de la personne chargée de déposer la déclaration d'importation que la base d'imposition à l'importation indiquée sur la déclaration est identique à celle qui serait déterminée pour la vente à distance si cette vente était localisée en France, c'est-à-dire qu'ils lui communiquent le prix auquel ils ont revendu le biens au consommateur situé en France. Cette situation correspond à l'exemple 1 du II-A-2 § 67 ;",
+      "chunk_id": "3166-PGP__section_window__3166-pgp-paragraph-00038__3166-pgp-paragraph-00043__ii-importations-a-importation-r-alis-e-dans-le-cadre-d-une-vente-distance-2-cas-particulier"
+    }
+  ]
+}

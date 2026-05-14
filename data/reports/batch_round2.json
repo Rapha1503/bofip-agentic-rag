@@ -1,0 +1,651 @@
+{
+  "generated_at": "2026-05-14T10:19:58.580817+00:00",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "case_count": 5,
+  "valid_count": 4,
+  "rows": [
+    {
+      "case_id": "r01_ba_cess",
+      "query": "Je suis agriculteur et je souhaite arreter mon activite pour prendre ma retraite. Comment sont imposes les benefices de l annee de cessation ?",
+      "rewritten_query": "En qualité d'exploitant agricole individuel, vous envisagez la cessation définitive de votre activité professionnelle en vue de faire valoir vos droits à la retraite. Conformément aux dispositions du Code Général des Impôts (CGI), notamment l'article 201, les bénéfices réalisés au titre de l'exercice de cessation sont imposés selon les règles suivantes :\n\nLes bénéfices professionnels, relevant de la catégorie des Bénéfices Agricoles (BA), sont imposés immédiatement entre les mains de l'exploitant, sans attendre l'échéance normale de déclaration. L'impôt sur le revenu (IR) est établi d'après le résultat de l'exercice clos lors de la cessation, lequel inclut les bénéfices non encore taxés ainsi que les plus-values professionnelles éventuelles, soumises au régime",
+      "category": "bnc_ba",
+      "note": "BA cessation activite imposition",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[PARTIAL] Les bénéfices de l'année de cessation sont imposés immédiatement, mais les extraits ne précisent pas les modalités pour un départ à la retraite.\n  Axes manquants: Possibilité de paiement fractionné\n\n- L'article 201 du CGI entraîne l'imposition immédiate des bénéfices non encore imposés lors de la cessation [3].\n- Les bénéfices incluent ceux issus de dispositifs d'étalement ou de déduction [3].\n- Aucun extrait ne traite spécifiquement du paiement fractionné pour un départ à la retraite sans passage à l'IS.\n\nLimites: Les extraits ne couvrent pas le paiement fractionné pour une cessation simple (retraite) sans option pour l'IS.",
+      "raw": "{\n  \"answer_status\": \"partial\",\n  \"axes_requis\": [\n    \"Imposition des bénéfices de l'année de cessation\",\n    \"Règles spécifiques pour les agriculteurs\",\n    \"Possibilité de paiement fractionné\"\n  ],\n  \"axes_couverts\": [\n    \"Imposition des bénéfices de l'année de cessation\",\n    \"Règles spécifiques pour les agriculteurs\"\n  ],\n  \"axes_manquants\": [\n    \"Possibilité de paiement fractionné\"\n  ],\n  \"conclusion\": \"Les bénéfices de l'année de cessation sont imposés immédiatement, mais les extraits ne précisent pas les modalités pour un départ à la retraite.\",\n  \"justification_bullets\": [\n    \"L'article 201 du CGI entraîne l'imposition immédiate des bénéfices non encore imposés lors de la cessation [3].\",\n    \"Les bénéfices incluent ceux issus de dispositifs d'étalement ou de déduction [3].\",\n    \"Aucun extrait ne traite spécifiquement du paiement fractionné pour un départ à la retraite sans passage à l'IS.\"\n  ],\n  \"limits\": \"Les extraits ne couvrent pas le paiement fractionné pour une cessation simple (retraite) sans option pour l'IS.\"\n}",
+      "structured": {
+        "answer_status": "partial",
+        "axes_requis": [
+          "Imposition des bénéfices de l'année de cessation",
+          "Règles spécifiques pour les agriculteurs",
+          "Possibilité de paiement fractionné"
+        ],
+        "axes_couverts": [
+          "Imposition des bénéfices de l'année de cessation",
+          "Règles spécifiques pour les agriculteurs"
+        ],
+        "axes_manquants": [
+          "Possibilité de paiement fractionné"
+        ],
+        "conclusion": "Les bénéfices de l'année de cessation sont imposés immédiatement, mais les extraits ne précisent pas les modalités pour un départ à la retraite.",
+        "justification_bullets": [
+          "L'article 201 du CGI entraîne l'imposition immédiate des bénéfices non encore imposés lors de la cessation [3].",
+          "Les bénéfices incluent ceux issus de dispositifs d'étalement ou de déduction [3].",
+          "Aucun extrait ne traite spécifiquement du paiement fractionné pour un départ à la retraite sans passage à l'IS."
+        ],
+        "limits": "Les extraits ne couvrent pas le paiement fractionné pour une cessation simple (retraite) sans option pour l'IS."
+      },
+      "validation": {
+        "valid": true,
+        "status": "partial",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          3
+        ],
+        "cite_count": 2,
+        "errors": [],
+        "axes_requis": [
+          "Imposition des bénéfices de l'année de cessation",
+          "Règles spécifiques pour les agriculteurs",
+          "Possibilité de paiement fractionné"
+        ],
+        "axes_manquants": [
+          "Possibilité de paiement fractionné"
+        ]
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-BA-CESS-30-20200212",
+          "title": "BA - Cession ou cessation d'activité - Paiement fractionné de l'impôt sur le revenu afférent à certains revenus agricoles en cas de passage à l'impôt sur les sociétés",
+          "publication_date": "2020-02-12",
+          "section_path": "I. Champ d'application",
+          "text": "Les dispositions de l'article 201 du CGI s'appliquent également lorsque un exploitant agricole apporte son entreprise individuelle à une société assujettie à l'IS et lorsque une société ou un groupement agricole, relevant du régime des sociétés de personnes, exerçant une activité agricole change de forme juridique au profit d'une forme sociale relevant du champ de l'IS. Remarque : Sont autorisées à opter pour l'IS les sociétés mentionnées au 3 de l' article 206 du CGI . Il s'agit notamment des sociétés en nom collectif, des sociétés civiles mentionnées au 1 de l' article 8 du CGI et des entreprises agricoles à responsabilité limitée. Pour plus de précisions sur les personnes morales relevant de l'IS il convient de se référer au BOI-IS-CHAMP-10 et pour celles qui sont autorisées à opter pour l'IS, il convient de se référer au BOI-IS-CHAMP-40 . L' article 75-0 C du CGI permet aux exploitants agricoles qui apportent leur exploitation à une société assujettie à l'IS ou, lorsqu'ils exercent leur activité dans le cadre d'une EARL, qui optent pour l’IS de demander le paiement, par cinquième, de l'impôt sur le revenu afférant : - aux sommes déduites au titre de la DEP, DPI ou DPA non encore utilisées, qui sont rapportées au bénéfice de l'exercice de cessation ; - à la fraction des revenus exceptionnels comprise dans le bénéfice imposable de l'exercice de cessation ; - à l'excédent de bénéfice agricole sur la moyenne triennale, imposé au taux marginal l'année de la cessation ;",
+          "chunk_id": "11811-PGP__section_window__11811-pgp-paragraph-00003__11811-pgp-paragraph-00008__i-champ-d-application"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-BA-CESS-30-20200212",
+          "title": "BA - Cession ou cessation d'activité - Paiement fractionné de l'impôt sur le revenu afférent à certains revenus agricoles en cas de passage à l'impôt sur les sociétés",
+          "publication_date": "2020-02-12",
+          "section_path": "I. Champ d'application",
+          "text": "Ce dispositif est également susceptible d'être appliqué, pour les mêmes revenus, par les associés d'une société ou d'un groupement relevant du régime des sociétés de personnes et exerçant une activité agricole qui opte pour l'assujettissement à l'IS ou change de forme juridique au profit d'une forme sociale relevant du champ de l'IS. Pour bénéficier du dispositif, l'exploitant qui exerce à titre individuel ou les associés de sociétés de personnes ou de groupements relevant de l'impôt sur le revenu dans la catégorie des bénéfices agricoles doivent devenir associés d'une société passible de l'IS quelle que soit sa forme juridique. Par ailleurs, l'exploitant agricole ou, selon le dispositif concerné, la société ou ses associés doivent avoir opté, au plus tard à la clôture de l'exercice précédant celui au titre duquel est intervenue la cessation ou à la clôture de l'exercice de l'avant dernière année d'assujettissement à l'impôt sur le revenu, pour l'étalement des revenus exceptionnels ou pour la moyenne triennale ou pratiqué une DEP ou une DPI ou une DPA. La mise en œuvre du dispositif n'est pas conditionnée par la circonstance que l'exploitant apporteur ou le collège des associés de la société précédemment redevables de l'impôt sur le revenu dans la catégorie des bénéfices agricoles conserve le contrôle de la société devenue passible de l'IS ou y exerce leur activité professionnelle ou même en demeure associés. N'est pas concerné par l'option pour le paiement fractionné, l'impôt sur le revenu dû à raison du décès de l'exploitant ou de toute opération emportant cessation partielle de l'entreprise agricole ou son changement réel d'activité.",
+          "chunk_id": "11811-PGP__section_window__11811-pgp-paragraph-00012__11811-pgp-paragraph-00015__i-champ-d-application"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-BA-CESS-30-20200212",
+          "title": "BA - Cession ou cessation d'activité - Paiement fractionné de l'impôt sur le revenu afférent à certains revenus agricoles en cas de passage à l'impôt sur les sociétés",
+          "publication_date": "2020-02-12",
+          "section_path": "I. Champ d'application",
+          "text": "Conformément aux dispositions de l' article 201 du code général des impôts (CGI) , l'option pour l'assujettissement à l'impôt sur les sociétés (IS) exercée par un exploitant agricole qui exerce son activité dans le cadre d'une exploitation agricole à responsabilité limitée (EARL) ou par une société ou un groupement exerçant une activité agricole, placé sous le régime des sociétés de personnes, entraîne en principe les conséquences fiscales de la cessation d'activité et l'imposition immédiate des bénéfices non encore imposés à la date de l'option, y compris ceux afférents aux revenus dont l'imposition a été étalée ( CGI, art. 75-0 A ), ou lissée par l'effet de la moyenne triennale ( CGI, art. 75-0 B ) ou de la déduction pour épargne de précaution (DEP) ( CGI, art. 73 ), de la déduction pour investissement (DPI) ( CGI, art. 72 D ) ou de la déduction pour aléas (DPA) ( CGI, art. 72 D bis ). Remarque : L' article 51 de la loi n° 2018-1317 du 28 décembre 2018 de finances pour 2019 abroge l'article 72 D du CGI relatif à la DPI et l'article 72 D bis du CGI relatif à la DPA. Cette suppression s’applique au titre des exercices clos à compter du 1 er janvier 2019. Les sommes déduites et leurs intérêts capitalisés en application de ces dispositifs et non encore rapportés à la clôture du dernier exercice clos avant le 1 er janvier 2019 sont utilisés et rapportés conformément aux modalités prévues, selon le cas, à l'article 72 D du CGI et à l'article 72 D bis du CGI dans leur rédaction antérieure à l'article 51 précité.",
+          "chunk_id": "11811-PGP__section_window__11811-pgp-paragraph-00001__11811-pgp-paragraph-00002__i-champ-d-application"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-BA-BASE-20-10-10-20210512",
+          "title": "BA - Base d'imposition - Régimes réels d'imposition - Principes généraux - Période d'imposition et détermination du bénéfice imposable",
+          "publication_date": "2021-05-12",
+          "section_path": "I. Période d'imposition > A. Principes",
+          "text": "L' article 72 du code général des impôts (CGI) pose en principe que le bénéfice réel de l'exploitation agricole est déterminé et imposé selon les principes généraux applicables aux entreprises industrielles et commerciales, sous réserve de certains aménagements destinés à tenir compte des contraintes et caractéristiques particulières de la profession agricole ( II-B § 230 et suiv. ). Les dispositions développées au BOI-BIC-DECLA-30-50 , relatives à la détermination de la période d'imposition en matière de bénéfices industriels et commerciaux, sont applicables en matière de bénéfices agricoles. Ainsi, les exploitants agricoles relevant d'un régime réel d'imposition peuvent déterminer librement la date de clôture de leur exercice. Par ailleurs, en application de l' article 36 du CGI et de l' article 37 du CGI , les bénéfices imposables au titre d'une année déterminée sont les bénéfices réalisés pendant l'exercice comptable qui a été clos au cours de ladite année, même si cet exercice ne coïncide pas avec l'année civile. Un exercice clos au cours d'une année d'imposition peut s'étendre sur une période inférieure ou supérieure à douze mois. L'imposition est alors établie d'après les résultats déclarés au titre de cet exercice. Il est rappelé qu'en application de l'article 37 du CGI, si aucun exercice n'est clos au cours d'une année quelconque, une imposition est cependant établie au titre de cette année. Elle porte sur les bénéfices de la période écoulée depuis la fin de la dernière période imposée -ou dans le cas d'entreprise nouvelle, depuis le début d'activité- jusqu'au 31 décembre de l'année considérée. Ces mêmes bénéfices viennent ensuite en déduction des résultats du bilan dans lesquels ils sont compris.",
+          "chunk_id": "3960-PGP__section_window__3960-pgp-paragraph-00000__3960-pgp-paragraph-00007__i-p-riode-d-imposition-a-principes"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-BA-REG-10-30-20160907",
+          "title": "BA - Régimes d'imposition - Appréciation des limites en fonction des caractéristiques de l'exploitation",
+          "publication_date": "2016-09-07",
+          "section_path": "II. Groupements et sociétés > C. Situation des membres de la société ou du groupement > 2. Recettes à retenir pour la détermination du régime d'imposition applicable > b. Recettes à prendre en compte pour la détermination du régime d'imposition applicable à la quote-part du bénéfice social revenant à un exploitant individuel membre d'une société ou d'un groupement agricole > 1° Exploitant individuel exerçant simultanément une activité agricole dans une société ou un groupement agricole relevant de l'impôt sur le revenu",
+          "text": "La quote-part de bénéfice est imposée selon le régime de la société ou du groupement ( CGI, art. 238 bis K, II ) : - régime réel s'il s'agit d'une société autre qu'un GAEC créée à compter du 1er janvier 1997 (CGI, art. 69 D) ; - régime déterminé selon le montant des recettes de la société ou du groupement s'il s'agit d'un GAEC ou d'une société créée avant le 1er janvier 1997 ( CGI, art. 71 ) Remarque : conformément à l' article 151 nonies du CGI , si le résultat de l'exploitation est imposé selon un régime réel d'imposition, les parts sont considérées comme un élément d'actif professionnel et sont donc obligatoirement inscrites à l'actif. Il convient au préalable de déterminer le régime applicable à l'activité individuelle de l'exploitant en additionnant les recettes personnelles de l'exploitant (abstraction faite des bénéfices sociaux distribués) et la somme des quote-parts des recettes des sociétés et des groupements dont il est membre ( CGI, art. 70 ). Dès lors, deux cas de figures sont à envisager. Si l'exploitant est soumis à un régime réel de plein droit pour son activité individuelle, la quote-part de bénéfice correspondant à ses droits est déterminée selon les règles des bénéfices réels ( CGI, art. 238 bis K, I ).",
+          "chunk_id": "3457-PGP__section_window__3457-pgp-paragraph-00092__3457-pgp-paragraph-00096__ii-groupements-et-soci-t-s-c-situation-des-membres-de-la-soci-t-ou-du-groupement-2-recettes-retenir-pour-la-d-termination-du-r-gime-d-imposition-applicable-b-recettes-prendre-en-compte-pour-la-d-termination-du-r-gime-d-imposition-applicable-la-quote-part-du-b-n-fice-social-revenant-un-exploitant-individuel-membre-d-une-soci-t-ou-d-un-groupement-agricole-1-exploitant-individuel-exer-ant-simultan-ment-une-activit-agricole-dans-une-soci-t-ou-un-groupement-agricole-relevant-de-l-imp-t-sur-le-revenu"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-BA-REG-10-30-20160907",
+          "title": "BA - Régimes d'imposition - Appréciation des limites en fonction des caractéristiques de l'exploitation",
+          "publication_date": "2016-09-07",
+          "section_path": "II. Groupements et sociétés > A. Sociétés ou groupements concernés > 1. Principes",
+          "text": "- des sociétés de fait. À cet égard, il est rappelé que selon une jurisprudence constante du Conseil d'État, l'existence d'une société de fait suppose que les associés participent aux apports, à la gestion et aux résultats. Ces trois conditions qui ne peuvent être appréciées qu'au vu des circonstances de fait doivent être simultanément remplies. Bien entendu, si des agriculteurs sont reconnus, pour l'application des taxes sur le chiffre d'affaires, exercer leur profession en société de fait, ils ne sauraient être considérés comme des exploitants individuels pour l'établissement de l'impôt sur le revenu ; - des indivisions ; - des indivisions ; - des exploitations en métayage quand est établie l'existence des trois caractéristiques du contrat de société : apports, partage des bénéfices et des pertes et affectio societatis. Cette démonstration peut être faite par tous moyens et notamment à partir des termes du contrat ou de la réalité des conditions d'exploitation. Lorsque cette preuve est apportée, les exploitations en métayage sont soumises au même régime fiscal que les sociétés de personnes pour l'appréciation des limites mentionnées à l' article 69 du CGI . Dès lors, le régime d'imposition de l'exploitation en métayage est déterminé en fonction de ses recettes totales. Le bailleur et le métayer sont personnellement assujettis à l'impôt sur le revenu, dans la catégorie des bénéfices agricoles, pour la part leur revenant dans les bénéfices de la métairie. Les mêmes règles s'appliquent lorsque le bailleur ou le métayer ont la forme juridique d'une société ou groupement dont les membres sont soumis à l'impôt sur le revenu pour la part leur revenant.",
+          "chunk_id": "3457-PGP__section_window__3457-pgp-paragraph-00042__3457-pgp-paragraph-00045__ii-groupements-et-soci-t-s-a-soci-t-s-ou-groupements-concern-s-1-principes"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-BA-20210421",
+          "title": "BA - Bénéfices agricoles",
+          "publication_date": "2021-04-21",
+          "section_path": "BA - Bénéfices agricoles",
+          "text": "- la liquidation ( BOI-BA-LIQ ) ; - les réductions et crédits d'impôt ( BOI-BA-RICI ) ; - les réductions et crédits d'impôt ( BOI-BA-RICI ) ; - les obligations déclaratives ( BOI-BA-DECLA ) ; - les obligations déclaratives ( BOI-BA-DECLA ) ; - le recouvrement, le contrôle et le contentieux ( BOI-BA-PROCD ) ; - le recouvrement, le contrôle et le contentieux ( BOI-BA-PROCD ) ; - les régimes sectoriels ( BOI-BA-SECT ) ; - les régimes sectoriels ( BOI-BA-SECT ) ; - la cession ou cessation d'activité ( BOI-BA-CESS ). Remarque : Le 1° du III de l' article 29 de la loi n° 2019-1479 du 28 décembre 2019 de finances pour 2020 supprime l'exonération temporaire des bénéfices provenant de cultures agréées des exploitations agricoles situées dans les départements d'outre mer (DOM), prévu par l' article 76 bis du CGI , pour les revenus provenant de terrains dont la première affectation aux cultures agréées n'a pas eu lieu au 30 juin 2020. Pour consulter les commentaires antérieurs concernant ce régime particulier applicable dans les DOM, il convient de se reporter au BOI-BA-GEO-10 . - la cession ou cessation d'activité ( BOI-BA-CESS ).",
+          "chunk_id": "4310-PGP__section_window__4310-pgp-paragraph-00013__4310-pgp-paragraph-00023__ba-b-n-fices-agricoles"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-BA-BASE-20-10-10-20210512",
+          "title": "BA - Base d'imposition - Régimes réels d'imposition - Principes généraux - Période d'imposition et détermination du bénéfice imposable",
+          "publication_date": "2021-05-12",
+          "section_path": "I. Période d'imposition > B. Changement de date de clôture > 3. Plusieurs exercices sont arrêtés",
+          "text": "Tel est le cas lorsqu'un exploitant dont l'exercice diffère de l'année civile décide de clôturer un deuxième exercice d'une durée inférieure à douze mois au cours de l'année d'imposition. Conformément aux dispositions de l' article 37 du CGI , lorsqu'il est dressé des bilans successifs au cours de la même année, les résultats en sont totalisés pour l'assiette de l'impôt dû au titre de ladite année. Si les exercices arrêtés sont bénéficiaires, la base imposable est égale au total des bénéfices. S'ils sont déficitaires, aucune imposition n'est établie et les déficits sont cumulés pour être imputés sur le revenu global, toutes conditions posées par le 1° du I de l' article 156 du CGI étant par ailleurs remplies. A défaut, ces déficits s'imputent sur les bénéfices agricoles des années suivantes jusqu'à la sixième inclusivement. Enfin, si certains exercices sont bénéficiaires et d'autres déficitaires, il est procédé à la somme algébrique des différents résultats. Si cette somme est positive, il y a lieu d'imposer le bénéfice correspondant sous réserve d'une imputation éventuelle de déficits globaux des années antérieures. Si elle est négative, le déficit ainsi obtenu est imputé sur le revenu global, toutes conditions posés par le 1° du I de l'article 156 du CGI étant par ailleurs remplies. À défaut, ce déficit s'impute sur les bénéfices agricoles des années suivantes jusqu'à la sixième inclusivement.",
+          "chunk_id": "3960-PGP__section_window__3960-pgp-paragraph-00044__3960-pgp-paragraph-00052__i-p-riode-d-imposition-b-changement-de-date-de-cl-ture-3-plusieurs-exercices-sont-arr-t-s"
+        }
+      ]
+    },
+    {
+      "case_id": "r02_reci_art",
+      "query": "Un controleur des impots vient de me notifier une proposition de rectification. J estime qu elle est mal fondee. Quels sont les recours possibles et les delais pour contester ?",
+      "rewritten_query": "Suite à la notification d'une proposition de rectification émanant d'un agent des impôts, que vous estimez infondée, quels sont les recours contentieux et gracieux ouverts au contribuable, ainsi que les délais de prescription applicables pour former une contestation, conformément au Livre des Procédures Fiscales (LPF) et au Code Général des Impôts (CGI) ?",
+      "category": "procedure",
+      "note": "Contentieux recours reclamation delai",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[PARTIAL] Sous réserve des délais précis, vous pouvez exercer un recours hiérarchique dans le délai de réclamation.\n  Axes manquants: Délais pour contester une proposition de rectification\n\n- Le recours hiérarchique est possible dès réception de la proposition de rectification, dans le délai imparti pour l'introduction d'un recours contentieux [4].\n- La demande doit être formulée par écrit à la personne nommément désignée sur la proposition de rectification [4].\n- Les extraits ne précisent pas le délai exact de réclamation pour contester la proposition de rectification.\n\nLimites: Les extraits ne fournissent pas le délai de réclamation contentieuse, ni les autres voies de recours (saisine du tribunal).",
+      "raw": "{\n  \"answer_status\": \"partial\",\n  \"axes_requis\": [\n    \"Recours possibles pour contester une proposition de rectification\",\n    \"Délais pour contester une proposition de rectification\"\n  ],\n  \"axes_couverts\": [\n    \"Recours possibles pour contester une proposition de rectification\"\n  ],\n  \"axes_manquants\": [\n    \"Délais pour contester une proposition de rectification\"\n  ],\n  \"conclusion\": \"Sous réserve des délais précis, vous pouvez exercer un recours hiérarchique dans le délai de réclamation.\",\n  \"justification_bullets\": [\n    \"Le recours hiérarchique est possible dès réception de la proposition de rectification, dans le délai imparti pour l'introduction d'un recours contentieux [4].\",\n    \"La demande doit être formulée par écrit à la personne nommément désignée sur la proposition de rectification [4].\",\n    \"Les extraits ne précisent pas le délai exact de réclamation pour contester la proposition de rectification.\"\n  ],\n  \"limits\": \"Les extraits ne fournissent pas le délai de réclamation contentieuse, ni les autres voies de recours (saisine du tribunal).\"\n}",
+      "structured": {
+        "answer_status": "partial",
+        "axes_requis": [
+          "Recours possibles pour contester une proposition de rectification",
+          "Délais pour contester une proposition de rectification"
+        ],
+        "axes_couverts": [
+          "Recours possibles pour contester une proposition de rectification"
+        ],
+        "axes_manquants": [
+          "Délais pour contester une proposition de rectification"
+        ],
+        "conclusion": "Sous réserve des délais précis, vous pouvez exercer un recours hiérarchique dans le délai de réclamation.",
+        "justification_bullets": [
+          "Le recours hiérarchique est possible dès réception de la proposition de rectification, dans le délai imparti pour l'introduction d'un recours contentieux [4].",
+          "La demande doit être formulée par écrit à la personne nommément désignée sur la proposition de rectification [4].",
+          "Les extraits ne précisent pas le délai exact de réclamation pour contester la proposition de rectification."
+        ],
+        "limits": "Les extraits ne fournissent pas le délai de réclamation contentieuse, ni les autres voies de recours (saisine du tribunal)."
+      },
+      "validation": {
+        "valid": false,
+        "status": "partial",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          4
+        ],
+        "cite_count": 2,
+        "errors": [
+          "bullet 3 no citation (partial allows missing cites only on gap bullets)"
+        ],
+        "axes_requis": [
+          "Recours possibles pour contester une proposition de rectification",
+          "Délais pour contester une proposition de rectification"
+        ],
+        "axes_manquants": [
+          "Délais pour contester une proposition de rectification"
+        ]
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-CF-PGR-10-10-20160706",
+          "title": "CF - Prescription du droit de reprise de l'administration - Effets, interruption et suspension de la prescription et exceptions aux règles générales",
+          "publication_date": "2016-07-06",
+          "section_path": "IV. Suspension de la prescription",
+          "text": "Lorsqu'à la suite d'une proposition de rectification, une procédure amiable en vue d'éliminer la double imposition est ouverte sur le fondement d'une convention fiscale bilatérale ou de la convention européenne 90/436/CEE du 23 juillet 1990 relative à l'élimination des doubles impositions en cas de correction des bénéfices des entreprises associées , le cours du délai d'établissement de l'imposition correspondante est suspendu de la date d'ouverture de la procédure amiable au terme du troisième mois qui suit la date de la notification au contribuable de l'accord ou du constat de désaccord intervenu entre les autorités compétentes, sauf si les bénéfices ou revenus rectifiés ont bénéficié d'un régime fiscal privilégié dans l'autre État ou territoire au sens de l' article 238 A du CGI ( LPF, art. L. 189 A , abrogé au 1 er janvier 2014). Remarque : L'article L. 189 A du LPF demeure néanmoins applicable aux procédures amiables ouvertes avant le 1 er janvier 2014.",
+          "chunk_id": "986-PGP__section_window__986-pgp-paragraph-00113__986-pgp-paragraph-00114__iv-suspension-de-la-prescription"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-CF-IOR-10-50-10-20210519",
+          "title": "CF - Procédures de rectification et d'imposition d'office - Procédure de rectification contradictoire - Effets de la proposition de rectification et de la réponse du contribuable - Effets de la proposition de rectification",
+          "publication_date": "2021-05-19",
+          "section_path": "CF - Procédures de rectification et d'imposition d'office - Procédure de rectification contradictoire - Effets de la proposition de rectification et de la réponse du contribuable - Effets de la proposition de rectification",
+          "text": "Actualité liée : 19/05/2021 : CF - Prescription du droit de reprise de l'administration et garanties du contribuables - Délais de reprise en cas d'omission ou d'insuffisance d'imposition révélée par une procédure judiciaire, par une procédure devant les juridictions administratives ou par une réclamation contentieuse (loi n° 2015-1786 du 29 décembre 2015 de finances rectificative pour 2015, art. 92) La proposition de rectification comporte trois effets : - elle interrompt le cours de la prescription applicable au droit de reprise de l'administration ; - elle interrompt le cours de la prescription applicable au droit de reprise de l'administration ; - elle ouvre un délai de réponse de trente jours, prorogé sur demande du contribuable de trente jours, qui s'impose en principe tant au contribuable qu'à l'administration ; - elle ouvre un délai de réponse de trente jours, prorogé sur demande du contribuable de trente jours, qui s'impose en principe tant au contribuable qu'à l'administration ; - elle fixe les limites de l'imposition à établir à l'issue de la procédure. 5 S'agissant de l'obligation prévue au deuxième alinéa de l' article L. 49 du livre des procédures fiscales (LPF) , il convient de se reporter au BOI-CF-PGR-30-25 . - elle fixe les limites de l'imposition à établir à l'issue de la procédure. S'agissant de l'obligation prévue au deuxième alinéa de l' article L. 49 du livre des procédures fiscales (LPF) , il convient de se reporter au BOI-CF-PGR-30-25 .",
+          "chunk_id": "5510-PGP__section_window__5510-pgp-paragraph-00000__5510-pgp-paragraph-00008__cf-proc-dures-de-rectification-et-d-imposition-d-office-proc-dure-de-rectification-contradictoire-effets-de-la-proposition-de-rectification-et-de-la-r-ponse-du-contribuable-effets-de-la-proposition-de-rectification"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-CF-IOR-10-50-10-20210519",
+          "title": "CF - Procédures de rectification et d'imposition d'office - Procédure de rectification contradictoire - Effets de la proposition de rectification et de la réponse du contribuable - Effets de la proposition de rectification",
+          "publication_date": "2021-05-19",
+          "section_path": "I. Interruption de la prescription > B. Conséquences > 1. Ouverture d'un nouveau délai de reprise > a. Principe",
+          "text": "Conformément au droit commun, l'interruption de la prescription a pour conséquence de faire courir, à compter de la date où la proposition de rectification a été effectuée, un nouveau délai de même nature et de même durée que celui qui a été interrompu. La durée de ce nouveau délai est donc toujours égale à celle du délai de reprise applicable au cas d'espèce et a pour point de départ l'année au cours de laquelle la proposition de rectification est effectuée (notamment en matière de droits d'enregistrement : I-A-3-a-3° § 150 du BOI-CF-PGR-10-40 ). L'imposition supplémentaire consécutive aux rehaussements proposés doit donc être mise en recouvrement avant l'expiration du délai susvisé, faute de quoi la prescription est acquise au contribuable. Exemple : C'est ainsi qu'une proposition de rectification intervenue le 15 mars N en matière d'impôts sur les revenus ou taxes sur le chiffre d'affaires et portant sur l'année N-2 a ouvert un nouveau délai venant à expiration le 31 décembre N+3. La mise en recouvrement de l'imposition correspondant à cette proposition devra intervenir au plus tard le 31 décembre N+3. En ce qui concerne la date de mise en recouvrement, il y a lieu de retenir la date effective de mise en recouvrement du rôle telle qu'elle a été fixée par décision administrative ( code général des impôts (CGI), art. 1659 ) ou la date de notification de l'avis de mise en recouvrement. L'émission d'impositions supplémentaires s'appliquant à plusieurs années successives et atteignant un chiffre élevé peut être échelonnée pour permettre à un contribuable éprouvant des difficultés de paiement d'acquitter l'intégralité de sa dette.",
+          "chunk_id": "5510-PGP__section_window__5510-pgp-paragraph-00018__5510-pgp-paragraph-00023__i-interruption-de-la-prescription-b-cons-quences-1-ouverture-d-un-nouveau-d-lai-de-reprise-a-principe"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-CF-PGR-30-10-20191030",
+          "title": "CF - Prescription du droit de reprise de l'administration et garanties du contribuable - Garanties liées aux procédures de rectification - Garanties accordées au contribuable pour discuter les propositions de rectification",
+          "publication_date": "2019-10-30",
+          "section_path": "IV. Recours hiérarchiques > B. Recours hiérarchique dans le cadre du contrôle sur pièces > 2. Modalités de mise en œuvre du recours hiérarchique > a. Demande du contribuable",
+          "text": "Le bénéfice de cette procédure est subordonné à une demande du contribuable. Celui-ci doit donc en être informé préalablement. Les propositions de rectification (imprimés n° 2120 et n° 3905) mentionnent ainsi cette possibilité, ainsi que la personne en charge du recours hiérarchique. La demande doit être formulée par le contribuable par écrit, y compris par courriel. Elle peut être effectuée sur quelque support que ce soit : sur la réponse à la proposition de rectification ou par une lettre séparée. Elle est adressée à la personne en charge du recours hiérarchique, nommément désignée sur la proposition de rectification. Le contribuable peut demander le recours hiérarchique dès la réception de la proposition de rectification. La demande doit être formulée dans le délai imparti pour l'introduction d'un recours contentieux, également appelé délai de réclamation. Pour plus de détail, il convient de se reporter au BOI-CTX-PREA-10-40 relatif aux délais spécifiques à certaines réclamations.",
+          "chunk_id": "242-PGP__section_window__242-pgp-paragraph-00101__242-pgp-paragraph-00106__iv-recours-hi-rarchiques-b-recours-hi-rarchique-dans-le-cadre-du-contr-le-sur-pi-ces-2-modalit-s-de-mise-en-uvre-du-recours-hi-rarchique-a-demande-du-contribuable"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-CF-IOR-10-30-20140227",
+          "title": "CF - Procédures de rectification et d'imposition d'office - Règles relatives à l'envoi de la proposition de rectification",
+          "publication_date": "2014-02-27",
+          "section_path": "II. Formes et modalités de la notification d'une proposition de rectification > B. Modalités de la notification",
+          "text": "La notification est normalement effectuée par voie postale. Lorsque plusieurs propositions de rectification sont adressées au même contribuable, chacune d'elles doit faire l'objet d'un envoi séparé, dans les conditions indiquées au II-A § 20 à 50 . En cas de remise directe au contribuable de l'original de la proposition de rectification, la notification n'est considérée comme réalisée que si l'intéressé accuse réception de la proposition par écrit sur l'exemplaire à conserver au dossier, ou y fait immédiatement figurer ses observations. Jugé, à cet égard, que la remise directe le 31 décembre interrompt valablement la prescription alors même que la notification par voie postale, effectuée parallèlement ne serait parvenue que le 2 janvier (CE, arrêt du 1er décembre 1982, n° 27387). La lettre est expédiée sous pli fermé ( LPF, art. R*. 103-1 ) en recommandé avec avis de réception. La réglementation postale applicable prévoit la délivrance d'un avis d'instance informant le destinataire qu'un pli recommandé est à sa disposition au guichet. Le retrait peut être opéré dans un délai de 15 jours, étant précisé que le jour de présentation n'est pas lui-même pris en compte pour le calcul de ce délai. Compte tenu de cette réglementation et de la jurisprudence du Conseil d'État en la matière, il y a lieu de veiller au respect des formalités dans les conditions suivantes.",
+          "chunk_id": "876-PGP__section_window__876-pgp-paragraph-00021__876-pgp-paragraph-00027__ii-formes-et-modalit-s-de-la-notification-d-une-proposition-de-rectification-b-modalit-s-de-la-notification"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-CF-IOR-10-50-10-20210519",
+          "title": "CF - Procédures de rectification et d'imposition d'office - Procédure de rectification contradictoire - Effets de la proposition de rectification et de la réponse du contribuable - Effets de la proposition de rectification",
+          "publication_date": "2021-05-19",
+          "section_path": "I. Interruption de la prescription > B. Conséquences > 1. Ouverture d'un nouveau délai de reprise > b. Cas particuliers > 1° Omissions révélées par une procédure judiciaire, par une procédure devant les juridictions administratives, ou par une réclamation contentieuse",
+          "text": "(80) Conformément aux dispositions de l' article L. 188 C du LPF , les omissions ou insuffisances d'impositions révélées par une procédure judiciaire, par une procédure devant les juridictions administratives, ou par une réclamation contentieuse, notamment à l'occasion de l'application des règles posées par l' article L. 204 du LPF concernant les compensations, peuvent être réparées jusqu'à l'expiration de l'année suivant celle de la décision qui a clos la procédure et au plus tard, jusqu'à la fin de la dixième année qui suit celle au titre de laquelle l'imposition est due ( BOI-CF-PGR-10-75 ). Les dispositions de l'article L. 188 C du LPF s'appliquent à l'ensemble des impositions omises ou minorées. La conjugaison de ce texte avec les dispositions de l' article L. 189 du LPF relatives à l'interruption des prescriptions par des propositions de rectification appelle les précisions suivantes qui sont données sous forme d'un exemple en matière d'impôt sur le revenu. Exemple : Le délai général de reprise de l'impôt sur le revenu dû au titre de N expire le 31 décembre N+3 ( LPF, art. L. 169, al. 1 ). Si l'insuffisance d'imposition au titre de l'année N est révélée par une procédure close ou une réclamation contentieuse ayant fait l'objet d'une décision en N+3, cette insuffisance peut être réparée dans le délai spécial de l'article L. 188 C du LPF venant à expiration le 31 décembre N+4. Or, conformément au principe énoncé au I-B-1-a § 50 et suivants , la proposition de rectification fait courir une prescription semblable à celle qu'elle a pour effet d'interrompre. Il en résulte les deux situations suivantes :",
+          "chunk_id": "5510-PGP__section_window__5510-pgp-paragraph-00026__5510-pgp-paragraph-00033__i-interruption-de-la-prescription-b-cons-quences-1-ouverture-d-un-nouveau-d-lai-de-reprise-b-cas-particuliers-1-omissions-r-v-l-es-par-une-proc-dure-judiciaire-par-une-proc-dure-devant-les-juridictions-administratives-ou-par-une-r-clamation-contentieuse"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-CTX-PREA-10-40-20140625",
+          "title": "CTX - Contentieux de l'assiette de l'impôt - Procédure préalable devant le service - Délais spécifiques à certaines réclamations",
+          "publication_date": "2014-06-25",
+          "section_path": "I. Délai applicable dans le cas où le contribuable a fait l'objet d'une procédure de reprise ou de rectification > A. Principe",
+          "text": "L' article R*. 196-3 du livre des procédures fiscales (LPF) dispose que dans le cas où un contribuable fait l'objet d'une procédure de reprise ou de rectification de la part de l'Administration fiscale, il dispose d'un délai égal à celui de l'Administration pour présenter ses propres réclamations. En ce sens, CE, arrêt du 5 octobre 1973, n° 83169 . La notion de procédure de reprise ou de rectification recouvre : - la procédure de rectification contradictoire ( LPF, art. L. 55 et suiv. ) ; - la procédure de régularisation spontanée ( LPF, art. L. 62 ). Elle recouvre également toute procédure permettant à l'Administration de réparer les omissions totales ou partielles et les erreurs d'imposition : - procédures d'imposition d'office ( CE, arrêt du 25 juillet 1975, n° 86984 ; CE, arrêt du 12 janvier 1977, n° 97012 ; CE, arrêt du 21 décembre 1979, n° 11826 ; CE, arrêt du 21 mars 1975, n° 87573 ) ; - notification d'un avis de mise en recouvrement fondé sur la déchéance d'un régime de faveur ( Cass. com., 6 décembre 1976, n° 75-12637 ). Remarque : Un contribuable qui n'a pas fait l'objet d'une procédure de reprise au titre d'une année N ne peut bénéficier, pour cette année, du délai spécial de réclamation prévu par l'article R*. 196-3 du LPF même si la taxe due au titre de cette année a été versée l'année N+1, laquelle a fait l'objet d'une procédure de rectification ( CE, 10 avril 1991, n° 107683 ).",
+          "chunk_id": "186-PGP__section_window__186-pgp-paragraph-00000__186-pgp-paragraph-00008__i-d-lai-applicable-dans-le-cas-o-le-contribuable-a-fait-l-objet-d-une-proc-dure-de-reprise-ou-de-rectification-a-principe"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-CF-IOR-10-50-10-20210519",
+          "title": "CF - Procédures de rectification et d'imposition d'office - Procédure de rectification contradictoire - Effets de la proposition de rectification et de la réponse du contribuable - Effets de la proposition de rectification",
+          "publication_date": "2021-05-19",
+          "section_path": "II. Ouverture d'un délai de réponse à la proposition de rectification pour le contribuable > B. Prorogation de trente à soixante jours du délai accordé au contribuable pour répondre à la proposition de rectification > 1. Champ d'application de la prorogation",
+          "text": "La prorogation de trente jours bénéficie à tous les contribuables, quelle que soit la nature du contrôle mis en œuvre, contrôle sur pièces ou contrôle externe, et concerne le délai imparti au destinataire de la proposition de rectification pour formuler ses observations en réponse, en application de l’ article L. 57 du LPF . Sont donc uniquement concernées les réponses aux rectifications effectuées dans le cadre de la procédure de rectification contradictoire. Ainsi, sous réserve des mesures de tempérament précisées au II-A-1 § 220 , la prorogation n’est pas applicable aux réponses du contribuable faisant suite notamment : - aux rectifications notifiées dans le cadre d’une procédure d’imposition d’office ; - aux rectifications notifiées dans le cadre d’une procédure d’imposition d’office ; - aux notifications des sanctions fiscales qui relèvent de l’ article L. 80 D du LPF ; - aux notifications des sanctions fiscales qui relèvent de l’ article L. 80 D du LPF ; - à la lettre portant réponse aux observations du contribuable (imprimé n° 3926-SD ) ; - à la lettre portant réponse aux observations du contribuable (imprimé n° 3926-SD ) ; - aux demandes de désignation de bénéficiaires des rectifications qualifiées de revenus distribués par l’administration ; - aux demandes de désignation de bénéficiaires des rectifications qualifiées de revenus distribués par l’administration ; - aux rehaussements d’impôts locaux, exclus de la procédure de rectification contradictoire. - aux rehaussements d’impôts locaux, exclus de la procédure de rectification contradictoire. Par mesure de tempérament, il sera admis que le contribuable bénéficie du délai supplémentaire de trente jours dans les situations suivantes.",
+          "chunk_id": "5510-PGP__section_window__5510-pgp-paragraph-00064__5510-pgp-paragraph-00077__ii-ouverture-d-un-d-lai-de-r-ponse-la-proposition-de-rectification-pour-le-contribuable-b-prorogation-de-trente-soixante-jours-du-d-lai-accord-au-contribuable-pour-r-pondre-la-proposition-de-rectification-1-champ-d-application-de-la-prorogation"
+        }
+      ]
+    },
+    {
+      "case_id": "r03_dmtg",
+      "query": "Mon pere vient de deceder et je dois remplir la declaration de succession. Comment calculer les droits de succession sur son appartement et ses comptes bancaires ?",
+      "rewritten_query": "Suite au décès de mon père, je suis tenu de souscrire la déclaration de succession. Dans le cadre de cette obligation déclarative, je souhaite connaître les modalités de calcul des droits de mutation par décès applicables à la transmission de son appartement, constituant un bien immobilier, ainsi que de ses comptes bancaires, relevant de la catégorie des liquidités et valeurs mobilières de placement.",
+      "category": "enr",
+      "note": "ENR succession liquidation droits",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[PARTIAL] Sous réserve des axes manquants, les extraits indiquent que l'appartement et les comptes bancaires doivent être déclarés, et que les comptes sont présumés faire partie de la succession.\n  Axes manquants: Évaluation des biens immobiliers, Calcul des droits de succession\n\n- La déclaration de succession doit comprendre tous les biens du défunt au jour du décès, y compris l'appartement et les comptes bancaires [1][4].\n- Les sommes inscrites sur un compte bancaire au nom du défunt sont présumées faire partie de sa succession [5].\n- Aucun extrait ne précise la méthode d'évaluation de l'appartement (immeuble) ni le barème des droits de succession.\n\nLimites: Les extraits ne fournissent pas de méthode d'évaluation des immeubles ni le tarif des droits de succession.",
+      "raw": "{\n  \"answer_status\": \"partial\",\n  \"axes_requis\": [\n    \"Biens à déclarer dans la succession\",\n    \"Évaluation des biens immobiliers\",\n    \"Évaluation des comptes bancaires\",\n    \"Calcul des droits de succession\"\n  ],\n  \"axes_couverts\": [\n    \"Biens à déclarer dans la succession\",\n    \"Évaluation des comptes bancaires\"\n  ],\n  \"axes_manquants\": [\n    \"Évaluation des biens immobiliers\",\n    \"Calcul des droits de succession\"\n  ],\n  \"conclusion\": \"Sous réserve des axes manquants, les extraits indiquent que l'appartement et les comptes bancaires doivent être déclarés, et que les comptes sont présumés faire partie de la succession.\",\n  \"justification_bullets\": [\n    \"La déclaration de succession doit comprendre tous les biens du défunt au jour du décès, y compris l'appartement et les comptes bancaires [1][4].\",\n    \"Les sommes inscrites sur un compte bancaire au nom du défunt sont présumées faire partie de sa succession [5].\",\n    \"Aucun extrait ne précise la méthode d'évaluation de l'appartement (immeuble) ni le barème des droits de succession.\"\n  ],\n  \"limits\": \"Les extraits ne fournissent pas de méthode d'évaluation des immeubles ni le tarif des droits de succession.\"\n}",
+      "structured": {
+        "answer_status": "partial",
+        "axes_requis": [
+          "Biens à déclarer dans la succession",
+          "Évaluation des biens immobiliers",
+          "Évaluation des comptes bancaires",
+          "Calcul des droits de succession"
+        ],
+        "axes_couverts": [
+          "Biens à déclarer dans la succession",
+          "Évaluation des comptes bancaires"
+        ],
+        "axes_manquants": [
+          "Évaluation des biens immobiliers",
+          "Calcul des droits de succession"
+        ],
+        "conclusion": "Sous réserve des axes manquants, les extraits indiquent que l'appartement et les comptes bancaires doivent être déclarés, et que les comptes sont présumés faire partie de la succession.",
+        "justification_bullets": [
+          "La déclaration de succession doit comprendre tous les biens du défunt au jour du décès, y compris l'appartement et les comptes bancaires [1][4].",
+          "Les sommes inscrites sur un compte bancaire au nom du défunt sont présumées faire partie de sa succession [5].",
+          "Aucun extrait ne précise la méthode d'évaluation de l'appartement (immeuble) ni le barème des droits de succession."
+        ],
+        "limits": "Les extraits ne fournissent pas de méthode d'évaluation des immeubles ni le tarif des droits de succession."
+      },
+      "validation": {
+        "valid": true,
+        "status": "partial",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          4,
+          5
+        ],
+        "cite_count": 3,
+        "errors": [],
+        "axes_requis": [
+          "Biens à déclarer dans la succession",
+          "Évaluation des biens immobiliers",
+          "Évaluation des comptes bancaires",
+          "Calcul des droits de succession"
+        ],
+        "axes_manquants": [
+          "Évaluation des biens immobiliers",
+          "Calcul des droits de succession"
+        ]
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-ENR-DMTG-10-10-20-10-20140711",
+          "title": "ENR - Mutations à titre gratuit – Successions – Champ d'application des droits de mutation par décès - Biens à déclarer – Règles générales",
+          "publication_date": "2014-07-11",
+          "section_path": "I. Principe",
+          "text": "Le droit de mutation par décès atteint tous les biens qui faisaient partie du patrimoine du défunt au jour de son décès, et qui, par le fait de son décès, sont transmis à ses héritiers, donataires ou légataires. Ainsi la déclaration de succession doit comprendre tous les biens dont la propriété apparente reposait sur la tête du défunt au jour de son décès, que ces biens soient ou non imposables ( BOI-ENR-DMTG-10-10-30 pour l'incidence de la territorialité de l'impôt ; BOI-ENR-DMTG-10-10-40-50 , BOI-ENR-DMTG-10-10-40-10 , BOI-ENR-DMTG-10-10-40-20 , BOI-ENR-DMTG-10-10-40-30 et BOI-ENR-DMTG-10-10-40-40 pour la preuve du droit de propriété du de cujus et BOI-ENR-DMTG-10-60-30 pour la forme et le contenu de la déclaration).",
+          "chunk_id": "3335-PGP__section_window__3335-pgp-paragraph-00000__3335-pgp-paragraph-00001__i-principe"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-ENR-DMTG-10-40-10-40-20190502",
+          "title": "ENR - Mutations à titre gratuit de meubles ou d'immeubles - Successions - Assiette - Évaluation des biens transmis - Évaluation des biens meubles incorporels",
+          "publication_date": "2019-05-02",
+          "section_path": "VI. Biens indisponibles hors de France par suite de mesures prises par un gouvernement étranger > B. Modalités du régime spécial",
+          "text": "Les biens susvisés, dont l'indisponibilité est justifiée, sont portés pour mémoire dans la déclaration souscrite en France en vue de la perception des droits de mutation par décès. Ultérieurement, les successibles sont tenus de souscrire une déclaration complémentaire dans le délai de neuf mois à compter : - ou bien, de la date à laquelle lesdits biens ou leur représentation, c'est-à-dire en cas de dépossession, l'indemnité ou la contrepartie reçue par eux, sont devenus disponibles ; - ou bien, de la date à laquelle lesdits biens ou leur représentation, c'est-à-dire en cas de dépossession, l'indemnité ou la contrepartie reçue par eux, sont devenus disponibles ; - ou bien, de la date à laquelle ces biens ont fait l'objet d'une vente, d'une cession ou d'un transfert volontaire ou forcé. - ou bien, de la date à laquelle ces biens ont fait l'objet d'une vente, d'une cession ou d'un transfert volontaire ou forcé. Les biens sont évalués à leur valeur au jour de la cessation de l'indisponibilité ou à la date de leur aliénation. Il est fait abstraction des fruits, intérêts, dividendes ou autres produits échus postérieurement à l'ouverture de la succession. Lorsque les biens ou leur représentation ne deviennent disponibles ou ne font l'objet d'une vente, d'une cession ou d'un transfert que pour partie, seule cette partie fait l'objet de la déclaration complémentaire et les droits ne deviennent exigibles qu'à due concurrence. Les droits sont liquidés selon le tarif et d'après les règles applicables à la date d'ouverture de la succession et doivent être acquittés au moment du dépôt de la déclaration complémentaire.",
+          "chunk_id": "1391-PGP__section_window__1391-pgp-paragraph-00082__1391-pgp-paragraph-00090__vi-biens-indisponibles-hors-de-france-par-suite-de-mesures-prises-par-un-gouvernement-tranger-b-modalit-s-du-r-gime-sp-cial"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-ENR-DMTG-10-20-40-30-20240404",
+          "title": "ENR - Mutations à titre gratuit - Successions - Champ d'application des droits de mutation par décès - Exonérations et régimes spéciaux - Exonération partielle en raison de la nature du bien transmis - Obligations déclaratives pour la transmission des parts ou actions de sociétés ayant une activité industrielle, commerciale, artisanale, agricole ou libérale",
+          "publication_date": "2024-04-04",
+          "section_path": "ENR - Mutations à titre gratuit - Successions - Champ d'application des droits de mutation par décès - Exonérations et régimes spéciaux - Exonération partielle en raison de la nature du bien transmis - Obligations déclaratives pour la transmission des parts ou actions de sociétés ayant une activité industrielle, commerciale, artisanale, agricole ou libérale",
+          "text": "Actualité liée : [node:date:13709-PGP] : ENR - Mutations à titre gratuit - Exonération partielle en raison de la nature du bien transmis : transmission d'entreprises ayant une activité industrielle, commerciale, artisanale, agricole ou libérale - Précisions sur les assouplissements des obligations déclaratives prévues à l'article 787 B du CGI (loi n° 2018-1317 du 28 décembre 2018 de finances pour 2019, art. 40) - Mise à jour suite à consultation publique Les obligations déclaratives relatives à l'exonération partielle de droits de mutation à titre gratuit (DMTG) prévue à l' article 787 B du code général des impôts (CGI) sont fixées par l' article 294 bis de l'annexe II au CGI et l' article 294 ter de l'annexe II au CGI . Ces articles prévoient que les sociétés dont les titres sont directement ou indirectement transmis doivent remettre plusieurs attestations au redevable afin de lui permettre de satisfaire à ses obligations déclaratives. Le non-respect par le redevable de ces obligations est susceptible d’entraîner la reprise de l’exonération accordée. La mise en recouvrement des droits complémentaires n’intervient toutefois qu’après, notamment, information des motifs de la remise en cause suivie d’un délai de trente jours laissé au contribuable pour présenter ses observations ( VII § 220 du BOI-ENR-DMTG-10-20-40-20 ). Les dispositions de l' article 40 de la loi n° 2018-1317 du 28 décembre 2018 de finances pour 2019 afférentes aux obligations déclaratives sont applicables à compter du 1 er janvier 2019, quelle que soit la date de la réalisation de la transmission à titre gratuit des titres sous le bénéfice de l'article 787 B du CGI, y compris pour celles effectuées antérieurement à cette date.",
+          "chunk_id": "6513-PGP__section_window__6513-pgp-paragraph-00000__6513-pgp-paragraph-00004__enr-mutations-titre-gratuit-successions-champ-d-application-des-droits-de-mutation-par-d-c-s-exon-rations-et-r-gimes-sp-ciaux-exon-ration-partielle-en-raison-de-la-nature-du-bien-transmis-obligations-d-claratives-pour-la-transmission-des-parts-ou-actions-de-soci-t-s-ayant-une-activit-industrielle-commerciale-artisanale-agricole-ou-lib-rale"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-ENR-DMTG-10-10-20-20120912",
+          "title": "ENR – Mutations à titre gratuit – Successions – Champ d'application des droits de mutation par décès – Biens à déclarer",
+          "publication_date": "2012-09-12",
+          "section_path": "ENR – Mutations à titre gratuit – Successions – Champ d'application des droits de mutation par décès – Biens à déclarer",
+          "text": "La déclaration de succession doit comprendre tous les biens (imposables ou non) qui faisaient partie du patrimoine du défunt au jour du décès. La présente section est consacrée : - aux biens divers à déclarer (sous-section 1 : BOI-ENR-DMTG-10-10-20-10 ) ; - au cas particulier des contrats d'assurance-vie (sous-section 2 : BOI-ENR-DMTG-10-10-20-20 ) ; - aux autres cas particuliers (sous-section 3 : BOI-ENR-DMTG-10-10-20-30 ).",
+          "chunk_id": "3365-PGP__section_window__3365-pgp-paragraph-00000__3365-pgp-paragraph-00004__enr-mutations-titre-gratuit-successions-champ-d-application-des-droits-de-mutation-par-d-c-s-biens-d-clarer"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-ENR-DMTG-10-10-40-50-20120912",
+          "title": "ENR - Mutations à titre gratuits - Successions – Champ d'application des droits de mutation par décès – Présomptions légales de propriété - Preuve du droit de propriété du défunt résultant de l'application de règles de droit civil",
+          "publication_date": "2012-09-12",
+          "section_path": "I. Théorie de la propriété apparente > B. Application à l'impôt de mutation par décès > 3. Titres nominatifs - Créances",
+          "text": "Sont considérés comme dépendant de la succession du défunt tous les titres nominatifs immatriculés à son nom et toutes les créances dont les titres constitutifs le désignent comme titulaire. C'est ainsi que les sommes inscrites sur un livret de caisse d'épargne et à un compte bancaire ou postal ouverts au nom du de cujus sont présumées faire partie de sa succession. Lorsque des livrets de caisse d'épargne ou des plans d'épargne-logement ont été ouverts au nom d'enfants mineurs par leurs parents dont l'un décède, les droits de mutation par décès ne peuvent, en principe, être perçus sur ces biens, le défunt n'en ayant pas la propriété apparente. Toutefois, l' article 784 du code général des impôts (CGI) prévoit que les parties sont tenues de faire connaître, notamment dans toute déclaration de succession, s'il existe ou non des donations antérieures consenties à un titre et sous une forme quelconque par le donateur ou le défunt aux donataires, héritiers ou légataires et dans l'affirmative, le montant de ces donations (cf. BOI-ENR-DMTG-10-50-50 ). La perception à effectuer tient compte de ces libéralités. En application de ce texte, l’administration est donc fondée à faire rapporter fiscalement à la succession du défunt le montant des livrets de caisse d'épargne ou de comptes d'épargne-logement ouverts au nom d'enfants lorsqu'elle établit que les fonds ont été fournis par leur auteur.",
+          "chunk_id": "2313-PGP__section_window__2313-pgp-paragraph-00007__2313-pgp-paragraph-00010__i-th-orie-de-la-propri-t-apparente-b-application-l-imp-t-de-mutation-par-d-c-s-3-titres-nominatifs-cr-ances"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-ENR-DMTG-10-10-40-50-20120912",
+          "title": "ENR - Mutations à titre gratuits - Successions – Champ d'application des droits de mutation par décès – Présomptions légales de propriété - Preuve du droit de propriété du défunt résultant de l'application de règles de droit civil",
+          "publication_date": "2012-09-12",
+          "section_path": "I. Théorie de la propriété apparente > B. Application à l'impôt de mutation par décès > 7. Déclaration de command",
+          "text": "Dans la déclaration de command, l'acheteur apparent (le commandé), indique au moment de la formation du contrat qu'il agit sur l'ordre d'un command, mais il se réserve la faculté de désigner, dans un certain délai, le nom de ce dernier. Si l'acheteur fait la déclaration dans le délai convenu, et si elle est acceptée par le command, il est censé n'avoir pas acheté. En application de ces principes, les droits de mutation par décès n'atteignent pas les biens acquis de son vivant par le défunt et pour lesquels il avait fait une déclaration régulière de command, lorsque cette déclaration a été acceptée, soit avant, soit après le décès, par le command déclaré. En cas de non-acceptation, les biens dépendent nécessairement de la succession de l'acquéreur.",
+          "chunk_id": "2313-PGP__section_window__2313-pgp-paragraph-00024__2313-pgp-paragraph-00026__i-th-orie-de-la-propri-t-apparente-b-application-l-imp-t-de-mutation-par-d-c-s-7-d-claration-de-command"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-ENR-DG-70-30-20120912",
+          "title": "ENR – Dispositions générales - Contentieux des droits d'enregistrement et de la taxe de publicité foncière – Demandes en restitution des droits de mutation par décès",
+          "publication_date": "2012-09-12",
+          "section_path": "III. Demandes en restitution des droits de mutation par décès en cas de paiement des majorations légales d'une rente viagère par les héritiers du débirentier > C. Conditions tenant à la forme et au délai de présentation des réclamations relatives aux droits de mutation par décès en cas de paiement des majorations légales d'une rente viagère par les héritiers du débirentier > 2. Forme des demandes en restitution des droits de mutation par décès en cas de paiement des majorations légales d'une rente viagère par les héritiers du débirentier",
+          "text": "Ainsi que le précise l' article 1965 A-2 du CGI , les demandes en restitution doivent être présentées sous la forme d'une déclaration de succession rectificative. Cette déclaration de succession rectificative doit être accompagnée : - soit d'une copie de l'acte constatant l'accord amiable ; - soit, à défaut de règlement amiable, d'une copie de la décision judiciaire ayant acquis l'autorité de la chose jugée ; - soit, s'il s'agit d'une rente majorée de plein droit, d'une attestation du crédirentier sous la forme prévue par l' article L 20 du LPF . La déclaration rectificative, obligatoirement rédigée sur une formule réglementaire et accompagnée des pièces justificatives susvisées, doit être déposée au service où la déclaration de la succession du débirentier a été souscrite. Elle doit contenir une évaluation du capital de la rente viagère majorée, compte tenu de l'âge du crédirentier soit au jour de la publication de la loi, s'il s'agit d'une rente majorée de plein droit, soit dans le cas contraire, à la date fixée par l'accord amiable ou la décision judiciaire comme point de départ des majorations.",
+          "chunk_id": "6667-PGP__section_window__6667-pgp-paragraph-00035__6667-pgp-paragraph-00041__iii-demandes-en-restitution-des-droits-de-mutation-par-d-c-s-en-cas-de-paiement-des-majorations-l-gales-d-une-rente-viag-re-par-les-h-ritiers-du-d-birentier-c-conditions-tenant-la-forme-et-au-d-lai-de-pr-sentation-des-r-clamations-relatives-aux-droits-de-mutation-par-d-c-s-en-cas-de-paiement-des-majorations-l-gales-d-une-rente-viag-re-par-les-h-ritiers-du-d-birentier-2-forme-des-demandes-en-restitution-des-droits-de-mutation-par-d-c-s-en-cas-de-paiement-des-majorations-l-gales-d-une-rente-viag-re-par-les-h-ritiers-du-d-birentier"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-ENR-DMTG-10-40-10-40-20190502",
+          "title": "ENR - Mutations à titre gratuit de meubles ou d'immeubles - Successions - Assiette - Évaluation des biens transmis - Évaluation des biens meubles incorporels",
+          "publication_date": "2019-05-02",
+          "section_path": "I. Valeurs mobilières françaises et étrangères",
+          "text": "Pour les valeurs mobilières françaises et étrangères de toute nature, admises aux négociations sur un marché réglementé, le capital imposable est déterminé par la moyenne des trente derniers cours qui précédent la transmission ( code général des impôts (CGI), art. 759 ). La fixation du capital retenu pour la liquidation et le paiement des droits de mutation à titre gratuit de valeurs mobilières cotées à une cote officielle par le cours de bourse moyen au jour de la transmission s'applique à des titres transmis en pleine propriété. Dès lors que les titres litigieux sont transmis en nue-propriété et que l'usufruitier était âgé de plus de 70 ans, l'abattement de 10 % correspondant au barème d'évaluation des usufruits fixé par l'article 669 du code général des impôts (CGI) (ex 762 du CGI) est justifié ( Cass. com., 23 février 1999, n° 96-19507 ). Cet arrêt peut être rapproché de la jurisprudence rendue en matière de droits de mutation à titre gratuit qui précise que l'incidence du démembrement de propriété sur la valeur des biens transférés est suffisamment prise en compte par le dispositif de l' article 669 du CGI . La Cour de cassation confirme ainsi que les dispositions de l'article 759 du CGI et de l'article 669 du CGI doivent être combinées en cas de démembrement de la propriété de titres cotés. Le cours moyen de la bourse est constitué par la moyenne du cours le plus haut et du cours le plus bas de la séance considérée ou, à défaut, par le seul cours mentionné s'il n'y a eu qu'un cours.",
+          "chunk_id": "1391-PGP__section_window__1391-pgp-paragraph-00001__1391-pgp-paragraph-00005__i-valeurs-mobili-res-fran-aises-et-trang-res"
+        }
+      ]
+    },
+    {
+      "case_id": "r04_tva_export",
+      "query": "Notre entreprise francaise vend des marchandises a un client professionnel en Belgique. Faut-il facturer la TVA francaise ?",
+      "rewritten_query": "Notre société, établie en France et assujettie à la taxe sur la valeur ajoutée (TVA), réalise une vente de marchandises à un client professionnel, lui-même assujetti à la TVA, situé en Belgique. Conformément aux dispositions du Code général des impôts (CGI), notamment l'article 258 A, et à la réglementation européenne relative aux livraisons intracommunautaires de biens, cette opération est-elle exonérée de la TVA française avec application du régime de la TVA intracommunautaire, ou doit-elle être soumise à la TVA française au taux en vigueur ?",
+      "category": "tva_int",
+      "note": "TVA livraison intracommunautaire exoneration",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Non, il ne faut pas facturer la TVA française si les conditions d'exonération sont remplies.\n\n- La vente à un client professionnel belge avec expédition hors de France constitue une livraison intracommunautaire exonérée sous conditions [1].\n- L'exonération requiert que l'acquéreur soit assujetti, identifié à la TVA dans un autre État membre et communique son numéro au vendeur [1][3].\n- Le vendeur doit déposer un état récapitulatif (article 289 B du CGI) [1][4].\n\nLimites: Aucune limite majeure dans les extraits fournis.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"axes_requis\": [\n    \"Nature de l'opération\",\n    \"Conditions d'exonération\",\n    \"Obligations du vendeur\"\n  ],\n  \"axes_couverts\": [\n    \"Nature de l'opération\",\n    \"Conditions d'exonération\",\n    \"Obligations du vendeur\"\n  ],\n  \"axes_manquants\": [],\n  \"conclusion\": \"Non, il ne faut pas facturer la TVA française si les conditions d'exonération sont remplies.\",\n  \"justification_bullets\": [\n    \"La vente à un client professionnel belge avec expédition hors de France constitue une livraison intracommunautaire exonérée sous conditions [1].\",\n    \"L'exonération requiert que l'acquéreur soit assujetti, identifié à la TVA dans un autre État membre et communique son numéro au vendeur [1][3].\",\n    \"Le vendeur doit déposer un état récapitulatif (article 289 B du CGI) [1][4].\"\n  ],\n  \"limits\": \"Aucune limite majeure dans les extraits fournis.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "axes_requis": [
+          "Nature de l'opération",
+          "Conditions d'exonération",
+          "Obligations du vendeur"
+        ],
+        "axes_couverts": [
+          "Nature de l'opération",
+          "Conditions d'exonération",
+          "Obligations du vendeur"
+        ],
+        "axes_manquants": [],
+        "conclusion": "Non, il ne faut pas facturer la TVA française si les conditions d'exonération sont remplies.",
+        "justification_bullets": [
+          "La vente à un client professionnel belge avec expédition hors de France constitue une livraison intracommunautaire exonérée sous conditions [1].",
+          "L'exonération requiert que l'acquéreur soit assujetti, identifié à la TVA dans un autre État membre et communique son numéro au vendeur [1][3].",
+          "Le vendeur doit déposer un état récapitulatif (article 289 B du CGI) [1][4]."
+        ],
+        "limits": "Aucune limite majeure dans les extraits fournis."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          3,
+          4
+        ],
+        "cite_count": 5,
+        "errors": [],
+        "axes_requis": [
+          "Nature de l'opération",
+          "Conditions d'exonération",
+          "Obligations du vendeur"
+        ],
+        "axes_manquants": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-TVA-CHAMP-30-20-10-20201014",
+          "title": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "publication_date": "2020-10-14",
+          "section_path": "I. Livraisons intracommunautaires exonérées > A. Conditions d'application de l'exonération",
+          "text": "L'exonération est accordée si les six conditions suivantes sont réunies : - la livraison est effectuée à titre onéreux ; - le vendeur est un assujetti agissant en tant que tel ; - le bien est expédié ou transporté hors de France par le vendeur, par l'acquéreur ou pour leur compte, à destination d'un autre État membre ; - l'acquéreur est un assujetti ou une personne morale non assujettie, qui ne bénéficie pas dans son État membre du régime dérogatoire l'autorisant à ne pas soumettre à la taxe sur la valeur ajoutée (TVA) ses acquisitions intracommunautaires à l'instar des personnes bénéficiant d'un régime dérogatoire (PBRD) ; - l’acquéreur doit être identifié à la TVA dans un Etat membre autre que celui de départ ou de l’expédition des biens et doit avoir communiqué son numéro d’identification au fournisseur ; - le fournisseur doit avoir déposé l’état récapitulatif mentionné au I de l’ article 289 B du CGI qui doit contenir les informations mentionnées au II de l'article 289 B du CGI. Lorsque le fournisseur n’a pas déposé l’état récapitulatif mentionné au I de l’article 289 B du CGI ou lorsque l’état récapitulatif qu’il a souscrit ne contient pas les informations mentionnées au II de l'article 289 B du CGI, l’exonération de la livraison intracommunautaire n’est pas remise en cause si le fournisseur est en mesure de justifier son manquement. Si l'une de ces conditions n'est pas remplie, l'exonération ne peut pas être appliquée. Le vendeur doit, en conséquence, soumettre à la TVA sa livraison, conformément au a du I de l' article 258 du CGI .",
+          "chunk_id": "697-PGP__section_window__697-pgp-paragraph-00008__697-pgp-paragraph-00016__i-livraisons-intracommunautaires-exon-r-es-a-conditions-d-application-de-l-exon-ration"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-TVA-CHAMP-20-70-20240724",
+          "title": "TVA - Champ d'application et territorialité - Territorialité - Précisions relatives à certaines opérations réalisées par des assujettis non établis en France",
+          "publication_date": "2024-07-24",
+          "section_path": "I. Principes",
+          "text": "D'une manière générale, les assujettis établis hors de France qui effectuent des opérations dont le lieu est situé en France en application des règles de territorialité prévues de l' article 258 du code général des impôts (CGI) à l' article 259 D du CGI sont soumis à la taxe sur la valeur ajoutée (TVA) dans les mêmes conditions que les assujettis établis en France réalisant les mêmes opérations. Toutefois, aux termes du deuxième alinéa du 1 et du 2 de l' article 283 du CGI , lorsque la livraison de biens ou la prestation de services est effectuée par un assujetti qui n'est pas établi en France, la taxe est due par le client identifié à la TVA en France. Aux fins de la TVA, une personne est considérée comme étant établie en France lorsqu'elle y dispose du siège de son activité économique, d'un établissement stable, de son domicile ou d'une résidence habituelle. Pour la définition de ces différentes notions, il convient de se reporter aux II et III § 100 à 190 du BOI-TVA-CHAMP-20-50-10 .",
+          "chunk_id": "1542-PGP__section_window__1542-pgp-paragraph-00001__1542-pgp-paragraph-00003__i-principes"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-TVA-CHAMP-30-20-10-20201014",
+          "title": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "publication_date": "2020-10-14",
+          "section_path": "I. Livraisons intracommunautaires exonérées > A. Conditions d'application de l'exonération > 4. Existence et validité du numéro d'identification à la TVA de l'acquéreur",
+          "text": "L'acquéreur doit s'assurer de l'existence et de la validité du numéro d'identification à la TVA qui lui est communiqué par l'acquéreur. L'exonération prévue au I de l' article 262 ter du CGI s'applique lorsque l'acquéreur, assujetti ou personne morale non assujettie, est identifié à la TVA dans un autre État membre de l'Union et a communiqué son numéro d'identification au vendeur français avant le début de l’expédition ou du transport. Dans le cas où l'acquéreur ne fournit pas de numéro d'identification à la TVA dans un autre État membre ou fournit un numéro invalide à la date de l'opération, la livraison doit être soumise à la TVA. Lorsque l’acquéreur des biens n’indique pas son numéro d’identification à la TVA au vendeur ou lorsque le numéro d’identification à la TVA indiqué a été délivré par la France, pays à partir duquel les biens sont expédiés ou transportés, les conditions d’application de l’exonération prévue au I de l’article 262 ter du CGI doivent être considérées comme non remplies et le vendeur n’a pas d’autre choix que de facturer la TVA. Lorsque l’acquéreur établit qu’il est un assujetti agissant en tant que tel au moment de l’acquisition et communique ultérieurement à son vendeur un numéro d’identification à la TVA attribué par l’État membre de destination, et qu’il n’existe aucune indication de fraude ou d’abus, le vendeur doit rectifier la facture conformément au 5 du I de l’ article 289 du CGI , dans les conditions exposées au V § 180 à 230 du BOI-TVA-DECLA-30-20-20-20 .",
+          "chunk_id": "697-PGP__section_window__697-pgp-paragraph-00046__697-pgp-paragraph-00049__i-livraisons-intracommunautaires-exon-r-es-a-conditions-d-application-de-l-exon-ration-4-existence-et-validit-du-num-ro-d-identification-la-tva-de-l-acqu-reur"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-TVA-CHAMP-30-20-10-20201014",
+          "title": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "publication_date": "2020-10-14",
+          "section_path": "I. Livraisons intracommunautaires exonérées > A. Conditions d'application de l'exonération > 5. Le vendeur a déposé l’état récapitulatif prévu à l’article 289 B du CGI",
+          "text": "En premier lieu, le Conseil d'État a jugé qu'il résultait des termes du A de l'article 28 quater de la sixième directive n° 77/388/CEE du Conseil du 17 mai 1977 en matière d'harmonisation des législations des États membres relatives aux taxes sur le chiffre d'affaires , modifiée (devenu l'article 138 de la directive 2006/112/CE du Conseil du 28 novembre 2006 ), et du 1° du I de l'article 262 ter du CGI que l'exonération de TVA des livraisons intracommunautaires de biens est subordonnée à la double condition cumulative, d'une part, que l'acquéreur desdits biens soit assujetti à cette taxe ou qu'il ait la qualité de personne morale non assujettie et ne bénéficiant pas dans l'État membre dans lequel elle est établie d'un régime dérogatoire l'autorisant à ne pas soumettre à la TVA ses acquisitions intracommunautaires et, d'autre part, que le bien ait été expédié ou transporté hors de France à destination de cet acquéreur par le vendeur, par l'acquéreur lui-même ou par un tiers pour leur compte, à destination d'un autre État membre. Sur ce dernier point, la Haute juridiction a rappelé qu'en la matière s'appliquait un régime de preuve objective ( CE, décision du 27 juillet 2005, n° 273619 et 273620, 8e et 3e s.-s., Sté Fauba France ).",
+          "chunk_id": "697-PGP__section_window__697-pgp-paragraph-00063__697-pgp-paragraph-00064__i-livraisons-intracommunautaires-exon-r-es-a-conditions-d-application-de-l-exon-ration-5-le-vendeur-a-d-pos-l-tat-r-capitulatif-pr-vu-l-article-289-b-du-cgi"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-TVA-CHAMP-30-20-10-20201014",
+          "title": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "publication_date": "2020-10-14",
+          "section_path": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "text": "Actualité liée : 14/10/2020 : TVA - Transposition de la directive 2018/1910 du Conseil du 4 décembre 2018 en ce qui concerne l'harmonisation et la simplification de certaines règles dans le système de la taxe sur la valeur ajoutée pour la taxation des échanges entre les Etats membres, mesures « Quick fixes » (loi n° 2019-1479 du 28 décembre 2019 de finances pour 2020, art. 34) Le I de l' article 262 ter du code général des impôts (CGI) exonère : - les livraisons de biens expédiés ou transportés par le vendeur, par l'acquéreur ou pour leur compte, dans un autre État membre de l'Union européenne, à destination d'un assujetti ou d'une personne morale non assujettie agissant en tant que tels ; - les transferts intracommunautaires de biens assimilés à des livraisons. Le 1° bis du I de l’article 262 ter du CGI précise les règles applicables dans le cadre des livraisons successives d’un même bien (livraisons en chaîne). Cette exonération ne s'applique pas aux échanges entre les départements d'outre-mer et un autre État membre, qui relèvent du régime des exportations. Le régime des livraisons intracommunautaires de moyens de transports neufs est étudié au BOI-TVA-SECT-70 . Remarque : Le territoire des États membres est défini au BOI-TVA-CHAMP-20-10 .",
+          "chunk_id": "697-PGP__section_window__697-pgp-paragraph-00000__697-pgp-paragraph-00007__tva-champ-d-application-et-territorialit-livraisons-intracommunautaires-de-biens-exon-r-es"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-TVA-CHAMP-30-20-10-20201014",
+          "title": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "publication_date": "2020-10-14",
+          "section_path": "I. Livraisons intracommunautaires exonérées > C. Refus du bénéfice de l'exonération > 1. Description du schéma de fraude « carrousel »",
+          "text": "- la taxe sur la valeur ajoutée afférente à une livraison de biens ne peut faire l'objet d'aucune déduction lorsqu'il est démontré que l'acquéreur savait ou ne pouvait ignorer que, par son acquisition, il participait à une fraude consistant à ne pas reverser la taxe due à raison de cette livraison ( CGI, art. 272, 3 ) ; - l'assujetti en faveur duquel a été effectuée une livraison de biens et qui savait ou ne pouvait ignorer que tout ou partie de la TVA due sur cette livraison ou sur toute livraison antérieure des mêmes biens ne serait pas reversée de manière frauduleuse est solidairement tenu, avec la personne redevable, d'acquitter cette taxe ( CGI, art. 283, 4 bis ). L'ensemble de ces dispositions tire les conséquences de la jurisprudence du Conseil d'État et de la Cour de justice des Communautés européennes. La jurisprudence du Conseil d'État ( CE, décision du 27 juillet 2005, n° 273619 et 273620, Société Fauba France ) précise que si un assujetti à la TVA disposant de justificatifs de l'expédition des biens à destination d'un autre Etat membre et du numéro d'identification à la TVA de l'acquéreur établi dans l'autre Etat membre doit être présumé avoir effectué une livraison intracommunautaire exonérée, cette présomption ne fait pas obstacle à ce que l'administration fiscale puisse établir que la livraison en cause n'a pas eu lieu en faisant notamment valoir que des livraisons répétées et portant sur des montants importants, ont eu pour destinataire présumé des personnes dépourvues d'activité réelle.",
+          "chunk_id": "697-PGP__section_window__697-pgp-paragraph-00108__697-pgp-paragraph-00111__i-livraisons-intracommunautaires-exon-r-es-c-refus-du-b-n-fice-de-l-exon-ration-1-description-du-sch-ma-de-fraude-carrousel"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-TVA-SECT-70-20-20220216",
+          "title": "TVA - Régimes sectoriels - Opérations intracommunautaires portant sur les moyens de transport neufs - Livraison dans un autre État membre",
+          "publication_date": "2022-02-16",
+          "section_path": "TVA - Régimes sectoriels - Opérations intracommunautaires portant sur les moyens de transport neufs - Livraison dans un autre État membre",
+          "text": "Les livraisons intracommunautaires de moyens de transport neufs effectuées par les assujettis habituels à la taxe sur la valeur ajoutée (TVA), à destination d'assujettis ou de personnes morales non assujetties disposant d'un numéro d'identification à la TVA dans leur État membre, sont exonérées en vertu de l' article 262 ter du code général des impôts (CGI) dès lors que les conditions requises par cet article sont réunies (numéro d'identification à la TVA de l'acquéreur et expédition du bien à destination d'un autre État membre). Ces livraisons doivent notamment figurer dans les états récapitulatifs souscrits auprès du service des douanes. Le régime spécifique applicable aux opérations intracommunautaires portant sur des moyens de transport neufs prévu à l' article 298 sexies du CGI concerne : - d'une part, les livraisons intracommunautaires de moyens de transport neufs effectuées par les assujettis habituels à la TVA, à destination des personnes bénéficiant d'un régime dérogatoire (PBRD) ou des autres personnes non assujetties (particuliers) ; - d'autre part, les livraisons intracommunautaires des mêmes biens par des personnes réalisant à titre occasionnel une telle opération à destination de tout acheteur (assujetti ou non-assujetti). La réalisation de ces opérations entraîne en toute hypothèse l'obligation de délivrer une facture et d'y faire figurer les caractéristiques du moyen de transport neuf, telles qu'elles sont définies au III de l'article 298 sexies du CGI.",
+          "chunk_id": "690-PGP__section_window__690-pgp-paragraph-00000__690-pgp-paragraph-00004__tva-r-gimes-sectoriels-op-rations-intracommunautaires-portant-sur-les-moyens-de-transport-neufs-livraison-dans-un-autre-tat-membre"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-TVA-CHAMP-30-20-10-20201014",
+          "title": "TVA - Champ d'application et territorialité - Livraisons intracommunautaires de biens exonérées",
+          "publication_date": "2020-10-14",
+          "section_path": "I. Livraisons intracommunautaires exonérées > C. Refus du bénéfice de l'exonération > 1. Description du schéma de fraude « carrousel »",
+          "text": "La société (A) effectue une livraison intracommunautaire à la société (B), pour un montant hors taxes de 100 000 €. La société (B) (société défaillante dite société « taxi »), revend à la société (C) pour 100 000 € TTC (soit 83 333 € hors taxes pour un taux de TVA de 20 %), en facturant un montant de TVA qu'elle ne déclare pas, avant de disparaître (la société B peut facturer une marge, le prix HT restera toutefois inférieur au prix normal du marché). La société (C) va pouvoir imputer (ou se faire rembourser) la TVA facturée par (B), soit 16 667 €. La société (C) a payé un prix HT de 83 333 €, soit 16,7 % de moins que le prix de vente de (A) à (B) (qui est en général le prix du marché). Elle bénéficie donc d'un avantage concurrentiel déloyal sur les autres entreprises du secteur qui se traduit par la capacité d'écouler sa marchandise sur le marché à prix cassé du fait du montage frauduleux. Afin de renforcer le dispositif de lutte contre la fraude touchant à la TVA intracommunautaire et, en particulier, celle qui concerne les schémas « carrousélistes », le deuxième alinéa du 1° du I de l' article 262 ter du CGI prévoit que l'exonération ne s'applique pas lorsqu'il est démontré que le fournisseur savait ou ne pouvait ignorer que le destinataire présumé de l'expédition ou du transport n'avait pas d'activité réelle. Par ailleurs :",
+          "chunk_id": "697-PGP__section_window__697-pgp-paragraph-00102__697-pgp-paragraph-00107__i-livraisons-intracommunautaires-exon-r-es-c-refus-du-b-n-fice-de-l-exon-ration-1-description-du-sch-ma-de-fraude-carrousel"
+        }
+      ]
+    },
+    {
+      "case_id": "r05_cir_jei",
+      "query": "J ai cree une startup en biotechnologie il y a 1 an. Je veux cumuler le statut de Jeune Entreprise Innovante et le credit impot recherche. Est-ce possible et comment ca marche ?",
+      "rewritten_query": "Dans le cadre de la création d’une entreprise exerçant une activité dans le secteur des biotechnologies, il y a un an, vous sollicitez des informations relatives à la possibilité de cumuler le statut fiscal de Jeune Entreprise Innovante (JEI), tel que défini à l’article 44 sexies-0 A du Code Général des Impôts (CGI), avec le bénéfice du Crédit d’Impôt Recherche (CIR), prévu à l’article 244 quater B du même code. Vous interrogez également sur les modalités pratiques de mise en œuvre de ce cumul.\n\nLe cumul du statut JEI et du CIR est juridiquement possible, sous réserve de remplir les conditions propres à chaque dispositif. Le statut JEI ouvre droit à des exonérations de cotisations sociales patronales et d’impôt sur les bénéfices (",
+      "category": "cross",
+      "note": "JEI CIR cumul exoneration cotisations",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Oui, il est possible de cumuler le statut JEI et le CIR. Les JEI peuvent bénéficier du CIR et demander son remboursement immédiat.\n\n- Les JEI peuvent bénéficier du CIR et du CICo, même si elles sont exonérées d'impôt sur les bénéfices [4].\n- Les JEI peuvent demander le remboursement immédiat du CIR et du CICo [4].\n- Les entreprises exonérées en application de l'article 44 sexies A du CGI peuvent bénéficier du CIR si elles remplissent les autres conditions [6].\n\nLimites: Aucune limite majeure dans les extraits fournis.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"axes_requis\": [\n    \"Cumul du statut JEI et du CIR\",\n    \"Conditions d'éligibilité au statut JEI\",\n    \"Modalités de cumul JEI et CIR\"\n  ],\n  \"axes_couverts\": [\n    \"Cumul du statut JEI et du CIR\",\n    \"Conditions d'éligibilité au statut JEI\",\n    \"Modalités de cumul JEI et CIR\"\n  ],\n  \"axes_manquants\": [],\n  \"conclusion\": \"Oui, il est possible de cumuler le statut JEI et le CIR. Les JEI peuvent bénéficier du CIR et demander son remboursement immédiat.\",\n  \"justification_bullets\": [\n    \"Les JEI peuvent bénéficier du CIR et du CICo, même si elles sont exonérées d'impôt sur les bénéfices [4].\",\n    \"Les JEI peuvent demander le remboursement immédiat du CIR et du CICo [4].\",\n    \"Les entreprises exonérées en application de l'article 44 sexies A du CGI peuvent bénéficier du CIR si elles remplissent les autres conditions [6].\"\n  ],\n  \"limits\": \"Aucune limite majeure dans les extraits fournis.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "axes_requis": [
+          "Cumul du statut JEI et du CIR",
+          "Conditions d'éligibilité au statut JEI",
+          "Modalités de cumul JEI et CIR"
+        ],
+        "axes_couverts": [
+          "Cumul du statut JEI et du CIR",
+          "Conditions d'éligibilité au statut JEI",
+          "Modalités de cumul JEI et CIR"
+        ],
+        "axes_manquants": [],
+        "conclusion": "Oui, il est possible de cumuler le statut JEI et le CIR. Les JEI peuvent bénéficier du CIR et demander son remboursement immédiat.",
+        "justification_bullets": [
+          "Les JEI peuvent bénéficier du CIR et du CICo, même si elles sont exonérées d'impôt sur les bénéfices [4].",
+          "Les JEI peuvent demander le remboursement immédiat du CIR et du CICo [4].",
+          "Les entreprises exonérées en application de l'article 44 sexies A du CGI peuvent bénéficier du CIR si elles remplissent les autres conditions [6]."
+        ],
+        "limits": "Aucune limite majeure dans les extraits fournis."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          4,
+          6
+        ],
+        "cite_count": 3,
+        "errors": [],
+        "axes_requis": [
+          "Cumul du statut JEI et du CIR",
+          "Conditions d'éligibilité au statut JEI",
+          "Modalités de cumul JEI et CIR"
+        ],
+        "axes_manquants": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-SJ-RES-10-20-20-40-20181107",
+          "title": "SJ - Garantie contre les changements de position de l'administration fiscale - Garantie contre les changements de doctrine - Procédures de rescrit fiscal - Garantie apportée par une prise de position formelle sur l'appréciation d'une situation de fait - Rescrits spécifiques avec l'accord implicite en cas d'absence de réponse de l'administration dans un délai encadré - Rescrits relatifs aux jeunes entreprises innovantes (JEI) ou aux jeunes entreprises universitaires (JEU)",
+          "publication_date": "2018-11-07",
+          "section_path": "I. Champ d'application de la garantie",
+          "text": "Le dispositif prévu au 4° de l’ article L. 80 B du livre des procédures fiscales (LPF) s'applique aux jeunes entreprises innovantes (JEI) et aux jeunes entreprises universitaires (JEU) au sens du b du 3° de l' article 44 sexies-0 A du code général des impôts (CGI) . Remarque : Le statut de JEI ayant été étendu aux JEU qui constituent une catégorie particulière de JEI. Pour prétendre aux avantages fiscaux et sociaux attachés à ce statut, l’entreprise doit remplir les conditions prévues par l’article 44 sexies-0 A du CGI qui concernent notamment sa taille, son âge, l’engagement d’un montant minimum de dépenses de recherche, les modalités de détention de capital et le caractère réellement nouveau de l’activité. Le I de l' article 44 sexies A du CGI tire les conséquences fiscales de l’obtention de ce statut de JEI au regard du montant et de la durée d’exonération d’impôt sur les sociétés. Toutes les entreprises exerçant une activité industrielle, commerciale ou non commerciale, quels que soient leur forme ou leur régime d’imposition, peuvent prétendre au statut de JEI. Ce dispositif est commenté au BOI-BIC-CHAMP-80-20-20 pour les JEI et au III-B § 250 et suivants du BOI-BIC-CHAMP-80-20-20-10 pour les JEU.",
+          "chunk_id": "650-PGP__section_window__650-pgp-paragraph-00000__650-pgp-paragraph-00005__i-champ-d-application-de-la-garantie"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-BIC-CHAMP-80-20-20-20-20240703",
+          "title": "BIC - Champ d'application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Portée et calcul des allègements fiscaux",
+          "publication_date": "2024-07-03",
+          "section_path": "BIC - Champ d'application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Portée et calcul des allègements fiscaux",
+          "text": "Actualité liée : [node:date:14329-PGP] : BIC - IF - Suppression de l'exonération d'impôt sur les bénéfices en faveur des jeunes entreprises innovantes - Création d'une nouvelle catégorie dite « jeune entreprise de croissance » (loi n° 2024-1322 du 29 décembre 2023 de finances pour 2024, art. 44 et 69) Les entreprises qui répondent aux conditions fixées par l' article 44 sexies-0 A du code général des impôts (CGI) et qui sont donc qualifiées de jeunes entreprises innovantes (JEI) sont notamment susceptibles de bénéficier d'une exonération d'impôt sur les sociétés ou d'impôt sur le revenu : à 100 % à raison des bénéfices réalisés au titre du premier exercice bénéficiaire ; puis à 50 % à raison des bénéfices réalisés au titre de l'exercice bénéficiaire suivant. Le bénéfice de l'exonération est subordonné au respect du règlement (UE) n° 1407/2013 de la Commission du 18 décembre 2013 modifié relatif à l'application des articles 107 et 108 du traité sur le fonctionnement de l'Union européenne aux aides de minimis . Conformément aux dispositions de l' article 69 de la loi n° 2023-1322 du 29 décembre 2023 de finances pour 2024 , le bénéfice de cette exonération est réservé aux entreprises créées jusqu'au 31 décembre 2023. Les entreprises créées depuis le 1 er janvier 2024, bien que répondant aux conditions fixées par l'article 44 sexies-0 A du CGI, ne peuvent donc plus bénéficier de l'exonération d'impôt sur les sociétés ou d'impôt sur le revenu.",
+          "chunk_id": "5357-PGP__section_window__5357-pgp-paragraph-00000__5357-pgp-paragraph-00005__bic-champ-d-application-et-territorialit-exon-rations-entreprises-exer-ant-une-activit-particuli-re-jeunes-entreprises-innovantes-jeunes-entreprises-universitaires-et-jeunes-entreprises-de-croissance-port-e-et-calcul-des-all-gements-fiscaux"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-BIC-CHAMP-80-20-20-10-20250716",
+          "title": "BIC - Champ d’application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Conditions d’éligibilité",
+          "publication_date": "2025-07-16",
+          "section_path": "BIC - Champ d’application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Conditions d’éligibilité",
+          "text": "Actualité liée : [node:date:14664-PGP] : BIC - Rehaussement à 20 % du seuil de dépenses et modifications des modalités de calcul du volume de dépenses de recherche permettant la qualification de jeune entreprise innovante (JEI) (loi n° 2025-199 du 28 février 2025 de financement de la sécurité sociale pour 2025, art. 22, V) Conformément aux dispositions de l’ article 44 sexies-0 A du code général des impôts (CGI) , une entreprise est qualifiée de « jeune entreprise innovante réalisant des projets de recherche et de développement » (JEI) lorsque, à la clôture de l’exercice, elle remplit simultanément des conditions tenant : à sa taille (moins de 250 salariés et chiffre d’affaires inférieur à 50 millions d’euros ou total du bilan inférieur à 43 millions d’euros) ; à son âge (création depuis moins de huit ans) ; à son volume de dépenses de recherche (20 % des charges fiscalement déductibles) ou à sa nature de jeune entreprise universitaire (JEU) ou de jeune entreprise de croissance (JEC) ; à la composition de son capital (détention de manière continue à 50 % au moins par des personnes physiques ou certaines personnes morales ou structures non dotées de la personnalité morale limitativement énumérées) ; au caractère réellement nouveau de son activité. La qualification de JEI est applicable à toutes les formes d’entreprises. Sont ainsi concernés, s’ils satisfont aux autres conditions : les entrepreneurs individuels relevant de l’impôt sur le revenu dans la catégorie des bénéfices industriels et commerciaux ou des bénéfices non commerciaux ;",
+          "chunk_id": "5356-PGP__section_window__5356-pgp-paragraph-00000__5356-pgp-paragraph-00008__bic-champ-d-application-et-territorialit-exon-rations-entreprises-exer-ant-une-activit-particuli-re-jeunes-entreprises-innovantes-jeunes-entreprises-universitaires-et-jeunes-entreprises-de-croissance-conditions-d-ligibilit"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-BIC-CHAMP-80-20-20-20-20240703",
+          "title": "BIC - Champ d'application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Portée et calcul des allègements fiscaux",
+          "publication_date": "2024-07-03",
+          "section_path": "I. Nature des avantages > B. Articulation avec le bénéfice du crédit d'impôt pour dépenses de recherche (CIR) et du crédit d'impôt en faveur de la recherche collaborative (CICo)",
+          "text": "Le I de l' article 244 quater B du CGI et le I de l' article 244 quater B bis du CGI prévoient expressément que les entreprises exonérées d'impôt sur les bénéfices en application de l' article 44 sexies A du CGI peuvent également solliciter le bénéfice du CIR et du CICo. De plus, le 3° du II de l' article 199 ter B du CGI et le 3° du II de l' article 199 ter B bis du CGI prévoient la possibilité pour les JEI mentionnées à l' article 44 sexies-0 A du CGI de demander le remboursement immédiat du CIR et du CICo. Ainsi, les JEI, quelle que soit leur année de création, peuvent bénéficier du remboursement immédiat de leur créance de CIR ou de CICo constatée au titre d'une année au cours de laquelle elles bénéficient de la qualification de JEI.",
+          "chunk_id": "5357-PGP__section_window__5357-pgp-paragraph-00013__5357-pgp-paragraph-00014__i-nature-des-avantages-b-articulation-avec-le-b-n-fice-du-cr-dit-d-imp-t-pour-d-penses-de-recherche-cir-et-du-cr-dit-d-imp-t-en-faveur-de-la-recherche-collaborative-cico"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-IF-CFE-10-30-60-20-20250716",
+          "title": "IF - Cotisation foncière des entreprises - Champ d’application - Personnes et activités exonérées - Autres exonérations facultatives temporaires - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance",
+          "publication_date": "2025-07-16",
+          "section_path": "II. Exonération en faveur des JEI, des jeunes entreprises universitaires (JEU) et des jeunes entreprises de croissance (JEC) > C. Condition tenant à la réalisation d’un volume de dépenses de recherche ou à la nature de JEU ou de JEC > 3. Cas des JEC",
+          "text": "L’ article 44 de la loi n° 2023-1322 du 29 décembre 2023 de finances pour 2024 a créé pour la qualification de JEI un autre critère alternatif ( CGI, art. 44 sexies-0 A, 3°-c ) à celui de la réalisation d’un seuil de dépenses de recherche à 20 % des charges. Ainsi, les entreprises qui satisfont à l’ensemble des critères mentionnés aux 1°, 4° et 5° de l’article 44 sexies-0 A du CGI sont considérées comme des JEI dès lors qu’elles satisfont également aux conditions cumulatives suivantes : elles ont réalisé des dépenses de recherche représentant entre 5 % et 20 % des charges des charges fiscalement déductibles au titre de ce même exercice ; Ce seuil de 20 % s’applique pour la CFE due à compter du 1 er janvier 2026. Remarque : Antérieurement, ce seuil était de 15 %. elles satisfont à des indicateurs de performance économique définis à l’ article 49 Q de l’annexe III au CGI dans sa rédaction issue du décret n° 2024-464 du 24 mai 2024 relatif à la définition des indicateurs de performance économique prévus au c du 3° de l’article 44 sexies-0 A du code général des impôts . Elles constituent une catégorie de JEI, dénommées « jeunes entreprises de croissance ». Les conditions de qualification de JEC ainsi que la date d’appréciation du respect de ces conditions sont exposées au III-C § 541 et suivants du BOI-BIC-CHAMP-80-20-20-10.",
+          "chunk_id": "2871-PGP__section_window__2871-pgp-paragraph-00046__2871-pgp-paragraph-00053__ii-exon-ration-en-faveur-des-jei-des-jeunes-entreprises-universitaires-jeu-et-des-jeunes-entreprises-de-croissance-jec-c-condition-tenant-la-r-alisation-d-un-volume-de-d-penses-de-recherche-ou-la-nature-de-jeu-ou-de-jec-3-cas-des-jec"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-BIC-RICI-10-10-10-10-20241204",
+          "title": "BIC - Réductions et crédits d'impôt - Crédit d'impôt recherche - Champ d'application - Entreprises concernées",
+          "publication_date": "2024-12-04",
+          "section_path": "BIC - Réductions et crédits d'impôt - Crédit d'impôt recherche - Champ d'application - Entreprises concernées",
+          "text": "Aux termes du premier alinéa de l’article 244 quater B du CGI, les entreprises exonérées en application de l’ article 44 sexies du CGI , de l’ article 44 sexies A du CGI , de l’ article 44 octies A du CGI , de l’ article 44 duodecies du CGI et de l’ article 44 terdecies du CGI à l’ article 44 septdecies du CGI peuvent bénéficier du CIR pour autant qu’elles remplissent par ailleurs les autres conditions prévues à l’article 244 quater B du CGI. Ainsi, sont exclues du bénéfice du CIR les entreprises exonérées d’impôt sur le revenu ou d’impôt sur les sociétés par une autre disposition. En revanche, le fait d’exercer une activité sous la forme d’une structure associative ne constitue pas en soi un obstacle au bénéfice du CIR. En effet, les associations professionnelles peuvent bénéficier du CIR dès lors, notamment, qu’elles exercent une activité économique afin d’être qualifiables d’entreprises et sont soumises à l’impôt sur les sociétés. Elles doivent donc exercer des activités lucratives de nature industrielle, commerciale ou agricole ( RM Gérard n° 59458, JO AN 17 août 2010, p. 9056 ).",
+          "chunk_id": "6484-PGP__section_window__6484-pgp-paragraph-00007__6484-pgp-paragraph-00008__bic-r-ductions-et-cr-dits-d-imp-t-cr-dit-d-imp-t-recherche-champ-d-application-entreprises-concern-es"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-BIC-CHAMP-80-20-20-20-20240703",
+          "title": "BIC - Champ d'application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Portée et calcul des allègements fiscaux",
+          "publication_date": "2024-07-03",
+          "section_path": "III. Combinaison du dispositif avec d'autres régimes d'exonération",
+          "text": "Au cas particulier, conformément au III de l’article 44 sexies A du CGI et au III § 200 à 230, 250 et 260 , lorsqu’une JEI réalisant des projets de recherche et de développement répond aux conditions requises pour bénéficier de l’un des régimes prévus à l'article 44 sexies du CGI, à l'article 44 septies du CGI, à l'article 44 octies du CGI, à l'article 44 decies du CGI, à l'article 244 quater E du CGI ou à l'article 44 sexies A du CGI en faveur des JEI et qu’elle décide d’opter pour le régime de faveur accordé aux JEI, elle doit notifier cette option au service des impôts dont elle relève dans les neuf mois suivant celui de son début d’activité ou dans les neuf premiers mois de l’exercice au titre duquel elle souhaite bénéficier des allègements prévus par l’article 44 sexies A du CGI. L’option est alors irrévocable, à condition toutefois que l’entreprise remplisse effectivement les conditions requises pour bénéficier de la qualification de JEI. Dans l’hypothèse où une entreprise répond aux seules conditions requises pour bénéficier du statut de JEI, elle n’a pas, par hypothèse, d’option à exercer. Le bénéfice de ce régime est acquis dès lors que l’entreprise remplit l’ensemble des conditions d’éligibilité au statut de JEI fixées à l’article 44 sexies-0 A du CGI et qu’elle a par ailleurs satisfait à ses obligations déclaratives en cochant, s’il s’agit d’une entreprise au réel normal, les imprimés 2065-SD (CERFA n° 11084) et 2058-A-SD (CERFA n° 10951), disponibles en ligne sur www.impots.gouv.fr.",
+          "chunk_id": "5357-PGP__section_window__5357-pgp-paragraph-00075__5357-pgp-paragraph-00077__iii-combinaison-du-dispositif-avec-d-autres-r-gimes-d-exon-ration"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-BIC-CHAMP-80-20-20-10-20250716",
+          "title": "BIC - Champ d’application et territorialité - Exonérations - Entreprises exerçant une activité particulière - Jeunes entreprises innovantes, jeunes entreprises universitaires et jeunes entreprises de croissance - Conditions d’éligibilité",
+          "publication_date": "2025-07-16",
+          "section_path": "III. Condition tenant à la réalisation d’un volume de dépenses de recherche ou à la nature de JEU ou de JEC > B. Cas des JEU > 2. Conditions tenant à la valorisation de travaux de recherche > b. Valorisation de travaux de recherche > 2° Modalités de la valorisation des travaux de recherche",
+          "text": "La valorisation des travaux de recherche par la JEU est réalisée dans le cadre d’une convention conclue entre cette entreprise et l’établissement d’enseignement supérieur au sein duquel les travaux de recherche ont été effectués. Le contenu et les modalités de cette convention sont prévues par le décret n° 2008-1560 du 31 décembre 2008 relatif à la convention liant une jeune entreprise innovante et un établissement d’enseignement supérieur pour l’application de l’article 44 sexies-0 A du code général des impôts .",
+          "chunk_id": "5356-PGP__section_window__5356-pgp-paragraph-00193__5356-pgp-paragraph-00194__iii-condition-tenant-la-r-alisation-d-un-volume-de-d-penses-de-recherche-ou-la-nature-de-jeu-ou-de-jec-b-cas-des-jeu-2-conditions-tenant-la-valorisation-de-travaux-de-recherche-b-valorisation-de-travaux-de-recherche-2-modalit-s-de-la-valorisation-des-travaux-de-recherche"
+        }
+      ]
+    }
+  ]
+}

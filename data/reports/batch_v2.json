@@ -1,0 +1,438 @@
+{
+  "generated_at": "2026-05-12T19:59:52.559165+00:00",
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "case_count": 4,
+  "valid_count": 4,
+  "rows": [
+    {
+      "case_id": "cto",
+      "query": "Comment sont imposes les gains d un compte-titres ordinaire pour un resident fiscal francais ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[INSUFFICIENT_EVIDENCE] Les extraits ne traitent pas du régime général des comptes-titres ordinaires.\n\n- Les extraits concernent les FCC, l'actionnariat salarié et les non-résidents, pas le compte-titres ordinaire.\n- Aucun extrait ne décrit le PFU ou le barème progressif pour les gains de cession de valeurs mobilières.\n\nLimites: Seuls les extraits fournis sont utilisés; d'autres règles peuvent s'appliquer.",
+      "raw": "{\n  \"answer_status\": \"insufficient_evidence\",\n  \"conclusion\": \"Les extraits ne traitent pas du régime général des comptes-titres ordinaires.\",\n  \"justification_bullets\": [\n    \"Les extraits concernent les FCC, l'actionnariat salarié et les non-résidents, pas le compte-titres ordinaire.\",\n    \"Aucun extrait ne décrit le PFU ou le barème progressif pour les gains de cession de valeurs mobilières.\"\n  ],\n  \"limits\": \"Seuls les extraits fournis sont utilisés; d'autres règles peuvent s'appliquer.\"\n}",
+      "structured": {
+        "answer_status": "insufficient_evidence",
+        "conclusion": "Les extraits ne traitent pas du régime général des comptes-titres ordinaires.",
+        "justification_bullets": [
+          "Les extraits concernent les FCC, l'actionnariat salarié et les non-résidents, pas le compte-titres ordinaire.",
+          "Aucun extrait ne décrit le PFU ou le barème progressif pour les gains de cession de valeurs mobilières."
+        ],
+        "limits": "Seuls les extraits fournis sont utilisés; d'autres règles peuvent s'appliquer."
+      },
+      "validation": {
+        "valid": true,
+        "status": "insufficient_evidence",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 2,
+        "cite_ids": [],
+        "cite_count": 0,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-RPPM-RCM-40-40-20191220",
+          "title": "RPPM - Revenus de capitaux mobiliers, gains et profits assimilés - Régimes particuliers - Fonds communs de créances (FCC) et organismes de titrisation",
+          "publication_date": "2019-12-20",
+          "section_path": "II. Régime fiscal des porteurs de parts de fonds communs de créances ou de fonds communs de titrisation ne supportant pas de risques d'assurance > A. Personnes physiques fiscalement domiciliées en France > 2. Modalités d'imposition > b. Gains de cession > 1° Régime d'imposition > a° Parts de plus de cinq ans",
+          "text": "Les gains nets de cession de parts de FCC ou de fonds communs de titrisation réalisés par les personnes physiques relèvent des dispositions du 5 du II de l' article 150-0 A du CGI ( BOI-RPPM-PVBMI-10-10-10 au II-A § 120 ). Ces gains sont imposés au nom du copropriétaire cédant suivant les modalités prévues au 1 ou au 2 de l' article 200 A du CGI ( BOI-RPPM-RCM-20-15 ).",
+          "chunk_id": "716-PGP__section_window__716-pgp-paragraph-00049__716-pgp-paragraph-00049__ii-r-gime-fiscal-des-porteurs-de-parts-de-fonds-communs-de-cr-ances-ou-de-fonds-communs-de-titrisation-ne-supportant-pas-de-risques-d-assurance-a-personnes-physiques-fiscalement-domicili-es-en-france-2-modalit-s-d-imposition-b-gains-de-cession-1-r-gime-d-imposition-a-parts-de-plus-de-cinq-ans"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-40-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (modalités pratiques)",
+          "publication_date": "2025-08-12",
+          "section_path": "II. Imputation et régularisation de la retenue > C. Gains imposés au tarif prévu pour les traitements et salaires > 3. Imputation et restitution de la retenue à la source",
+          "text": "Le bénéficiaire domicilié hors de France porte sur sa déclaration annuelle de revenus n° 2042 (CERFA n° 10330), disponible sur impots.gouv.fr, la fraction du montant des gains de source française provenant de dispositifs d’actionnariat salarié qui a été imposée au taux de 20 % (14,4 % dans les DOM) au cours de l’année ainsi que ses autres revenus de source française dont il a disposé au cours de l’année. La retenue à la source au taux de 20 % (ou 14,4 %) prélevée sur ces gains n’est pas déduite du montant des gains déclarés mais elle s’impute sur le montant de l’impôt sur le revenu calculé sur l’ensemble des revenus de source française du contribuable. En application de l’ article 197 A du CGI , l’impôt sur le revenu dû par les contribuables domiciliés hors de France est alors calculé en appliquant le barème progressif de l’impôt sur le revenu de droit commun. Cet impôt ne peut être inférieur à un montant calculé en appliquant un taux de 20 % à la fraction du revenu net imposable inférieure ou égale à la limite supérieure de la deuxième tranche du barème de l’impôt sur le revenu et un taux de 30 % à la fraction supérieure à cette limite. Ces taux de 20 % et 30 % sont ramenés respectivement à 14,4 % et 20 % dans les DOM. Lorsque le contribuable justifie que le taux de l’impôt français sur l’ensemble de ses revenus de source française ou étrangère serait inférieur à ces minima, ce taux est applicable à ses revenus de source française.",
+          "chunk_id": "3923-PGP__section_window__3923-pgp-paragraph-00062__3923-pgp-paragraph-00066__ii-imputation-et-r-gularisation-de-la-retenue-c-gains-impos-s-au-tarif-pr-vu-pour-les-traitements-et-salaires-3-imputation-et-restitution-de-la-retenue-la-source"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-RPPM-RCM-40-40-20191220",
+          "title": "RPPM - Revenus de capitaux mobiliers, gains et profits assimilés - Régimes particuliers - Fonds communs de créances (FCC) et organismes de titrisation",
+          "publication_date": "2019-12-20",
+          "section_path": "II. Régime fiscal des porteurs de parts de fonds communs de créances ou de fonds communs de titrisation ne supportant pas de risques d'assurance > A. Personnes physiques fiscalement domiciliées en France > 2. Modalités d'imposition > b. Gains de cession > 1° Régime d'imposition > b° Parts de cinq ans ou moins",
+          "text": "Les gains retirés par les personnes physiques de la cession de parts suivent le régime fiscal applicable aux plus-values de cession des titres de créances négociables qui est prévu à l' article 124 B du CGI et à l' article 124 C du CGI ( BOI-RPPM-RCM-20-10-20-40 et BOI-RPPM-RCM-10-10-70 ). Ces gains sont imposables dans les mêmes conditions que les produits ( II-A-2-a-1°-a° § 70 ).",
+          "chunk_id": "716-PGP__section_window__716-pgp-paragraph-00050__716-pgp-paragraph-00051__ii-r-gime-fiscal-des-porteurs-de-parts-de-fonds-communs-de-cr-ances-ou-de-fonds-communs-de-titrisation-ne-supportant-pas-de-risques-d-assurance-a-personnes-physiques-fiscalement-domicili-es-en-france-2-modalit-s-d-imposition-b-gains-de-cession-1-r-gime-d-imposition-b-parts-de-cinq-ans-ou-moins"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-INT-DG-20-20-20-20-20120912",
+          "title": "INT – Dispositions communes - Droit conventionnel - Modalités d'imposition au regard du droit conventionnel - Dividendes - Modalités pratiques d'obtention des avantages conventionnels sur les distributions de dividendes de source française à des résidents d’Etats ayant conclu avec la France une convention fiscale",
+          "publication_date": "2012-09-12",
+          "section_path": "II. Modalités d’obtention des avantages conventionnels > B. Procédure simplifiée > 3. Obligations de l’établissement payeur en France > a. Procédure « papier »",
+          "text": "L’établissement payeur en France, qu’il gère directement les comptes d‘actionnaires non-résidents ou qu’il intervienne simplement dans le paiement de dividendes à des actionnaires dont les comptes sont gérés à l’étranger, doit fournir à l’administration fiscale française les trois types de documents suivants. Ceux-ci peuvent être établis, à leur convenance, soit par l’établissement français lui-même, soit le cas échéant, par l’établissement qui gère le compte à l’étranger. Le premier de ces documents (ci-après dénommée « liste nominative ») est une liste nominative des bénéficiaires des revenus dont les intitulés sont libellés en langue française. Cette liste doit regrouper séparément par ordre alphabétique les personnes physiques, les sociétés, les OPCVM, les fonds de pension et le cas échéant les autres actionnaires. Par ailleurs, la liste comporte, pour chaque bénéficiaire des revenus les mentions suivantes : • identité de la société distributrice en France ; • identité et adresse complète de l’établissement qui gère le compte-titres à l’étranger ; • nom, prénom ou raison sociale et adresse complète de l’actionnaire ; • identifiant fiscal de l’actionnaire si cet identifiant existe ; • nature des titres détenus ; • nature des droits aux dividendes en cas de démembrement de la propriété des titres entre personnes autres que les personnes physiques ; • date de mise en paiement et nombre de coupons qui ont été payés à l’actionnaire ; • valeur unitaire du coupon ; • montant total des dividendes.",
+          "chunk_id": "3042-PGP__section_window__3042-pgp-paragraph-00101__3042-pgp-paragraph-00111__ii-modalit-s-d-obtention-des-avantages-conventionnels-b-proc-dure-simplifi-e-3-obligations-de-l-tablissement-payeur-en-france-a-proc-dure-papier"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-40-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (modalités pratiques)",
+          "publication_date": "2025-08-12",
+          "section_path": "II. Imputation et régularisation de la retenue > A. Dispositions générales > 2. Incidence sur les autres revenus et sur la contribution salariale",
+          "text": "Ces dispositions n’ont pas pour effet de limiter les obligations déclaratives des contribuables qui ne sont pas domiciliés fiscalement en France pour l’établissement de l’impôt sur le revenu sur leurs autres revenus et sont sans incidence sur les obligations relatives aux autres impositions dues par ces contribuables. Ainsi, lorsque les conditions d’assujettissement à la contribution salariale prévue à l’ article L. 137-14 du code de la sécurité sociale sont remplies, les gains de source française provenant d’actions gratuites ou d’options sur titres réalisés par des personnes non domiciliées fiscalement en France doivent être déclarés par ces personnes pour être soumis à cette contribution.",
+          "chunk_id": "3923-PGP__section_window__3923-pgp-paragraph-00025__3923-pgp-paragraph-00026__ii-imputation-et-r-gularisation-de-la-retenue-a-dispositions-g-n-rales-2-incidence-sur-les-autres-revenus-et-sur-la-contribution-salariale"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-IR-DOMIC-10-20-20-40-20250812",
+          "title": "IR - Situations particulières liées au domicile - Application du droit interne en l’absence de conventions fiscales internationales - Modalités d’imposition - Retenue applicable sur les gains de source française provenant de dispositifs d’actionnariat salarié (modalités pratiques)",
+          "publication_date": "2025-08-12",
+          "section_path": "I. Redevable, paiement et déclaration de la retenue à la source > A. Redevable > 3. Mise en œuvre",
+          "text": "La retenue doit être opérée même si le débiteur est établi ou domicilié à l’étranger. Lorsque le redevable de la retenue à la source n’est pas l’employeur ou l’entreprise qui a procédé à l’attribution des avantages salariaux sous forme de titres à des conditions préférentielles, il lui appartient de se faire communiquer par cet employeur et par le bénéficiaire les informations nécessaires pour établir et prélever la retenue. Pour les dispositifs légaux d’actionnariat salarié (options sur titres, actions gratuites, BSPCE), les obligations déclaratives prévoient une information des établissements teneurs du compte sur lequel sont inscrits les titres afin que le redevable dispose des informations nécessaires pour effectuer la retenue à la source. Pour le calcul de la retenue à la source, chaque débiteur applique le taux ou le tarif correspondant au montant total des avantages ou gains de source française pour lesquels il est redevable de la taxe en application du IV de l’ article 182 A ter du CGI au cours de l’année. Exemple : Si un contribuable procède, au cours de la même année, à plusieurs cessions de titres issus d’options (attribuées antérieurement au 28 septembre 2012) inscrits sur des comptes gérés par un même redevable, ce dernier doit assurer le suivi au cours de l’année civile des opérations réalisées sur ces comptes afin de prélever la retenue au taux majoré si le seuil de 152 500 € est franchi ou, en cas d’option pour les traitements et salaires, appliquer le barème progressif prévu au III de l’ article 182 A du CGI ( II § 250 et suivants du BOI-IR-DOMIC-10-20-20-30 ).",
+          "chunk_id": "3923-PGP__section_window__3923-pgp-paragraph-00007__3923-pgp-paragraph-00011__i-redevable-paiement-et-d-claration-de-la-retenue-la-source-a-redevable-3-mise-en-uvre"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-INT-DG-20-20-20-20-20120912",
+          "title": "INT – Dispositions communes - Droit conventionnel - Modalités d'imposition au regard du droit conventionnel - Dividendes - Modalités pratiques d'obtention des avantages conventionnels sur les distributions de dividendes de source française à des résidents d’Etats ayant conclu avec la France une convention fiscale",
+          "publication_date": "2012-09-12",
+          "section_path": "II. Modalités d’obtention des avantages conventionnels > B. Procédure simplifiée > 2. Obligations de l’établissement qui, le cas échéant, gère à l’étranger le compte-titres du non-résident",
+          "text": "Si des comptes de l’actionnaire sont gérés à l’étranger, le gestionnaire du compte à l’étranger, dès qu’il est en possession des attestations de résidence, doit faire connaître à l’établissement payeur en France, avant le paiement des dividendes, le montant global des dividendes auxquels ont droit ces actionnaires et pour lesquels cet établissement payeur peut appliquer le taux réduit de retenue à la source prévu par la convention. Ce montant ne comprend pas les dividendes versés à des actionnaires qui n’ont pu fournir l’attestation en temps utile et, bien entendu, ne peut concerner des personnes qui l’ont fournie en temps utile mais ne sont plus actionnaires à la date de détachement du coupon. Le gestionnaire du compte à l’étranger fournit à l’établissement payeur en France, postérieurement à la mise en paiement des dividendes, et dans un délai permettant à l’établissement payeur en France de déposer la liste nominative et les pages récapitulatives prévues ci-après dans les 3 mois à compter de la fin du mois de la distribution, la liste des informations suivantes selon la présentation convenue entre ce gestionnaire et l’établissement payeur français : • identité de la société française distributrice ; • identité et adresse complète de l’établissement qui gère le compte-titres à l’étranger ; • nom, prénom ou raison sociale et adresse complète de l’actionnaire ; • identifiant fiscal de l’actionnaire si cet identifiant existe ; • nature des titres détenus ; • nature des droits aux dividendes en cas de démembrement de la propriété des titres entre personnes autre que les personnes physiques ; • date de mise en paiement et nombre de coupons qui ont été payés à l’actionnaire ; • valeur unitaire du coupon ;",
+          "chunk_id": "3042-PGP__section_window__3042-pgp-paragraph-00085__3042-pgp-paragraph-00095__ii-modalit-s-d-obtention-des-avantages-conventionnels-b-proc-dure-simplifi-e-2-obligations-de-l-tablissement-qui-le-cas-ch-ant-g-re-l-tranger-le-compte-titres-du-non-r-sident"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-RPPM-RCM-40-40-20191220",
+          "title": "RPPM - Revenus de capitaux mobiliers, gains et profits assimilés - Régimes particuliers - Fonds communs de créances (FCC) et organismes de titrisation",
+          "publication_date": "2019-12-20",
+          "section_path": "II. Régime fiscal des porteurs de parts de fonds communs de créances ou de fonds communs de titrisation ne supportant pas de risques d'assurance > A. Personnes physiques fiscalement domiciliées en France > 2. Modalités d'imposition > b. Gains de cession > 2° Calcul de la plus-value",
+          "text": "Le gain réalisé lors de la cession des parts est déterminé dans les conditions définies au premier alinéa du 1 et au 3 de l' article 150-0 D du CGI ( BOI-RPPM-PVBMI-20-10 ). Dès lors, le gain est constitué par la différence entre le prix effectif de cession des parts, net des frais et taxes acquittés par le cédant, et le prix effectif d'acquisition ou, en cas d'acquisition à titre gratuit, leur valeur retenue pour la détermination des droits de mutation. Le prix ou la valeur d'acquisition est augmenté des frais d'acquisition autres que les droits de mutation à titre gratuit. En cas d'acquisitions successives de parts d'un même fonds donnant lieu à des droits identiques sur le capital et les intérêts, le prix d'acquisition à retenir est la valeur moyenne pondérée d'acquisition de ces parts. Pour les titres qui ont fait l'objet d'un amortissement partiel entre la date de leur acquisition et celle de leur cession, le prix d'acquisition est diminué du montant du capital remboursé (lui-même éventuellement diminué de la prime de remboursement y afférente). Lorsque le prix d'acquisition est constitué par la valeur moyenne pondérée d'acquisition des parts, le prix d'acquisition à retenir pour le calcul de cette valeur doit également être diminué du montant du capital remboursé (lui-même éventuellement diminué de la prime de remboursement y afférente).",
+          "chunk_id": "716-PGP__section_window__716-pgp-paragraph-00052__716-pgp-paragraph-00055__ii-r-gime-fiscal-des-porteurs-de-parts-de-fonds-communs-de-cr-ances-ou-de-fonds-communs-de-titrisation-ne-supportant-pas-de-risques-d-assurance-a-personnes-physiques-fiscalement-domicili-es-en-france-2-modalit-s-d-imposition-b-gains-de-cession-2-calcul-de-la-plus-value"
+        }
+      ]
+    },
+    {
+      "case_id": "tva",
+      "query": "Quel est le taux de TVA applicable aux travaux de renovation energetique ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Le taux réduit de 5,5% s'applique aux travaux de rénovation énergétique en France métropolitaine et en Corse.\n\n- Le taux réduit de 5,5% est applicable aux prestations de rénovation énergétique [1].\n- En Corse, le taux est de 5,5% et de 2,10% dans les DOM (Guadeloupe, Martinique, La Réunion) [1].\n- Les prestations éligibles incluent isolation, équipements de chauffage renouvelable, ventilation [4].\n\nLimites: Se référer aux conditions détaillées dans les extraits BOFiP pour l'éligibilité précise.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Le taux réduit de 5,5% s'applique aux travaux de rénovation énergétique en France métropolitaine et en Corse.\",\n  \"justification_bullets\": [\n    \"Le taux réduit de 5,5% est applicable aux prestations de rénovation énergétique [1].\",\n    \"En Corse, le taux est de 5,5% et de 2,10% dans les DOM (Guadeloupe, Martinique, La Réunion) [1].\",\n    \"Les prestations éligibles incluent isolation, équipements de chauffage renouvelable, ventilation [4].\"\n  ],\n  \"limits\": \"Se référer aux conditions détaillées dans les extraits BOFiP pour l'éligibilité précise.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Le taux réduit de 5,5% s'applique aux travaux de rénovation énergétique en France métropolitaine et en Corse.",
+        "justification_bullets": [
+          "Le taux réduit de 5,5% est applicable aux prestations de rénovation énergétique [1].",
+          "En Corse, le taux est de 5,5% et de 2,10% dans les DOM (Guadeloupe, Martinique, La Réunion) [1].",
+          "Les prestations éligibles incluent isolation, équipements de chauffage renouvelable, ventilation [4]."
+        ],
+        "limits": "Se référer aux conditions détaillées dans les extraits BOFiP pour l'éligibilité précise."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          4
+        ],
+        "cite_count": 3,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-TVA-LIQ-30-20-95-20251022",
+          "title": "TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux d’amélioration de la qualité énergétique",
+          "publication_date": "2025-10-22",
+          "section_path": "III. Modalités d’application",
+          "text": "Les modalités d’application du taux réduit de 5,5 % de TVA sur les prestations de rénovation énergétique sont identiques à celles prévues au BOI-TVA-LIQ-30-20-90-40 , auquel il convient de se reporter. Ainsi, pour bénéficier du taux réduit sur les travaux qu’il engage, le client doit certifier sur le devis ou la facture établis par l’entreprise que les conditions pour le bénéfice du taux réduit sont remplies dans les mêmes conditions que celles prévues pour l’application du taux prévu par l’ article 279-0 bis du CGI ( II § 60 et suivants du BOI-TVA-LIQ-30-20-90-40 ). Outre les éléments figurant au II-A § 80 du BOI-TVA-LIQ-30-20-90-40 , le preneur doit certifier que les prestations de rénovation énergétique portent sur la fourniture, la pose, l’installation ou l’entretien des matériaux, appareils et équipements dans les conditions fixées par l’ article 278-0 bis A du CGI . Le preneur n’a pas à attester de l’objet des travaux ou du respect des critères fixés par les dispositions de l’ article 30-0 D de l’annexe IV au CGI à l’ article 30-0 D nonies de l’annexe IV au CGI en application de l’article 278-0 bis A du CGI. Le taux applicable aux travaux d’amélioration de la qualité énergétique est de 5,5 % en Corse et de 2,10 % dans les départements de Guadeloupe, de Martinique et de La Réunion.",
+          "chunk_id": "9417-PGP__section_window__9417-pgp-paragraph-00070__9417-pgp-paragraph-00074__iii-modalit-s-d-application"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-RES-TVA-000206-20251022",
+          "title": "RES - Taxe sur la valeur ajoutée - Liquidation - Taux de TVA applicable aux prestations d’audit énergétique",
+          "publication_date": "2025-10-22",
+          "section_path": "Réponse : > 1/ Cadre juridique",
+          "text": "En application de l’ article 278-0 bis A du CGI , la TVA est perçue au taux réduit de 5,5 % en ce qui concerne les prestations de rénovation énergétique qui sont effectuées dans des locaux achevés depuis au moins deux ans et destinés à un usage d’habitation. Ces prestations portent sur la pose, l’installation, l’adaptation ou l’entretien de matériaux, d’équipements, d’appareils ou de systèmes ayant pour objet d’économiser l’énergie ou de recourir à de l’énergie produite à partir de sources renouvelables par l’amélioration de l’isolation thermique, du chauffage et de la ventilation ou de la production d’eau chaude sanitaire. En revanche, les prestations d’études sont soumises au taux normal de 20 % de la TVA ( I-D § 190 du BOI-TVA-LIQ-30-20-90-30 ). Il ne pourrait en être différemment sans méconnaitre l’ annexe III de la directive 2006/112/CE du Conseil du 28 novembre 2006 modifiée relative au système commun de taxe sur la valeur ajoutée (dite « directive TVA ») qui liste de manière exhaustive les biens et services pouvant bénéficier d’un taux réduit, laquelle liste ne mentionne pas les prestations d’audit énergétique. Par ailleurs, des règles particulières sont prévues lorsque des éléments relevant de taux différents sont regroupés dans une même opération économique. En effet, en présence d’une offre commerciale composée d’éléments relevant de taux de TVA différents, la détermination du taux de TVA applicable dépend de la qualification de l’opération et de ses éléments. À cet égard, l’ article 257 ter du CGI et l’ article 278-0 du CGI précisent, conformément aux principes dégagés par la Cour de justice de l’Union européenne (CJUE), la démarche à adopter dans une telle situation.",
+          "chunk_id": "14669-PGP__section_window__14669-pgp-paragraph-00002__14669-pgp-paragraph-00005__r-ponse-1-cadre-juridique"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-TVA-LIQ-30-20-95-20251022",
+          "title": "TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux d’amélioration de la qualité énergétique",
+          "publication_date": "2025-10-22",
+          "section_path": "TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux d’amélioration de la qualité énergétique",
+          "text": "Actualité liée : [node:date:14835-PGP] : TVA - Consultation publique - Travaux de rénovation, travaux d’amélioration de la qualité énergétique, livraison et installation d’équipements de production d’électricité utilisant l’énergie radiative du soleil (loi n° 2022-1726 du 30 décembre 2022 de finances pour 2023, art. 65 et loi n° 2025-127 du 14 février 2025 de finances pour 2025, art. 32, 41 et 42) - Rescrit Les commentaires contenus dans le présent document font l’objet d’une consultation publique du 22 octobre 2025 au 1 er décembre 2025 inclus pour permettre aux personnes intéressées d’adresser leurs remarques éventuelles à l’administration. Ces remarques doivent être formulées par courriel adressé à : bureau.d1-dlf@dgfip.finances.gouv.fr . Seules les contributions signées seront examinées. Dès la présente publication, vous pouvez vous prévaloir de ces commentaires jusqu’à leur éventuelle révision à l’issue de la consultation. La taxe sur la valeur ajoutée (TVA) est perçue au taux réduit de 5,5 % sur certaines prestations de rénovation énergétique portant sur des locaux à usage d’habitation achevés depuis plus de deux ans ( code général des impôts [CGI], art. 278-0 bis A ). Remarque : Ce taux réduit traduit l’exercice par la France de la faculté prévue au point 10 de l’ annexe III de la directive 2006/112/CE du Conseil du 28 novembre 2006 modifiée relative au système commun de taxe sur la valeur ajoutée concernant les travaux de rénovation, de transformation et de réparation de logements.",
+          "chunk_id": "9417-PGP__section_window__9417-pgp-paragraph-00000__9417-pgp-paragraph-00003__tva-liquidation-taux-r-duits-prestations-de-services-imposables-aux-taux-r-duits-travaux-d-am-lioration-de-la-qualit-nerg-tique"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-TVA-LIQ-30-20-95-20251022",
+          "title": "TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux d’amélioration de la qualité énergétique",
+          "publication_date": "2025-10-22",
+          "section_path": "II. Prestations de travaux et équipements éligibles au taux réduit de 5,5 % > A. Prestations de travaux éligibles au taux réduit de 5,5 %",
+          "text": "La nature et le contenu des prestations de rénovation énergétique bénéficiant d’un taux réduit de TVA en application de l’ article 278-0 bis A du CGI sont précisés par un arrêté conjoint des ministres chargés du budget, du logement et de l’énergie (CGI, art. 278-0 bis A, II). Ainsi, aux termes de l’ article 30-0 D de l’annexe IV au CGI , dans sa rédaction résultant de l’ arrêté du 4 décembre 2024 relatif à la nature et aux caractéristiques des prestations de rénovation énergétique bénéficiant du taux réduit de la taxe sur la valeur ajoutée prévu à l’article 278-0 bis A du code général des impôts , les prestations de rénovation énergétique bénéficiant du taux réduit de 5,5 % sont les suivantes : l’isolation thermique des parois opaques ou vitrées, des portes d’entrée donnant sur l’extérieur, ainsi que l’isolation thermique par l’installation de volets isolants ou de protections solaires mobiles. Ces prestations doivent être réalisées conformément aux prescriptions de l’ article 30-0 D bis de l’annexe IV au CGI ; la pose, l’installation, l’adaptation ou l’entretien des équipements de chauffage et de production d’eau chaude sanitaire utilisant une source d’énergie renouvelable conformément aux prescriptions de l’ article 30-0 D ter de l’annexe IV au CGI ; la pose, l’installation, l’adaptation ou l’entretien des systèmes de ventilation mécanique contrôlée double flux, des systèmes de ventilation mécanique simple flux hygroréglable et des systèmes de ventilation hybride hygroréglable conformément aux prescriptions de l’ article 30-0 D quater de l’annexe IV au CGI ;",
+          "chunk_id": "9417-PGP__section_window__9417-pgp-paragraph-00033__9417-pgp-paragraph-00037__ii-prestations-de-travaux-et-quipements-ligibles-au-taux-r-duit-de-5-5-a-prestations-de-travaux-ligibles-au-taux-r-duit-de-5-5"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-TVA-LIQ-30-20-90-20251022",
+          "title": "TVA - Liquidation - Taux réduits - Prestations imposables aux taux réduits - Travaux (autres que de construction ou de reconstruction) portant sur des locaux à usage d’habitation achevés depuis plus de deux ans",
+          "publication_date": "2025-10-22",
+          "section_path": "TVA - Liquidation - Taux réduits - Prestations imposables aux taux réduits - Travaux (autres que de construction ou de reconstruction) portant sur des locaux à usage d’habitation achevés depuis plus de deux ans",
+          "text": "Lorsqu’ils n’entrent pas dans la catégorie des prestations de rénovation énergétique soumises au taux réduit de la taxe sur la valeur ajoutée (TVA) de 5,5 % en application de l’ article 278-0 bis A du code général des impôts (CGI) ( BOI-TVA-LIQ-30-20-95 ), l’ article 279-0 bis du CGI soumet au taux réduit de 10 % de la TVA les travaux d’amélioration, de transformation, d’aménagement et d’entretien portant sur des locaux à usage d’habitation, achevés depuis plus de deux ans à l’exception, notamment, de la part correspondant à la fourniture d’équipements ménagers ou mobiliers et de certains gros équipements. Les conditions d’application du taux réduit prévu par l’article 279-0 bis du CGI se déclinent sur quatre axes : les locaux concernés (sous-section 1, BOI-TVA-LIQ-30-20-90-10 ) ; les opérations concernées (sous-section 2, BOI-TVA-LIQ-30-20-90-20 ) ; les opérations particulières (sous-section 3, BOI-TVA-LIQ-30-20-90-30 ) ; les modalités d’application (sous-section 4, BOI-TVA-LIQ-30-20-90-40 ).",
+          "chunk_id": "1617-PGP__section_window__1617-pgp-paragraph-00000__1617-pgp-paragraph-00005__tva-liquidation-taux-r-duits-prestations-imposables-aux-taux-r-duits-travaux-autres-que-de-construction-ou-de-reconstruction-portant-sur-des-locaux-usage-d-habitation-achev-s-depuis-plus-de-deux-ans"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-RES-TVA-000206-20251022",
+          "title": "RES - Taxe sur la valeur ajoutée - Liquidation - Taux de TVA applicable aux prestations d’audit énergétique",
+          "publication_date": "2025-10-22",
+          "section_path": "Réponse : > 2/ Application au cas particulier",
+          "text": "En revanche, un tel regroupement est susceptible de se produire lorsque la prestation est rendue, en amont de ces travaux, par l’entreprise qui assure la réalisation des travaux ou du moins en est le maître d’œuvre. À cette fin, il serait nécessaire, outre l’identité du fournisseur, que l’audit soit, sur le plan contractuel, économique et matériel indissociablement lié à la réalisation de travaux de rénovation énergétique. Tel peut être le cas lorsque des éléments matériels contractuels ou tarifaires permettent de lier les deux prestations en prévoyant ab initio qu’elles doivent nécessairement être réalisées ou que l’acquéreur ne dispose pas de réelle alternative sur le plan économique. En effet, dans une telle hypothèse, le consommateur moyen recherche alors spécifiquement la combinaison de ces éléments. Dans les situations où un regroupement entre l’audit et les travaux qui en découlent est caractérisé, le taux appliqué à cette combinaison d’éléments est alors celui de la prestation de rénovation énergétique, soit le taux de 5,5 % prévu à l’ article 278-0 bis A du CGI , tant que le prix de cette prestation reste très supérieur à celui de l’audit. À défaut, le taux de 20 % s’appliquera à l’ensemble de la combinaison d’éléments.\n\nBOI-TVA-LIQ-30-20-95 : TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux d’amélioration de la qualité énergétique",
+          "chunk_id": "14669-PGP__section_window__14669-pgp-paragraph-00021__14669-pgp-paragraph-00023__r-ponse-2-application-au-cas-particulier__merge__document-li"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-TVA-LIQ-30-20-90-40-20251022",
+          "title": "TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux (autres que de construction ou de reconstruction) portant sur des locaux à usage d’habitation achevés depuis plus de deux ans - Modalités d’application",
+          "publication_date": "2025-10-22",
+          "section_path": "IV. Précisions sur le taux applicable",
+          "text": "Le taux applicable aux travaux d’amélioration, de transformation, d’aménagement et d’entretien est de 10 % en France continentale et en Corse. Un taux particulier de 2,10 % est prévu dans les départements de Guadeloupe, de Martinique et de La Réunion ( BOI-TVA-GEO-20-10 ). Les équipements mobiliers ou certains gros équipements mentionnés à l’ article 30-00 A de l’annexe IV au CGI , relèvent en revanche du taux normal de la TVA, soit 20 % en France continentale et en Corse et 8,5 % dans les départements de Guadeloupe, de Martinique et de La Réunion. Cela étant, en Corse, lorsque la pose de ces équipements s’inscrit dans le cadre d’une opération répondant à la définition des travaux immobiliers, lesdits équipements bénéficient du taux de 10 % prévu au 5° du I de l’ article 297 du CGI ( IV-A § 110 et suivants du BOI-TVA-GEO-10-10 ). Le taux applicable aux prestations de rénovation énergétique des locaux est de 5,5 % en France métropolitaine et en Corse et de 2,10 % dans les départements de Guadeloupe, de Martinique et de La Réunion ( BOI-TVA-LIQ-30-20-95 ).",
+          "chunk_id": "1742-PGP__section_window__1742-pgp-paragraph-00094__1742-pgp-paragraph-00097__iv-pr-cisions-sur-le-taux-applicable"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-TVA-LIQ-30-20-95-20251022",
+          "title": "TVA - Liquidation - Taux réduits - Prestations de services imposables aux taux réduits - Travaux d’amélioration de la qualité énergétique",
+          "publication_date": "2025-10-22",
+          "section_path": "I. Généralités > B. Réalisation de travaux relevant de taux de TVA différents",
+          "text": "Dans cette situation, le consommateur ne recherche pas spécifiquement la combinaison de ces deux prestations. Il s’agit, dès lors, de deux opérations distinctes relevant chacune d’un régime TVA qui lui est propre. La circonstance que les deux prestations soient mentionnées sur le même devis et reprise sur une même facture est sans incidence. Exemple 3 : Une entreprise installe dans une maison à usage d’habitation achevée depuis plus de deux ans une chaudière neuve fonctionnant au gaz. Elle réalise également, dans le cadre de cette installation, des travaux de rénovation du local de la chaudière rendus nécessaires par le changement d’équipement et dont le coût est minime par rapport à celui de l’installation. La combinaison de ces deux prestations étant spécifiquement recherchée par le client, ces prestations doivent être considérées comme formant une opération unique aux fins de la TVA. La prestation d’installation de la chaudière fonctionnant au gaz relève du taux normal. Les travaux de rénovation réalisés dans le local relèvent, quant à eux, du taux réduit de 10 %. Toutefois, ces travaux de rénovation doivent ici être considérés comme accessoires au changement de la chaudière. Dans ces conditions, le taux normal s’applique à l’ensemble de l’opération. Exemple 4 : Une entreprise réalise une extension de moins de 9 m² dans un local d’habitation achevé depuis plus de deux ans. Dans le cadre de cette extension, elle réalise des travaux de gros œuvre et second œuvre relevant du taux de 10 %, ainsi que des travaux de rénovation énergétique éligibles au taux de 5,5 %. Il s’agit de prestations complémentaires, mais présentant chacune une utilité propre pour la réalisation de l’extension.",
+          "chunk_id": "9417-PGP__section_window__9417-pgp-paragraph-00023__9417-pgp-paragraph-00029__i-g-n-ralit-s-b-r-alisation-de-travaux-relevant-de-taux-de-tva-diff-rents"
+        }
+      ]
+    },
+    {
+      "case_id": "integration",
+      "query": "Quelles sont les conditions pour qu une societe puisse former un groupe d integration fiscale ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Détention à 95% au moins, directe ou indirecte, et option conjointe pour l'intégration.\n\n- La société mère doit détenir au moins 95% du capital des filiales, directement ou indirectement [1].\n- La détention indirecte peut passer par des sociétés intermédiaires, y compris étrangères [1][3].\n- Les sociétés doivent être soumises à l'IS en France et exercer l'option d'intégration [2].\n\nLimites: Les conditions précises de l'option et les exceptions ne sont pas détaillées ici.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Détention à 95% au moins, directe ou indirecte, et option conjointe pour l'intégration.\",\n  \"justification_bullets\": [\n    \"La société mère doit détenir au moins 95% du capital des filiales, directement ou indirectement [1].\",\n    \"La détention indirecte peut passer par des sociétés intermédiaires, y compris étrangères [1][3].\",\n    \"Les sociétés doivent être soumises à l'IS en France et exercer l'option d'intégration [2].\"\n  ],\n  \"limits\": \"Les conditions précises de l'option et les exceptions ne sont pas détaillées ici.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Détention à 95% au moins, directe ou indirecte, et option conjointe pour l'intégration.",
+        "justification_bullets": [
+          "La société mère doit détenir au moins 95% du capital des filiales, directement ou indirectement [1].",
+          "La détention indirecte peut passer par des sociétés intermédiaires, y compris étrangères [1][3].",
+          "Les sociétés doivent être soumises à l'IS en France et exercer l'option d'intégration [2]."
+        ],
+        "limits": "Les conditions précises de l'option et les exceptions ne sont pas détaillées ici."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          2,
+          3
+        ],
+        "cite_count": 4,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-IS-GPE-10-30-30-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Aménagements consécutifs à la jurisprudence \"Société Papillon“",
+          "publication_date": "2015-05-06",
+          "section_path": "III. Conséquences de l'existence de sociétés intermédiaires sur le périmètre des groupes fiscaux > B. Constitution de sous-groupes",
+          "text": "Avant la promulgation de l' article 33 de la troisième loi de finances rectificative pour 2009 n° 2009-1674 du 30 décembre 2009 , l’interposition entre deux sociétés imposables à l’impôt sur les sociétés en France d’une société étrangère non imposable à l’impôt sur les sociétés en France empêchait les deux sociétés françaises de former un groupe d’intégration fiscale entre elles. En revanche, toutes autres conditions étant satisfaites, ces deux sociétés pouvaient chacune former des groupes distincts avec leurs propres filiales françaises puisque la société mère d’un groupe peut être détenue par une autre société imposable à l’impôt sur les sociétés indirectement par l’intermédiaire d’une personne morale non soumise à cet impôt (premier alinéa du I de l’ article 223 A du CGI ). Désormais, la société française détenue par une autre société française indirectement par l’intermédiaire d’une société étrangère revêtant la qualité de société intermédiaire peut rejoindre le groupe d’intégration fiscale constitué par la société française qui la détient ; tel est d’ailleurs l’objectif premier des évolutions apportées par l’article 33 de la troisième loi de finances rectificative pour 2009. Mais la société française ainsi détenue par une autre société française indirectement par l’intermédiaire d’une société intermédiaire peut également ne pas rejoindre le groupe d’intégration fiscale constitué par la société française qui la détient et constituer son propre groupe d’intégration fiscale. En effet, comme auparavant, une société mère peut être détenue par une autre société soumise à l’impôt sur les sociétés si cette détention se fait de manière indirecte par l’intermédiaire d’une personne morale non soumise à cet impôt.",
+          "chunk_id": "4997-PGP__section_window__4997-pgp-paragraph-00022__4997-pgp-paragraph-00025__iii-cons-quences-de-l-existence-de-soci-t-s-interm-diaires-sur-le-p-rim-tre-des-groupes-fiscaux-b-constitution-de-sous-groupes"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-IS-GPE-10-30-20-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Sociétés et organismes du secteur des assurances",
+          "publication_date": "2015-05-06",
+          "section_path": "I. Conditions relatives à la personne morale tête du groupe > E. Situation des entités sous-combinantes",
+          "text": "Le rescrit n° 2012/31 a précisé, au regard du régime de groupe, la situation des sous-groupes combinés du secteur des assurances, sans liens capitalistiques. RES N° 2012/31 (FE) du 24 avril 2012 : Régime de groupe – intégration fiscale d'un sous-groupe combiné – groupes du secteur des assurances, sans liens capitalistiques. Question : Une entité sous-combinante peut-elle former un groupe fiscal avec les entités membres de son périmètre de combinaison comptable ? Réponse : Conformément au 2 ème alinéa de l' article 223 A du CGI , lorsqu'une personne morale soumise à l'impôt sur les sociétés (IS) dans les conditions de droit commun établit des comptes combinés en application de l' article L. 212-7 du code de la mutualité en tant qu'entreprise combinante, elle peut se constituer seule redevable de l'IS dû sur l'ensemble des résultats du groupe formé par elle-même, les personnes morales soumises à l'IS dans les conditions de droit commun dénuées de capital qui sont membres du périmètre de combinaison et qui ont avec elle, en vertu d'un accord, soit une direction commune, soit des services communs assez étendus pour engendrer un comportement commercial, technique ou financier commun, soit des liens importants et durables en vertu de dispositions réglementaires, statutaires ou contractuelles, et les sociétés dont elle et les personnes morales combinées détiennent 95 % au moins du capital, directement ou indirectement.",
+          "chunk_id": "5057-PGP__section_window__5057-pgp-paragraph-00070__5057-pgp-paragraph-00074__i-conditions-relatives-la-personne-morale-t-te-du-groupe-e-situation-des-entit-s-sous-combinantes"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-IS-GPE-50-60-30-20210811",
+          "title": "IS - Régime fiscal des groupes de sociétés - Opérations de restructurations du groupe - Cas particuliers dont le chaînage capitalistique comporte des sociétés établies hors de France - Constitution de sous-groupes en cas d'interposition de sociétés intermédiaires ou lorsque la société mère remplit les conditions pour former un groupe horizontal",
+          "publication_date": "2021-08-11",
+          "section_path": "I. Constitution de sous-groupes en cas d'interposition de sociétés intermédiaires",
+          "text": "Une société française détenue par une autre société française indirectement par l’intermédiaire d’une société établie à l'étranger revêtant la qualité de société intermédiaire peut rejoindre le groupe d’intégration fiscale constitué par la société française qui la détient, dans les conditions commentées au BOI-IS-GPE-10-30-30 . Mais la société française ainsi détenue par une autre société française indirectement par l’intermédiaire d’une société intermédiaire peut également ne pas rejoindre le groupe d’intégration fiscale constitué par la société française qui la détient et constituer son propre groupe d’intégration fiscale. En effet, comme auparavant, une société mère peut être détenue par une autre société soumise à l’impôt sur les sociétés si cette détention se fait de manière indirecte par l’intermédiaire d’une personne morale non soumise à cet impôt. Dans ce cas et conformément aux dispositions du i du 6 de l’ article 223 L du code général des impôts (CGI) , elle pourra rejoindre ultérieurement avec les filiales qui sont membres de son propre groupe le groupe de la société française qui la détient indirectement par l’intermédiaire de la société intermédiaire. Les règles qui régissent ce passage d’un groupe à l’autre sont calquées sur celles déjà existantes, prévues au d du 6 de l’article 223 L du CGI, pour les conséquences de l’acquisition à 95 % au moins, directement ou indirectement par l'intermédiaire de sociétés soumises à l'impôt sur les sociétés, d’une société mère par une autre personne morale passible de l'impôt sur les sociétés. Le d du 6 de l’article 223 L du CGI a vocation à s’appliquer lorsque la chaîne de détention est composée exclusivement de sociétés soumises à l’impôt sur les sociétés.",
+          "chunk_id": "5788-PGP__section_window__5788-pgp-paragraph-00001__5788-pgp-paragraph-00005__i-constitution-de-sous-groupes-en-cas-d-interposition-de-soci-t-s-interm-diaires"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-IS-GPE-10-30-50-20200415",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Groupe horizontal",
+          "publication_date": "2020-04-15",
+          "section_path": "II. Conséquences sur la constitution et le périmètre du groupe de la détention de la société mère par des sociétés non résidentes > B. Constitution de sous-groupes",
+          "text": "Des sociétés soumises à l'impôt sur les sociétés détenues à 95 % au moins par une entité mère non résidente peuvent, si les conditions sont remplies, former ensemble un groupe d'intégration horizontale. Mais toutes les sociétés ainsi détenues ne sont pas contraintes de former ensemble un groupe horizontal ou d'entrer dans le groupe horizontal d'une autre société. Des sociétés qui remplissent les conditions pour former ensemble un groupe d'intégration horizontale, peuvent choisir, en tant que sociétés mères, de constituer indépendamment l'une de l'autre des groupes horizontaux ou verticaux, si elles en remplissent les conditions, ou choisir d'appartenir à de tels groupes. Lorsqu'une société s'est constituée société mère d'un groupe horizontal, et rejoint ultérieurement un autre groupe horizontal, son groupe cesse. En effet, dans ces circonstances, la personne morale seule redevable de l'impôt d'un premier groupe, que rejoint la société mère d'un deuxième groupe, se constitue société mère de ce deuxième groupe, qui cesse de ce fait selon les dispositions du troisième alinéa de l' article 223 S du CGI . Dans ce cas, les dispositions d'atténuation du f du 6 de l' article 223 L du CGI sont applicables ( BOI-IS-GPE-50 ). Par ailleurs, les sociétés qui remplissent ou viennent à remplir les conditions pour rejoindre un groupe horizontal, mais font le choix de former un groupe vertical distinct, peuvent rejoindre ultérieurement le groupe horizontal avec les sociétés qui composent leur groupe, en appliquant les dispositions d'atténuation du j du 6 de l'article 223 L du CGI ( BOI-IS-GPE-50-60-30 ).",
+          "chunk_id": "10058-PGP__section_window__10058-pgp-paragraph-00065__10058-pgp-paragraph-00068__ii-cons-quences-sur-la-constitution-et-le-p-rim-tre-du-groupe-de-la-d-tention-de-la-soci-t-m-re-par-des-soci-t-s-non-r-sidentes-b-constitution-de-sous-groupes"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-IS-GPE-10-30-30-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Aménagements consécutifs à la jurisprudence \"Société Papillon“",
+          "publication_date": "2015-05-06",
+          "section_path": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Aménagements consécutifs à la jurisprudence \"Société Papillon“",
+          "text": "Avant la promulgation de l' article 33 de la troisième loi de finances rectificative pour 2009 n° 2009-1674 du 30 décembre 2009 , les dispositions de l’ article 223 A du code général des impôts (CGI) autorisait, sous certaines conditions, les sociétés détenues à 95 % au moins, directement ou indirectement par l’intermédiaire de sociétés membres du groupe et soumises à l’impôt sur les sociétés en France, par leur société mère à rejoindre le groupe d’intégration fiscale constitué par cette dernière. Dans son arrêt « Société Papillon » ( CJCE, arrêt du 27 novembre 2008, aff. C 418/07 ), la Cour de Justice des Communautés Européennes (CJCE) a considéré que : le droit communautaire « s’oppose à la législation d’un État membre en vertu de laquelle un régime d’imposition de groupe est accordé à une société mère résidente de cet État membre qui détient des filiales et des sous-filiales également résidentes dudit État, mais est exclu pour une telle société mère si ses sous-filiales résidentes sont détenues par l’intermédiaire d’une filiale résidente d’un autre État membre ». Afin de tenir compte de cette décision, l’ article 33 de la troisième loi de finances rectificative pour 2009 n° 2009-1674 du 30 décembre 2009 apporte un certain nombre d’aménagements au régime fiscal des groupes de sociétés notamment en ce qui concerne les règles de détermination du périmètre du groupe.",
+          "chunk_id": "4997-PGP__section_window__4997-pgp-paragraph-00000__4997-pgp-paragraph-00003__is-r-gime-fiscal-des-groupes-de-soci-t-s-formation-du-groupe-cas-particuliers-am-nagements-cons-cutifs-la-jurisprudence-soci-t-papillon"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-IS-GPE-10-30-30-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Aménagements consécutifs à la jurisprudence \"Société Papillon“",
+          "publication_date": "2015-05-06",
+          "section_path": "IV. Exemples d'application",
+          "text": "En conséquence, la société M, qui détient 95 % au moinsdu capital de la société F, par l’intermédiaire de sociétés intermédiaires, peut constituer un groupe fiscal et y intégrer la société F. Exemple 8 : La société M, située en France, détient la totalité du capital de la société F, située en France. La société italienne E, dénuée de capital, détient l’intégralité du capital des sociétés G, située en France, et H, située en Espagne. La société M est également la société combinante pour l’ensemble de ces sociétés. La société M peut constituer un groupe d’intégration fiscale comprenant les sociétés F et G.",
+          "chunk_id": "4997-PGP__section_window__4997-pgp-paragraph-00051__4997-pgp-paragraph-00054__iv-exemples-d-application"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-IS-GPE-50-60-30-20210811",
+          "title": "IS - Régime fiscal des groupes de sociétés - Opérations de restructurations du groupe - Cas particuliers dont le chaînage capitalistique comporte des sociétés établies hors de France - Constitution de sous-groupes en cas d'interposition de sociétés intermédiaires ou lorsque la société mère remplit les conditions pour former un groupe horizontal",
+          "publication_date": "2021-08-11",
+          "section_path": "II. Constitution de sous-groupes lorsque la société mère remplit les conditions pour former un groupe horizontal",
+          "text": "D'une part, les dispositions de l'article 223 L du CGI permettent, par exemple, d'atténuer les conséquences de la cessation d'un groupe vertical lorsque sa société mère rejoint un groupe horizontal, alors qu'elle était déjà détenue dans les conditions prévues pour les groupes horizontaux au deuxième alinéa du I de l'article 223 A du CGI avant l'entrée en vigueur de l' article 63 de la loi n° 2014-1655 du 29 décembre 2014 de finances rectificative pour 2014 qui a aménagé le régime des groupes de sociétés pour permettre la constitution d'une intégration fiscale horizontale. D'autre part, les dispositions de l'article 223 S du CGI permettent de ne pas appliquer les conséquences de la cessation d'un groupe vertical lorsque la société mère forme un groupe horizontal. L'option pour constituer le nouveau groupe ou élargir le périmètre du groupe préexistant est exercée au plus tard à l'expiration du délai de dépôt de la déclaration de résultats de l'exercice précédant celui au titre duquel elle est exercée. Elle est accompagnée de la liste des sociétés du groupe, des sociétés intermédiaires, des sociétés étrangères et de l'entité mère non résidente. La durée du premier exercice des sociétés du groupe ainsi formé peut être inférieure ou supérieure à douze mois, afin de permettre un alignement des dates d’ouverture et de clôture de l’ensemble des membres ; cette durée doit être précisée dans le document formalisant l’option de la nouvelle société mère, qu’elle adresse au service des impôts dont elle relève ( BOI-IS-GPE-10-40 ). Les conséquences de la cessation du groupe vertical qui cesse à l'occasion de l'élargissement du groupe horizontal correspondent à celles décrites au I § 60 .",
+          "chunk_id": "5788-PGP__section_window__5788-pgp-paragraph-00032__5788-pgp-paragraph-00035__ii-constitution-de-sous-groupes-lorsque-la-soci-t-m-re-remplit-les-conditions-pour-former-un-groupe-horizontal"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-IS-GPE-10-30-30-20150506",
+          "title": "IS - Régime fiscal des groupes de sociétés - Formation du groupe - Cas particuliers - Aménagements consécutifs à la jurisprudence \"Société Papillon“",
+          "publication_date": "2015-05-06",
+          "section_path": "IV. Exemples d'application",
+          "text": "Exemple 1 : La société M, située en France, détient directement 100 % du capital de sa filiale française F1 et indirectement 100 % de sa filiale française F2 – en l’occurrence à 50 % par l’intermédiaire de sa filiale française F1 et à 50 % par l’intermédiaire de l’établissement stable italien de sa filiale américaine A dont elle détient 95 % du capital (détention assimilée à une détention à 100 %), les titres de la filiale F2 étant inscrits à l’actif de l’établissement stable italien. La société M peut constituer un groupe fiscal comprenant ses filiales françaises F1 et F2. Exemple 2 : La société M, située en France, détient directement 100 % du capital de sa filiale française F1 et indirectement 100 % de sa filiale française F2 – en l’occurrence à 50 % par l’intermédiaire de sa filiale française F1 et à 50 % par l’intermédiaire de sa filiale américaine A dont elle détient 95 % du capital (détention assimilée à une détention à 100 %), les titres de la filiale F2 étant inscrits pour moitié à l’actif du siège américain et pour moitié à l’actif de l’établissement stable italien de la société A. La société M peut constituer un groupe fiscal comprenant sa filiale française F1, l’établissement stable italien de la société A peut revêtir la qualité de société intermédiaire, mais la filiale F2, détenue à seulement 75 % par l’intermédiaire de sociétés du groupe et de sociétés intermédiaires, ne peut rejoindre le groupe d’intégration fiscale constitué par la société M.",
+          "chunk_id": "4997-PGP__section_window__4997-pgp-paragraph-00028__4997-pgp-paragraph-00033__iv-exemples-d-application"
+        }
+      ]
+    },
+    {
+      "case_id": "succession",
+      "query": "Comment evaluer les biens immobiliers dans une declaration de succession ?",
+      "category": "direct",
+      "note": "",
+      "api_called": true,
+      "attempts": 1,
+      "answer_text": "[SUPPORTED] Les immeubles sont évalués à leur valeur vénale au jour du décès, avec déclaration détaillée.\n\n- Les biens sont évalués à leur valeur vénale au jour du fait générateur [4].\n- Les immeubles doivent être mentionnés avec situation, contenance et identification [1].\n- Une estimation distincte des immeubles par nature n'est pas obligatoire [1].\n\nLimites: Seuls les extraits fournis sont utilisés ; d'autres règles peuvent s'appliquer.",
+      "raw": "{\n  \"answer_status\": \"supported\",\n  \"conclusion\": \"Les immeubles sont évalués à leur valeur vénale au jour du décès, avec déclaration détaillée.\",\n  \"justification_bullets\": [\n    \"Les biens sont évalués à leur valeur vénale au jour du fait générateur [4].\",\n    \"Les immeubles doivent être mentionnés avec situation, contenance et identification [1].\",\n    \"Une estimation distincte des immeubles par nature n'est pas obligatoire [1].\"\n  ],\n  \"limits\": \"Seuls les extraits fournis sont utilisés ; d'autres règles peuvent s'appliquer.\"\n}",
+      "structured": {
+        "answer_status": "supported",
+        "conclusion": "Les immeubles sont évalués à leur valeur vénale au jour du décès, avec déclaration détaillée.",
+        "justification_bullets": [
+          "Les biens sont évalués à leur valeur vénale au jour du fait générateur [4].",
+          "Les immeubles doivent être mentionnés avec situation, contenance et identification [1].",
+          "Une estimation distincte des immeubles par nature n'est pas obligatoire [1]."
+        ],
+        "limits": "Seuls les extraits fournis sont utilisés ; d'autres règles peuvent s'appliquer."
+      },
+      "validation": {
+        "valid": true,
+        "status": "supported",
+        "conclusion": true,
+        "bullets": true,
+        "limits": true,
+        "bullet_count": 3,
+        "cite_ids": [
+          1,
+          4
+        ],
+        "cite_count": 3,
+        "errors": []
+      },
+      "chunks": [
+        {
+          "rank": 1,
+          "boi_reference": "BOI-ENR-DMTG-10-60-30-20170213",
+          "title": "ENR - Mutations à titre gratuit - Successions - Obligations déclaratives des redevables - Forme et contenu de la déclaration de succession",
+          "publication_date": "2017-02-13",
+          "section_path": "II. Contenu de la déclaration de succession > B. Énumération et estimation des biens successoraux > 3. Précisions sur les modalités de déclaration de certains biens > a. Immeubles",
+          "text": "Les immeubles doivent être mentionnés avec toutes les indications de leur situation et de leur contenance permettant de les identifier. Lorsque les immeubles forment une seule exploitation ou un corps de domaine connu sous un nom particulier, il suffit d'indiquer la contenance et la situation de chaque immeuble d'après sa nature (bâtiments ruraux, prés, terres, vignes, etc.). Le détail article par article des immeubles non bâtis n'est exigé que pour les parcelles isolées ne formant pas un corps de domaine. Il est nécessaire de mentionner pour chacune d'elles, la nature, la situation, la contenance et la désignation cadastrale (section, numéro du plan et lieu-dit). Lorsqu'il existe un cheptel, immeuble par destination, il doit être détaillé dans la déclaration. Mais une estimation distincte des immeubles par nature n'est pas obligatoire. Dans tous les cas où il a été établi une attestation notariée après le décès, les héritiers, légataires ou donataires peuvent se dispenser d'indiquer dans les formules de déclarations de succession le détail des immeubles transmis en annexant une copie de ladite attestation à laquelle ils se référent expressément. Lorsque la succession comprend des immeubles situés en dehors de la circonscription du bureau où est déposée la déclaration, le détail doit être présenté non dans cette déclaration, mais distinctement auprès de chaque bureau de la situation des biens, sur une formule spéciale n° 2709-SD («formule foraine», CERFA n° 10820) fournie par l'administration ou disponible en ligne sur le site www.impots.gouv.fr , et signée par le déclarant ( CGI, art. 800, I ). La déclaration souscrite au bureau du domicile du défunt rappelle simplement le total du capital imposable constaté par chacune de ces déclarations partielles.",
+          "chunk_id": "1504-PGP__section_window__1504-pgp-paragraph-00106__1504-pgp-paragraph-00111__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-3-pr-cisions-sur-les-modalit-s-de-d-claration-de-certains-biens-a-immeubles"
+        },
+        {
+          "rank": 2,
+          "boi_reference": "BOI-ENR-DMTG-10-60-30-20170213",
+          "title": "ENR - Mutations à titre gratuit - Successions - Obligations déclaratives des redevables - Forme et contenu de la déclaration de succession",
+          "publication_date": "2017-02-13",
+          "section_path": "II. Contenu de la déclaration de succession > B. Énumération et estimation des biens successoraux > 1. Généralités",
+          "text": "La déclaration de succession doit indiquer l'énumération et l'estimation détaillée de la totalité des biens successoraux dont la propriété apparente reposait sur la tête du défunt au jour de son décès, que ces biens soient ou non imposables ( BOI-ENR-DMTG-10-10-20-10 ). Elle doit distinguer les biens dépendant de la communauté s'il en existe une, et les biens propres au défunt. Les biens légués passent directement du patrimoine du de cujus dans celui du légataire. L'héritier ou le légataire universel n'ayant jamais été investi d'un droit de propriété à l'égard des biens légués à titre particulier n'a pas à les comprendre dans la déclaration qu'il est tenu de souscrire. Dans la pratique, les opérations à effectuer sont les suivantes : - liquidation de la communauté : - liquidation de la communauté : - biens composant la communauté au jour du décès, - biens composant la communauté au jour du décès, - biens composant la communauté au jour du décès, - le cas échéant, ajouter l'excédent des récompenses, - le cas échéant, ajouter l'excédent des récompenses, - le cas échéant, ajouter l'excédent des récompenses, - le cas échéant, déduire l'excédent des reprises, - le cas échéant, déduire l'excédent des reprises, - le cas échéant, déduire l'excédent des reprises, - déduire le passif commun ; - déduire le passif commun ; - déduire le passif commun ; - boni de communauté (dont 1/2 à chaque époux) ; - boni de communauté (dont 1/2 à chaque époux) ; - succession ; - succession ; - actif : - actif : - 1/2 boni de communauté, - 1/2 boni de communauté, - 1/2 boni de communauté, - propre au défunt, - propre au défunt,",
+          "chunk_id": "1504-PGP__section_window__1504-pgp-paragraph-00031__1504-pgp-paragraph-00059__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-1-g-n-ralit-s"
+        },
+        {
+          "rank": 3,
+          "boi_reference": "BOI-ENR-DMTG-20-30-10-20210406",
+          "title": "ENR - Mutations à titre gratuit - Donations - Assiette des droits",
+          "publication_date": "2021-04-06",
+          "section_path": "I. Valeur imposable",
+          "text": "Les règles d'évaluation des biens étudiées en matière de succession sont, en principe, applicables aux donations ( BOI-ENR-DMTG-10-40-10 ). Seules les dispositions propres aux donations sont indiquées ci-après.\n\nDe même que pour les mutations par décès, la valeur des meubles est, en principe, déterminée par la déclaration détaillée et estimative des parties ( code général des impôts (CGI), art. 758 ). L'évaluation article par article doit être donnée dans l'acte. Mais, comme pour les déclarations de succession, les parties ont la faculté de fournir l'énumération et l'évaluation des meubles dans un état descriptif et estimatif annexé à l'acte de donation. Lorsqu'il est rédigé sous seing privé, cet état est exempté de la formalité de l'enregistrement.",
+          "chunk_id": "2696-PGP__section_window__2696-pgp-paragraph-00000__2696-pgp-paragraph-00001__i-valeur-imposable__merge__i-valeur-imposable-a-meubles"
+        },
+        {
+          "rank": 4,
+          "boi_reference": "BOI-ENR-DMTG-10-40-10-20120912",
+          "title": "ENR - Mutations à titre gratuit – Successions – Assiette – Évaluation des biens transmis",
+          "publication_date": "2012-09-12",
+          "section_path": "ENR - Mutations à titre gratuit – Successions – Assiette – Évaluation des biens transmis",
+          "text": "En principe, les biens transmis sont évalués à leur valeur vénale au jour du fait générateur de l'impôt ( CGI, art. 666 ). Les droits de mutation par décès sont en conséquence assis sur une déclaration estimative des redevables. Cependant pour certains biens, il existe des bases légales d'évaluation. La présente section est consacrée d'une part à l'examen du principe d'évaluation à la valeur vénale (sous-section 1, cf. BOI-ENR-DMTG-10-40-10-10 ), et d'autre part à la description des principes généraux gouvernant chaque catégorie de biens, à savoir : - l'évaluation des meubles corporels (sous-section 2, cf. BOI-ENR-DMTG-10-40-10-20 ), - l'évaluation des immeubles (sous-section 3, cf. BOI-ENR-DMTG-10-40-10-30 ), - l'évaluation des biens meubles incorporels (sous-section 4, cf. BOI-ENR-DMTG-10-40-10-40 ). Une sous-section 5 ( BOI-ENR-DMTG-10-40-10-50 ) est par ailleurs consacrée à l'étude des règles d'évaluation en cas de démembrement de propriété. Enfin, en cas de modification de la valeur vénale initialement déclarée, il y a lieu de déposer une déclaration rectificative. Cette hypothèse est examinée dans une sous-section 6 ( BOI-ENR-DMTG-10-40-10-60 ).",
+          "chunk_id": "2706-PGP__section_window__2706-pgp-paragraph-00000__2706-pgp-paragraph-00007__enr-mutations-titre-gratuit-successions-assiette-valuation-des-biens-transmis"
+        },
+        {
+          "rank": 5,
+          "boi_reference": "BOI-ENR-DMTG-10-60-30-20170213",
+          "title": "ENR - Mutations à titre gratuit - Successions - Obligations déclaratives des redevables - Forme et contenu de la déclaration de succession",
+          "publication_date": "2017-02-13",
+          "section_path": "II. Contenu de la déclaration de succession > B. Énumération et estimation des biens successoraux > 3. Précisions sur les modalités de déclaration de certains biens > b. Meubles > 1° Meubles corporels",
+          "text": "Les meubles corporels ne sont détaillés que si l'évaluation des parties constitue la base de perception de l'impôt ; ils ne le sont pas obligatoirement, lorsque leur valeur est déterminée d'après une des bases légales d'évaluation ( BOI-ENR-DMTG-10-40-10-20 ). Quand le détail est obligatoire, il est donné dans la déclaration de succession elle-même. Mais les redevables ont la faculté de fournir l'énumération et l'évaluation des meubles corporels dans un état estimatif article par article établi sur papier libre, certifié par les déclarants et annexé à la déclaration. Remarque : Cas des bijoux, pierreries, objets d'art ou de collection. La plupart des contrats d'assurance contre l'incendie ou contre le vol du mobilier personnel contiennent une clause générale suivant laquelle, sauf stipulation contraire, les bijoux, pierreries et perles fines, dentelles, statues et tableaux de valeur, les collections d'objets rares et précieux sont compris dans l'assurance du mobilier personnel jusqu'à concurrence d'un pourcentage maximum (généralement 30 %) du capital assuré ; au-delà de cette proportion, l'assuré doit faire une déclaration spéciale et payer une surprime correspondant à l'excédent de valeur. Les polices d'assurance du mobilier personnel ainsi que les contrats multirisques habitation qui ne contiennent aucune dérogation au pourcentage maximum fixé par la clause générale susvisée n'entrent pas dans les prévisions de l' article 798 du CGI et de l' article 805 du CGI . En revanche, doivent être déclarés, dans les conditions prévues par cet article, les contrats d'assurance contre l'incendie ou contre le vol du mobilier personnel ou les contrats multirisques habitation qui renferment une déclaration spéciale fixant, pour les biens susvisés, une proportion supérieure à celle prévue par la clause générale.",
+          "chunk_id": "1504-PGP__section_window__1504-pgp-paragraph-00113__1504-pgp-paragraph-00118__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-3-pr-cisions-sur-les-modalit-s-de-d-claration-de-certains-biens-b-meubles-1-meubles-corporels"
+        },
+        {
+          "rank": 6,
+          "boi_reference": "BOI-ENR-DMTG-10-60-30-20170213",
+          "title": "ENR - Mutations à titre gratuit - Successions - Obligations déclaratives des redevables - Forme et contenu de la déclaration de succession",
+          "publication_date": "2017-02-13",
+          "section_path": "II. Contenu de la déclaration de succession > B. Énumération et estimation des biens successoraux > 3. Précisions sur les modalités de déclaration de certains biens > b. Meubles > 3° Fonds de commerce",
+          "text": "La déclaration doit faire apparaître une évaluation distincte des éléments incorporels, du matériel servant à l'exploitation du fonds de commerce et des marchandises. Il n'est pas nécessaire que le matériel et les marchandises fassent l'objet d'un inventaire ou état estimatif distinct si le détail de ces biens est fourni article par article dans le corps de la déclaration ; il en est de même si un inventaire a été dressé par un officier public. Il est précisé qu'en ce qui concerne les stocks de marchandises, une certaine tolérance est admise et les produits ou objets peuvent être groupés par lots selon leur nature.\n\nSur ce point, il convient de se reporter au BOI-ENR-DMTG-10-50-70 .\n\nSur ce point, il convient de se reporter au VI § 270 et suivants du BOI-ENR-DMTG-10-40-10-40 .",
+          "chunk_id": "1504-PGP__section_window__1504-pgp-paragraph-00136__1504-pgp-paragraph-00138__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-3-pr-cisions-sur-les-modalit-s-de-d-claration-de-certains-biens-b-meubles-3-fonds-de-commerce__merge__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-3-pr-cisions-sur-les-modalit-s-de-d-claration-de-certains-biens-d-biens-indisponibles-hors-de-france-par-suite-de-mesures-prises-par-un-gouvernement-tranger"
+        },
+        {
+          "rank": 7,
+          "boi_reference": "BOI-ENR-DMTG-10-60-30-20170213",
+          "title": "ENR - Mutations à titre gratuit - Successions - Obligations déclaratives des redevables - Forme et contenu de la déclaration de succession",
+          "publication_date": "2017-02-13",
+          "section_path": "II. Contenu de la déclaration de succession > B. Énumération et estimation des biens successoraux > 4. Défaut d'estimation des biens",
+          "text": "Sauf pour les biens pour lesquels il existe des bases légales d'évaluation, les droits de mutation par décès sont assis sur une déclaration détaillée et estimative des redevables ( BOI-ENR-DMTG-10-40-10 ). À défaut de déclaration estimative, la formalité est refusée ( CGI, art. 851, al. 3 ) et l'administration est fondée à procéder à une taxation d'office ( BOI-ENR-DMTG-10-60-50 au III § 230 ). Il en est ainsi notamment, lorsque les biens ont été déclarés pour mémoire dans une déclaration de succession. L'infraction commise n'est pas une omission au sens de l' article L. 55 du LPF , mais un défaut de déclaration estimative.",
+          "chunk_id": "1504-PGP__section_window__1504-pgp-paragraph-00141__1504-pgp-paragraph-00142__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-4-d-faut-d-estimation-des-biens"
+        },
+        {
+          "rank": 8,
+          "boi_reference": "BOI-ENR-DMTG-10-60-30-20170213",
+          "title": "ENR - Mutations à titre gratuit - Successions - Obligations déclaratives des redevables - Forme et contenu de la déclaration de succession",
+          "publication_date": "2017-02-13",
+          "section_path": "II. Contenu de la déclaration de succession > B. Énumération et estimation des biens successoraux > 3. Précisions sur les modalités de déclaration de certains biens > a. Immeubles",
+          "text": "Lorsque la succession comprend un immeuble rural donné à bail à long terme au bénéficiaire de la transmission, à son conjoint, à un de leurs descendants, ou à une société contrôlée par une ou plusieurs de ces personnes, il convient de se reporter au BOI-ENR-DMTG-10-20-30-20 .",
+          "chunk_id": "1504-PGP__section_window__1504-pgp-paragraph-00112__1504-pgp-paragraph-00112__ii-contenu-de-la-d-claration-de-succession-b-num-ration-et-estimation-des-biens-successoraux-3-pr-cisions-sur-les-modalit-s-de-d-claration-de-certains-biens-a-immeubles"
+        }
+      ]
+    }
+  ]
+}

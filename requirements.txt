@@ -1,0 +1,6 @@
+beautifulsoup4
+lxml
+rank-bm25
+nbformat
+sentence-transformers
+openai

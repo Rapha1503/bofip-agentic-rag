@@ -1,0 +1,48 @@
+# Secrets
+.env.local
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Large data files
+data/models/
+data/raw/
+data/interim/*.npy
+data/interim/raw_docs_sample_*.jsonl
+data/interim/chunks_*.jsonl
+data/interim/doc_dense_cache_*.json
+data/interim/chunk_dense_cache_*.json
+data/interim/doc_tree_*.jsonl
+
+# Old phase reports (2012-era, huge filenames)
+data/reports/phase0_*.json
+data/reports/phase15_*.json
+data/reports/phase2_*.json
+data/reports/phase3_*.json
+data/reports/phase4_*.json
+data/reports/phase5_*.json
+data/reports/phase6_*.json
+data/reports/phase8_*.json
+data/reports/phase9_*.json
+data/reports/pre_llm_*.json
+data/reports/eval_baseline_*.json
+data/reports/eval_rag_smoke*.json
+data/reports/eval_rag_full.json
+data/reports/eval_rag_5.json
+
+# ML cache
+*.safetensors
+*.bin
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

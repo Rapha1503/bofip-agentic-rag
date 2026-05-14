@@ -1,0 +1,6 @@
+{"id": "q1", "query": "BOI-AIS-MOB-10 taxes sur les deplacements routiers", "expected_boi": "BOI-AIS-MOB-10-20240710"}
+{"id": "q2", "query": "taxe sur la mise en relation par voie electronique transport", "expected_boi": "BOI-AIS-CCN-30-40-20250409"}
+{"id": "q3", "query": "zones sinistrees secheresse 2009 ariege", "expected_boi": "BOI-ANNX-000098-20120912"}
+{"id": "q4", "query": "benefices agricoles forfaitaires cultures specialisees revenus 2015", "expected_boi": "BOI-BAREME-000024-20160706"}
+{"id": "q5", "query": "article 151 septies A cessions echelonnees", "expected_boi": "BOI-FORM-000098-20250723"}
+{"id": "q6", "query": "modele option report d imposition article 151 octies A", "expected_boi": "BOI-LETTRE-000262-20220622"}

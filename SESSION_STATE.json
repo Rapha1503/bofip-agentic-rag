@@ -1,0 +1,70 @@
+{
+  "generated_on": "2026-05-13",
+  "active_corpus": {
+    "name": "commentary",
+    "document_count": 5666,
+    "chunk_count": 66289
+  },
+  "pipeline": {
+    "query_rewriting": "DeepSeek-chat — expands acronyms, formalizes French, adds BOFIP terminology",
+    "stage1": "multi-view hybrid (BM25 base/sections_leads/stem + dense e5-large doc + dense e5-base chunk) with dense-anchor filter + confidence-weighted RRF fusion → top-8 docs",
+    "stage2": "local BM25 inside top-8 docs, 8 chunks/doc = 64 candidates",
+    "reranker": "BAAI/bge-reranker-v2-m3 cross-encoder, section-path-aware → top-8 chunks",
+    "llm": "DeepSeek-chat, coverage-aware prompt with supported|partial|insufficient_evidence",
+    "device": "cuda (RTX 3060 Laptop)"
+  },
+  "key_features": [
+    "query_rewriting",
+    "dense_anchor_filter",
+    "coverage_checker",
+    "partial_answer_status",
+    "axes_requis_couverts_manquants_contract",
+    "batch_with_incremental_save_and_resume"
+  ],
+  "key_metrics": {
+    "benchmark_15_queries": {
+      "total": 15,
+      "correct": 12,
+      "partial": 2,
+      "honest": 1,
+      "wrong": 0,
+      "valid_count": 14,
+      "report": "data/reports/batch_final_v1.json"
+    },
+    "failure_pattern_analysis_11_queries": {
+      "pattern_a_convention_spam": "fixed_via_dense_anchor_filter",
+      "pattern_b_edge_case_sibling": "fixed_via_wider_net_section_aware_reranker",
+      "pattern_c_terminology_gap": "fixed_via_llm_query_rewriting"
+    }
+  },
+  "entry_points": {
+    "single_query": "python scripts/preview_answer.py --query \"...\"",
+    "batch": "python scripts/preview_answer.py --input data/interim/batch_final.jsonl --output data/reports/batch.json",
+    "resume": "python scripts/preview_answer.py --input ... --resume data/reports/batch.json",
+    "eval": "python scripts/evaluate.py --runtime rag --limit 15",
+    "tests": "python -m unittest discover -s tests -v"
+  },
+  "key_files": {
+    "runtime": "src/bofip_cleanroom/rag_runtime.py",
+    "reranker": "src/bofip_cleanroom/reranker.py",
+    "eval_harness": "src/bofip_cleanroom/eval_harness.py",
+    "preview_script": "scripts/preview_answer.py",
+    "evaluate_script": "scripts/evaluate.py",
+    "eval_queries": "data/interim/eval_queries_v1.jsonl",
+    "passage_gold": "data/interim/passage_gold_v3.jsonl",
+    "batch_input": "data/interim/batch_final.jsonl"
+  },
+  "key_reports": {
+    "benchmark_15": "data/reports/batch_final_v1.json",
+    "coverage_test": "data/reports/preview_coverage.json",
+    "rewrite_test": "data/reports/batch_rewrite_v1.json"
+  },
+  "test_count": 102,
+  "provider": "deepseek",
+  "model": "deepseek-chat",
+  "known_limitations": [
+    "dictionnaire_en_ligne_to_livres_numeriques_terminology_gap",
+    "runtime_load_47s_one_time",
+    "per_query_latency_30s_including_rewrite_retrieval_reranker_llm"
+  ]
+}
