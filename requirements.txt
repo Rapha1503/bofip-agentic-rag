@@ -4,3 +4,7 @@ rank-bm25
 nbformat
 sentence-transformers
 openai
+streamlit
+numpy
+torch
+nltk

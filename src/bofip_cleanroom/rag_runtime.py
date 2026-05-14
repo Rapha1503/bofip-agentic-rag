@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 
 from .dense_retrieval import DenseDocumentIndex, DenseEncoder, DenseIndex
-from .direct_chunk_retrieval import DirectChunkRetriever, DirectChunkHit, Stage1DocumentHit
+from .direct_chunk_retrieval import DirectChunkRetriever, Stage1DocumentHit
 from .hybrid_retrieval import (
     RankedDoc,
     compute_source_rank_profiles,
@@ -29,6 +29,12 @@ CORPUS_PATHS: dict[str, dict[str, str]] = {
         "chunks": "data/interim/chunks_section_window_sample_5666.jsonl",
         "doc_dense_cache": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
         "chunk_dense_cache": "data/interim/chunk_dense_cache_5666_full_e5.npy",
+    },
+    "demo": {
+        "raw_docs": "data/interim/raw_docs_sample_200.jsonl",
+        "chunks": "data/interim/chunks_section_window_sample_200.jsonl",
+        "doc_dense_cache": "data/interim/doc_dense_cache_200_sections_firstpara_e5large.npy",
+        "chunk_dense_cache": "data/interim/chunk_dense_cache_200_full_e5.npy",
     },
 }
 

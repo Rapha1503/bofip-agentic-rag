@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+# ⚠️ LEGACY — superseded by RagRuntime + CrossEncoderReranker in rag_runtime.py.
+# This runtime (Phase8b) uses acronym expansion, specificity rerank, and family
+# routing. Those features are deprecated per NEXT_ACTIONS.md:
+# "Do not re-add family routing, alias expansion, specificity rerank —
+#  the reranker subsumes them."
+# Kept for backward compatibility with existing evaluation scripts.
+
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
