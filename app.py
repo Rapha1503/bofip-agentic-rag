@@ -1,6 +1,6 @@
 """BOFIP RAG — Assistant Fiscal"""
 from __future__ import annotations
-import json, os, sys
+import hashlib, json, logging, os, sys, time
 from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -9,6 +9,21 @@ from openai import OpenAI
 from bofip_cleanroom.env_utils import load_default_env_files
 from bofip_cleanroom.rag_runtime import RagRuntime
 from bofip_cleanroom.prompt_utils import build_prompt
+
+# ── File logging ───────────────────────────────────────────────────
+LOG_DIR = PROJECT_ROOT / "data" / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+_pipeline_logger = logging.getLogger("bofip_pipeline")
+_pipeline_logger.setLevel(logging.DEBUG)
+_fh = logging.FileHandler(LOG_DIR / "pipeline.log", encoding="utf-8")
+_fh.setFormatter(logging.Formatter("%(asctime)s | %(message)s", datefmt="%H:%M:%S"))
+_pipeline_logger.addHandler(_fh)
+_pipeline_logger.propagate = False
+
+def _log(step: str, data: dict):
+    _pipeline_logger.info(f"[{step}] {json.dumps(data, ensure_ascii=False, default=str)[:2000]}")
+
 
 PROVIDERS = {
     "DeepSeek": {
@@ -137,6 +152,18 @@ def render_answer(parsed):
 
 def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
     results = {"query":query,"error":None}
+
+    # Cache check
+    cache_key = hashlib.md5((query + llm_model + str(use_rewrite) + multi_axis).encode()).hexdigest()[:12]
+    if "result_cache" not in st.session_state:
+        st.session_state.result_cache = {}
+    if cache_key in st.session_state.result_cache:
+        cached = st.session_state.result_cache[cache_key]
+        _log("CACHE_HIT", {"key": cache_key, "query": query[:80]})
+        return cached
+
+    t0 = time.time()
+    _log("QUERY_START", {"query": query[:200], "model": llm_model, "rewrite": use_rewrite, "multi_axis": multi_axis})
     # Rewrite + optional facets
     if use_rewrite:
         try:
@@ -153,6 +180,7 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
         facet_queries = [rewritten]
     results["rewritten"] = rewritten
     results["facet_queries"] = facet_queries
+    _log("REWRITE", {"original": query[:120], "rewritten": rewritten[:120], "facets": len(facet_queries)})
     # Retrieval — per facet, merge with diversity
     all_chunks_raw = []; all_stage1 = []; seen_docs = set(); main_log = {}
     for fq in facet_queries:
@@ -176,6 +204,8 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
     all_chunks_raw = merged
     results["stage1"] = all_stage1[:8]
     results["pipeline_log"] = main_log
+    _log("RETRIEVAL", {"stage1_docs": [h.boi_reference for h in all_stage1[:8]], 
+          "merged_chunks": len(all_chunks_raw), "pipeline_log": main_log})
     chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
                "publication_date":c.publication_date,"section_path":c.section_path,
                "text":c.text,"chunk_id":c.chunk_id,"score":float(getattr(c,"score",0))}
@@ -196,11 +226,17 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
     results["llm_raw"] = llm_r["raw"]
     results["ptokens"] = llm_r["ptokens"]
     results["ctokens"] = llm_r["ctokens"]
+    _log("LLM_DONE", {"ptokens": llm_r["ptokens"], "ctokens": llm_r["ctokens"], 
+          "raw_len": len(llm_r["raw"]), "valid_json": True})
     try:
         parsed = json.loads(llm_r["raw"])
     except json.JSONDecodeError:
         parsed = None
     results["parsed"] = parsed
+    elapsed = time.time() - t0
+    _log("QUERY_DONE", {"cache_key": cache_key, "elapsed_s": round(elapsed, 1),
+          "unique_docs": main_log.get("unique_docs_final", "?"), "status": parsed.get("answer_status", "?") if parsed else "parse_error"})
+    st.session_state.result_cache[cache_key] = results
     return results
 
 def display_results(results):
@@ -266,6 +302,9 @@ with st.sidebar:
     st.caption("Corpus: 5666 documents BOFIP")
     st.caption("Modèles: E5-large (docs) / E5-base (chunks)")
     st.caption("Reranker: bge-reranker-v2-m3")
+    if st.button("🗑️ Vider le cache"):
+        st.session_state.result_cache = {}
+        st.rerun()
 
 if not api_key:
     st.warning(f"Entrez une clé API **{provider['env_key']}** dans la barre latérale.")
