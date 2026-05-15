@@ -80,6 +80,7 @@ def rewrite_query(query, client, model):
         model=model,
         messages=[{"role":"system","content":system},{"role":"user","content":query}],
         temperature=0.0, max_tokens=400,
+        response_format={"type":"json_object"},
     )
     content = (resp.choices[0].message.content or "").strip()
     # Robust JSON extraction
@@ -112,9 +113,10 @@ def _detect_multi_axis(query: str) -> bool:
     if query.count("?") >= 2 or query.count(",") >= 2:
         signals += 1
     # Procedure/control keywords (with conjugations)
-    if any(w in qt for w in ("procédure", "redressement", "redresser", "contrôle", "garantie",
-                              "protéger", "sanction", "délai", "prescription", "recours",
-                              "réclamation", "vérification", "opposabilité", "opposable", "doctrine")):
+    if any(w in qt for w in ("procédure", "redressement", "redresser", "contrôle", "vérificateur",
+                              "vérification", "garantie", "protéger", "sanction", "délai",
+                              "prescription", "recours", "réclamation", "opposabilité",
+                              "opposable", "doctrine", "personnel", "excessif")):
         signals += 1
     # Source references
     if any(w in qt for w in ("cgi", "lpf", "bofip", "article", "textes")):
@@ -211,7 +213,21 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
             merged.append(c)
     all_chunks_raw = merged
     results["stage1"] = all_stage1[:8]
-    results["pipeline_log"] = main_log
+    # Compute diversity log from merged result (not single facet)
+    from collections import Counter
+    final_docs = [c.boi_reference for c in all_chunks_raw]
+    doc_dist = Counter(final_docs)
+    stage1_refs = [h.boi_reference for h in all_stage1]
+    merged_log = dict(main_log)
+    merged_log.update({
+        "unique_docs_final": len(set(final_docs)),
+        "max_chunks_per_doc": max(doc_dist.values()) if doc_dist else 0,
+        "doc_distribution_final": {k[:30]: v for k, v in doc_dist.items()},
+        "stage2_candidates": len(all_chunks_raw),
+        "stage1_docs_dropped": [r for r in stage1_refs if r not in set(final_docs)],
+        "facets_used": len(facet_queries),
+    })
+    results["pipeline_log"] = merged_log
     _log("RETRIEVAL", {"stage1_docs": [h.boi_reference for h in all_stage1[:8]], 
           "merged_chunks": len(all_chunks_raw), "pipeline_log": main_log})
     chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
