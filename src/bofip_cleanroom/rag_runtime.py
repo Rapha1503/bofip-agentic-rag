@@ -331,44 +331,6 @@ class RagRuntime:
             source_confidences=confidences,
             pipeline_log=log,
         )
-            chunk_items = [(r.item, float(r.score)) for r in ranked]
-        else:
-            chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
-
-        preview_chunks = []
-        for idx, (hit, score) in enumerate(chunk_items, start=1):
-            doc = self.documents_by_ref[hit.boi_reference]
-            preview_chunks.append(
-                RagChunkHit(
-                    rank=idx,
-                    boi_reference=hit.boi_reference,
-                    title=doc.title,
-                    section_path=" > ".join(hit.chunk.section_path),
-                    chunk_id=hit.chunk.chunk_id,
-                    chunk_kind=hit.chunk.chunk_kind,
-                    text=hit.chunk.text,
-                    publication_date=doc.publication_date,
-                    score=score,
-                )
-            )
-
-        stage1_out = [
-            RagStage1Hit(
-                rank=h.rank,
-                score=h.score,
-                boi_reference=h.boi_reference,
-                title=self.documents_by_ref[h.boi_reference].title,
-            )
-            for h in stage1_hits
-        ]
-
-        return RagResult(
-            query=query,
-            stage1_hits=stage1_out,
-            stage2_chunks=preview_chunks,
-            source_confidences=confidences,
-            pipeline_log=log,
-        )
 
     # ── Diversity selection ────────────────────────────────────────
 
