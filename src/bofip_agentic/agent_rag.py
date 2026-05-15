@@ -137,6 +137,7 @@ class AgenticRAG:
             "iterations": len(trace),
             "total_s": total_s,
             "chunks_used": len(all_chunks),
+            "sources": _sort_chunks(all_chunks)[:8],
             "trace": trace,
         }
 
