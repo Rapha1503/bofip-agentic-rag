@@ -266,15 +266,31 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
 def display_results(results):
     if results.get("error"):
         st.error(results["error"]); return
-    with st.expander("🔄 RÉÉCRITURE", expanded=True):
-        st.info(results["rewritten"])
-        if results["rewritten"] != results["query"]:
-            st.caption(f"Original: « {results['query']} »")
-    with st.expander(f"📚 DOCUMENTS — Stage 1 ({len(results.get('stage1',[]))} docs)", expanded=True):
+
+    # 1. Original question
+    st.markdown(f"**❓ Question:** {results['query']}")
+
+    # 2. Rewrite (only if different)
+    if results.get("rewritten") and results["rewritten"] != results["query"]:
+        st.caption(f"🔄 Reformulée: {results['rewritten'][:200]}")
+
+    # 3. ANSWER
+    p = results.get("parsed")
+    if p:
+        render_answer(p)
+    else:
+        st.warning("JSON invalide"); st.text(results.get("llm_raw","")[:500])
+        p = {"answer_status": "parse_error"}
+
+    # 4. Documents utilisés
+    with st.expander(f"📚 Documents utilisés — Stage 1 ({len(results.get('stage1',[]))} docs)", expanded=False):
         rows = [{"#":h.rank,"Score":f"{h.score:.4f}","BOFIP":h.boi_reference,"Titre":h.title[:120]} for h in results.get("stage1",[])]
         if rows: st.dataframe(rows, use_container_width=True, hide_index=True)
-    chunks = results.get("chunks",[])
-    with st.expander(f"✂️ CHUNKS — Stage 2 + Reranker ({len(chunks)} final)", expanded=True):
+
+    # 5. Technical details (collapsed)
+    with st.expander("🔧 Détails techniques (chunks, prompt, debug)", expanded=False):
+        chunks = results.get("chunks",[])
+        st.caption(f"Chunks finaux: {len(chunks)}")
         for i,c in enumerate(chunks):
             bg = "#1a472a" if i==0 else "#1a1a2e"
             st.markdown(f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px;color:#e0e0e0">'
@@ -282,13 +298,8 @@ def display_results(results):
                         f'<span style="font-size:12px;color:#aab">📂 {c["section_path"]}</span><br>'
                         f'<span style="font-size:13px">{c["text"][:300]}{"..." if len(c["text"])>300 else ""}</span></div>',
                         unsafe_allow_html=True)
-    with st.expander("🤖 PROMPT ENVOYÉ AU LLM", expanded=False):
-        st.code(results.get("prompt",""), language="text")
-    with st.expander("✅ RÉPONSE", expanded=True):
-        p = results.get("parsed")
-        if p: render_answer(p)
-        else: st.warning("JSON invalide"); st.text(results.get("llm_raw","")[:500])
-    with st.expander("📋 DÉBOGAGE", expanded=False):
+        with st.expander("🤖 Prompt LLM"):
+            st.code(results.get("prompt",""), language="text")
         plog = results.get("pipeline_log", {})
         if plog:
             c1,c2,c3 = st.columns(3)
@@ -301,9 +312,7 @@ def display_results(results):
             dist = plog.get("doc_distribution_final",{})
             if dist:
                 st.caption("Distribution: " + str(dist))
-        c1,c2 = st.columns(2)
-        c1.metric("Prompt tokens", results.get("ptokens","?"))
-        c2.metric("Completion tokens", results.get("ctokens","?"))
+        st.caption(f"Prompt tokens: {results.get('ptokens','?')} | Completion: {results.get('ctokens','?')}")
         st.code(results.get("llm_raw",""), language="json")
 
 # ── UI ──
@@ -348,6 +357,7 @@ with tab1:
     if st.button("Rechercher", type="primary", disabled=not query.strip()):
         with st.spinner("Recherche en cours..."):
             results = process_query(query, rt, client, model, use_rewrite, multi_axis)
+        st.markdown("---")
         display_results(results)
 
 with tab2:
@@ -372,6 +382,6 @@ with tab2:
             st.dataframe(rows, use_container_width=True, hide_index=True)
             expand_all = st.checkbox("📂 Tout développer", value=False, key="expand_batch")
             for i,res in enumerate(all_results):
-                st.markdown(f"---\n### Q{i+1}: {res['query'][:100]}")
-                with st.expander(f"Afficher les détails", expanded=expand_all):
+                st.markdown(f"---")
+                with st.expander(f"### Q{i+1}: {res['query'][:100]}", expanded=expand_all):
                     display_results(res)
