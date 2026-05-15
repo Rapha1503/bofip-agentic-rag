@@ -20,46 +20,33 @@ from bofip_cleanroom.prompt_utils import build_prompt
 PROVIDERS = {
     "DeepSeek": {
         "base_url": "https://api.deepseek.com/v1",
-        "models": ["deepseek-chat", "deepseek-reasoner"],
-        "default_model": "deepseek-chat",
+        "models": ["deepseek-v4-flash", "deepseek-v4-pro"],
+        "default_model": "deepseek-v4-flash",
         "env_key": "DEEPSEEK_API_KEY",
     },
     "OpenAI": {
         "base_url": "https://api.openai.com/v1",
-        "models": ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "o3-mini"],
-        "default_model": "gpt-4o-mini",
+        "models": ["gpt-5.2", "gpt-4.1-mini", "gpt-4.1", "o4-mini"],
+        "default_model": "gpt-4.1-mini",
         "env_key": "OPENAI_API_KEY",
     },
     "Anthropic": {
         "base_url": "https://api.anthropic.com/v1",
-        "models": ["claude-sonnet-4-20250514", "claude-3-5-haiku-20241022", "claude-opus-4-20250514"],
-        "default_model": "claude-3-5-haiku-20241022",
+        "models": ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"],
+        "default_model": "claude-haiku-4-5",
         "env_key": "ANTHROPIC_API_KEY",
-        "header_name": "x-api-key",
     },
     "Mistral": {
         "base_url": "https://api.mistral.ai/v1",
-        "models": ["mistral-large-latest", "mistral-small-latest", "codestral-latest"],
-        "default_model": "mistral-small-latest",
+        "models": ["mistral-small-4", "mistral-large-3", "mistral-medium-3.5"],
+        "default_model": "mistral-small-4",
         "env_key": "MISTRAL_API_KEY",
     },
     "Google": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+        "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite"],
         "default_model": "gemini-2.5-flash",
         "env_key": "GEMINI_API_KEY",
-    },
-    "Groq": {
-        "base_url": "https://api.groq.com/openai/v1",
-        "models": ["llama-4-scout-17b-16e-instruct", "llama-3.3-70b-versatile", "deepseek-r1-distill-llama-70b"],
-        "default_model": "llama-4-scout-17b-16e-instruct",
-        "env_key": "GROQ_API_KEY",
-    },
-    "Together": {
-        "base_url": "https://api.together.xyz/v1",
-        "models": ["meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", "mistralai/Mixtral-8x22B-Instruct-v0.1"],
-        "default_model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
-        "env_key": "TOGETHER_API_KEY",
     },
 }
 
