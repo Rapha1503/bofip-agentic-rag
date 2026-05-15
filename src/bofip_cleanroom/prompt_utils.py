@@ -19,12 +19,14 @@ def build_prompt(query: str, chunks: list[dict]) -> str:
         "Instructions:\n"
         "- Tu es un assistant fiscal. Reponds UNIQUEMENT a partir des extraits fournis.\n"
         "- N'invente ni source, ni article, ni taux, ni reponse.\n"
-        "- Si la question contient une premisse fausse et que les extraits la contredisent, corrige-la.\n"
+        "- Les montants et taux donnes par l'utilisateur dans la question peuvent etre utilises sans citation.\n"
+        "- Si la question contient un chiffre ou un taux qui est contredit par les extraits, corrige-le explicitement en citant l'extrait.\n"
+        "- Si la question demande un calcul, detaille les etapes: formule, valeurs, resultat.\n"
         "- Renvoie un objet JSON valide et rien d'autre. Pas de markdown autour.\n\n"
         'Schema JSON: {"answer_status":"supported|partial|insufficient_evidence","axes_requis":["..."],"axes_couverts":["..."],"axes_manquants":["..."],"conclusion":"...","justification_bullets":["..."],"limits":"..."}\n\n'
         "Etape 1 - Identifier les axes fiscaux requis (1 a 5 axes).\n"
         "Etape 2 - Verifier couverture: supported (tous couverts) | partial (mixte) | insufficient_evidence (aucun).\n"
         "Etape 3 - 2-4 puces avec citations [n] pour axes couverts. Puce explicative pour chaque axe manquant.\n"
-        "- limits obligatoire <= 40 mots. Lister axes manquants si partial.\n"
+        "- limits obligatoire <= 50 mots. Lister axes manquants si partial.\n"
         "- Citations [n] referencent UNIQUEMENT les extraits fournis.\n"
     )

@@ -131,7 +131,7 @@ def call_llm(prompt, client, model):
         model=model,
         messages=[{"role":"system","content":"Tu es un assistant fiscal prudent. Schema JSON strict."},
                   {"role":"user","content":prompt}],
-        temperature=0.0, max_tokens=2000,
+        temperature=0.0, max_tokens=2800,
         response_format={"type":"json_object"},
     )
     content = resp.choices[0].message.content or ""
@@ -196,6 +196,19 @@ def process_query(query, rt, client, llm_model, use_rewrite):
         if compute_q not in facet_queries:
             facet_queries.append(compute_q)
             _log("COMPUTE_FACET", {"added": compute_q[:120]})
+    # Multi-component detection: split into per-topic sub-queries
+    _COMPONENT_PAIRS = [("intérêt","intérêt de retard taux calcul"),
+                        ("majoration","majoration pourcentage taux calcul"),
+                        ("amende","amende montant calcul"),
+                        ("pénalité","pénalité taux calcul")] 
+    qt = query.lower()
+    if any(qt.count(w) >= 1 for w, _ in _COMPONENT_PAIRS):
+        for keyword, subq in _COMPONENT_PAIRS:
+            if keyword in qt:
+                q = subq
+                if q not in facet_queries:
+                    facet_queries.append(q)
+                    _log("COMPONENT_FACET", {"keyword": keyword, "query": q})
     _log("REWRITE", {"original": query[:120], "rewritten": rewritten[:120], "facets": len(facet_queries)})
     # Retrieval — per facet, merge with diversity
     all_chunks_raw = []; all_stage1 = []; seen_docs = set(); main_log = {}
@@ -219,6 +232,17 @@ def process_query(query, rt, client, llm_model, use_rewrite):
         if doc_counts[d] <= 3:
             merged.append(c)
     all_chunks_raw = merged
+    # Deduplicate by chunk_id (can happen with multi-facet)
+    seen_ids = set()
+    deduped = []
+    for c in all_chunks_raw:
+        if c.chunk_id not in seen_ids:
+            seen_ids.add(c.chunk_id)
+            deduped.append(c)
+    all_chunks_raw = deduped
+    # Renumber chunks [1]-[N] after all merges
+    for idx, c in enumerate(all_chunks_raw, 1):
+        c.rank = idx
     results["stage1"] = all_stage1[:8]
     # Compute diversity log from merged result (not single facet)
     from collections import Counter
