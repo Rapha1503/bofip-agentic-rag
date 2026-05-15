@@ -9,35 +9,36 @@ __pycache__/
 .venv/
 *.egg-info/
 
-# Large data files
-data/models/
+# Data — large files not in repo (use README instructions to download)
 data/raw/
+data/models/
 data/interim/*.npy
-data/interim/raw_docs_sample_*.jsonl
+data/interim/raw_docs_*.jsonl
 data/interim/chunks_*.jsonl
 data/interim/doc_dense_cache_*.json
 data/interim/chunk_dense_cache_*.json
 data/interim/doc_tree_*.jsonl
 
-# Old phase reports (2012-era, huge filenames)
-data/reports/phase0_*.json
-data/reports/phase15_*.json
-data/reports/phase2_*.json
-data/reports/phase3_*.json
-data/reports/phase4_*.json
-data/reports/phase5_*.json
-data/reports/phase6_*.json
-data/reports/phase8_*.json
-data/reports/phase9_*.json
+# Old phase reports only (huge filenames, historical)
+data/reports/phase*.json
+data/reports/manifest*.json
 data/reports/pre_llm_*.json
 data/reports/eval_baseline_*.json
 data/reports/eval_rag_smoke*.json
 data/reports/eval_rag_full.json
 data/reports/eval_rag_5.json
+data/reports/raw_inventory.json
+data/reports/phase15_fidelity_report*.md
+data/reports/phase7_*.json
+data/reports/phase8b_*.json
 
-# ML cache
-*.safetensors
-*.bin
+# Old scripts (historical phases, superseded by preview_answer.py + evaluate.py)
+scripts/phase*.py
+scripts/build_*.py
+scripts/verify_*.py
+
+# Old notebooks (historical exploration)
+notebooks/
 
 # IDE
 .vscode/
@@ -46,3 +47,6 @@ data/reports/eval_rag_5.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
