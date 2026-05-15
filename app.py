@@ -111,9 +111,10 @@ def _detect_multi_axis(query: str) -> bool:
     # Multiple clauses
     if query.count("?") >= 2 or query.count(",") >= 2:
         signals += 1
-    # Procedure/control keywords
-    if any(w in qt for w in ("procédure", "redressement", "contrôle", "garantie", "sanction",
-                              "délai", "prescription", "recours", "réclamation", "vérification")):
+    # Procedure/control keywords (with conjugations)
+    if any(w in qt for w in ("procédure", "redressement", "redresser", "contrôle", "garantie",
+                              "protéger", "sanction", "délai", "prescription", "recours",
+                              "réclamation", "vérification", "opposabilité", "opposable", "doctrine")):
         signals += 1
     # Source references
     if any(w in qt for w in ("cgi", "lpf", "bofip", "article", "textes")):
