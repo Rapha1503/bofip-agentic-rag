@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pickle
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -93,17 +94,21 @@ class RagRuntime:
         self.reranker = reranker
 
         self.lexical_indexes = self._init_lexical(documents)
+        self.doc_dense_index = DenseDocumentIndex(documents, document_embeddings)
+        self.chunk_dense_index = DenseIndex(chunks, chunk_embeddings)
+        self.chunk_retriever = DirectChunkRetriever(chunks, local_chunk_mode="full")
 
     def _init_lexical(self, documents: list[RawDocument]) -> dict[str, DocumentLexicalIndex]:
         """Load BM25 indexes from cache if available, otherwise build + save."""
         indexes = {}
+        cache_dir = Path(__file__).resolve().parents[2] / "data" / "interim"
         modes = {
             "base": ("base", None),
             "sections_leads": ("sections_leads", None),
             "sections_leads_stem": ("sections_leads", lambda text: tokenize(text, stem=True)),
         }
         for mode_key, (search_mode, tok_fn) in modes.items():
-            cache_path = Path("data") / "interim" / f"bm25_cache_5666_{mode_key}.pkl"
+            cache_path = cache_dir / f"bm25_cache_5666_{mode_key}.pkl"
             try:
                 if cache_path.exists():
                     indexes[mode_key] = DocumentLexicalIndex.load(
@@ -112,8 +117,8 @@ class RagRuntime:
                         tokenize_fn=tok_fn,
                     )
                     continue
-            except Exception:
-                pass
+            except (pickle.PickleError, OSError, EOFError, ImportError):
+                pass  # Corrupted or incompatible cache — rebuild
             indexes[mode_key] = DocumentLexicalIndex(
                 documents,
                 search_text_fn=get_document_search_text_fn(search_mode),
@@ -121,12 +126,9 @@ class RagRuntime:
             )
             try:
                 indexes[mode_key].save(cache_path)
-            except Exception:
-                pass
+            except (pickle.PickleError, OSError):
+                pass  # Can't persist — non-fatal
         return indexes
-        self.doc_dense_index = DenseDocumentIndex(documents, document_embeddings)
-        self.chunk_dense_index = DenseIndex(chunks, chunk_embeddings)
-        self.chunk_retriever = DirectChunkRetriever(chunks, local_chunk_mode="full")
 
     @classmethod
     def from_local_corpus(
