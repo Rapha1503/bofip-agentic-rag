@@ -238,9 +238,6 @@ def process_query(query, rt, client, llm_model, use_rewrite):
             seen_ids.add(c.chunk_id)
             deduped.append(c)
     all_chunks_raw = deduped
-    # Renumber chunks [1]-[N] after all merges
-    for idx, c in enumerate(all_chunks_raw, 1):
-        c.rank = idx
     results["stage1"] = all_stage1[:8]
     # Compute diversity log from merged result (not single facet)
     from collections import Counter
@@ -259,10 +256,10 @@ def process_query(query, rt, client, llm_model, use_rewrite):
     results["pipeline_log"] = merged_log
     _log("RETRIEVAL", {"stage1_docs": [h.boi_reference for h in all_stage1[:8]], 
           "merged_chunks": len(all_chunks_raw), "pipeline_log": main_log})
-    chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
+    chunks = [{"rank":idx+1,"boi_reference":c.boi_reference,"title":c.title,
                "publication_date":c.publication_date,"section_path":c.section_path,
                "text":c.text,"chunk_id":c.chunk_id,"score":float(getattr(c,"score",0))}
-              for c in all_chunks_raw[:8]]
+              for idx,c in enumerate(all_chunks_raw[:8])]
     results["chunks"] = chunks
     if not chunks:
         results["parsed"] = {"answer_status":"insufficient_evidence","conclusion":"Aucun extrait trouvé.",
