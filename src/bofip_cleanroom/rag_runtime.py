@@ -101,7 +101,8 @@ class RagRuntime:
     def _init_lexical(self, documents: list[RawDocument]) -> dict[str, DocumentLexicalIndex]:
         """Load BM25 indexes from cache if available, otherwise build + save."""
         indexes = {}
-        cache_dir = Path(__file__).resolve().parents[2] / "data" / "interim"
+        cache_dir = Path.home() / ".cache" / "bofip_rag"
+        cache_dir.mkdir(parents=True, exist_ok=True)
         modes = {
             "base": ("base", None),
             "sections_leads": ("sections_leads", None),
@@ -266,14 +267,13 @@ class RagRuntime:
                 get_text=lambda hit: " > ".join(hit.chunk.section_path) + "\n" + hit.chunk.text,
                 top_k=max_chunks,
             )
-            ranked_items = [r.item for r in ranked]
+            chunk_items = [(r.item, float(r.score)) for r in ranked]
         else:
-            ranked_items = candidates[:max_chunks]
+            chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
 
         preview_chunks = []
-        for idx, hit in enumerate(ranked_items, start=1):
+        for idx, (hit, score) in enumerate(chunk_items, start=1):
             doc = self.documents_by_ref[hit.boi_reference]
-            score = getattr(hit, "score", 0.0) if use_reranker else 0.0
             preview_chunks.append(
                 RagChunkHit(
                     rank=idx,
@@ -284,7 +284,7 @@ class RagRuntime:
                     chunk_kind=hit.chunk.chunk_kind,
                     text=hit.chunk.text,
                     publication_date=doc.publication_date,
-                    score=float(score),
+                    score=score,
                 )
             )
 
