@@ -52,13 +52,49 @@ def get_runtime():
     return RagRuntime.from_local_corpus(corpus="commentary", device=device)
 
 def rewrite_query(query, client, model):
+    """Rewrite query + optionally detect legal facets. Returns (rewritten_str, facet_queries_list)."""
+    system = (
+        "Analyse cette question fiscale. Retourne UNIQUEMENT un JSON valide sans markdown:\n"
+        '{"rewritten_query":"question reformulee en francais administratif formel",'
+        '"facets":[{"name":"axe","query":"sous-requete pour cet axe"}]}\n'
+        "Identifie les axes juridiques distincts necessaires (1 a 5). "
+        "Si la question est simple, retourne 1 seul facet. "
+        "Les facets doivent couvrir: regle de fond, procedure, doctrine, garanties, sanctions si presents."
+    )
     resp = client.chat.completions.create(
         model=model,
-        messages=[{"role":"system","content":"Reecris cette question en francais administratif et fiscal formel. Developpe les sigles et abreviations. Reponds UNIQUEMENT avec la question reformulee, sans guillemets ni commentaire."},
-                  {"role":"user","content":query}],
-        temperature=0.0, max_tokens=200,
+        messages=[{"role":"system","content":system},{"role":"user","content":query}],
+        temperature=0.0, max_tokens=300,
     )
-    return (resp.choices[0].message.content or "").strip() or query
+    content = (resp.choices[0].message.content or "").strip()
+    try:
+        data = json.loads(content)
+        rewritten = data.get("rewritten_query", query) or query
+        facets = data.get("facets", [])
+        facet_queries = [f.get("query", rewritten) for f in facets if f.get("query")]
+        return rewritten, facet_queries if facet_queries else [rewritten]
+    except (json.JSONDecodeError, TypeError):
+        return query, [query]
+
+
+def _detect_multi_axis(query: str) -> bool:
+    """Heuristic: does this query need multi-facet retrieval?"""
+    signals = 0
+    qt = query.lower()
+    # Multiple clauses
+    if query.count("?") >= 2 or query.count(",") >= 2:
+        signals += 1
+    # Procedure/control keywords
+    if any(w in qt for w in ("procédure", "redressement", "contrôle", "garantie", "sanction",
+                              "délai", "prescription", "recours", "réclamation", "vérification")):
+        signals += 1
+    # Source references
+    if any(w in qt for w in ("cgi", "lpf", "bofip", "article", "textes")):
+        signals += 1
+    # Length
+    if len(query) > 80:
+        signals += 1
+    return signals >= 2
 
 def call_llm(prompt, client, model):
     resp = client.chat.completions.create(
@@ -94,29 +130,43 @@ def render_answer(parsed):
         st.markdown(f"- {b}")
     st.caption(f"Limites: {limits}")
 
-def process_query(query, rt, client, llm_model, use_rewrite):
+def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
     results = {"query":query,"error":None}
-    # Rewrite
+    # Rewrite + optional facets
     if use_rewrite:
         try:
-            rewritten = rewrite_query(query, client, llm_model)
+            rewritten, facet_queries = rewrite_query(query, client, llm_model)
         except Exception as e:
             return {**results,"error":f"Erreur réécriture: {e}"}
     else:
-        rewritten = query
+        rewritten, facet_queries = query, [query]
+    # Auto-detect multi-axis
+    if multi_axis == "auto" and len(facet_queries) <= 1:
+        if _detect_multi_axis(query):
+            facet_queries = [rewritten, query]
+    elif multi_axis == "off":
+        facet_queries = [rewritten]
     results["rewritten"] = rewritten
-    # Retrieval
-    try:
-        result = rt.retrieve(rewritten, top_docs=8)
-    except Exception as e:
-        return {**results,"error":f"Erreur retrieval: {e}"}
-    results["stage1"] = result.stage1_hits
-    results["pipeline_log"] = getattr(result, "pipeline_log", {})
-    # Chunks
+    results["facet_queries"] = facet_queries
+    # Retrieval — per facet, merge
+    all_chunks = []; all_stage1 = []; seen_docs = set()
+    main_log = {}
+    for fq in facet_queries:
+        try:
+            res = rt.retrieve(fq, top_docs=5)
+            for h in res.stage1_hits:
+                if h.boi_reference not in seen_docs:
+                    all_stage1.append(h); seen_docs.add(h.boi_reference)
+            for c in res.stage2_chunks: all_chunks.append(c)
+            main_log = getattr(res, "pipeline_log", {})
+        except Exception as e:
+            return {**results,"error":f"Erreur retrieval: {e}"}
+    results["stage1"] = all_stage1[:8]
+    results["pipeline_log"] = main_log
     chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
                "publication_date":c.publication_date,"section_path":c.section_path,
                "text":c.text,"chunk_id":c.chunk_id,"score":float(getattr(c,"score",0))}
-              for c in result.stage2_chunks]
+              for c in all_chunks[:16]]
     results["chunks"] = chunks
     if not chunks:
         results["parsed"] = {"answer_status":"insufficient_evidence","conclusion":"Aucun extrait trouvé.",
@@ -197,6 +247,8 @@ with st.sidebar:
     model = st.selectbox("Modèle", provider["models"], key=f"model_{provider_id}")
     use_rewrite = st.checkbox("Réécriture de la question", value=True,
                               help="Reformule la question en vocabulaire fiscal avant la recherche.")
+    multi_axis = st.selectbox("Recherche multi-axes", ["auto", "off", "on"], index=0,
+                              help="Auto: activé si question complexe. On: toujours. Off: jamais.")
     st.divider()
     st.caption("Corpus: 5666 documents BOFIP")
     st.caption("Modèles: E5-large (docs) / E5-base (chunks)")
@@ -219,7 +271,7 @@ with tab1:
     query = st.text_input("Votre question", placeholder="Quel taux de TVA pour une pompe à chaleur ?")
     if st.button("Rechercher", type="primary", disabled=not query.strip()):
         with st.spinner("Recherche en cours..."):
-            results = process_query(query, rt, client, model, use_rewrite)
+            results = process_query(query, rt, client, model, use_rewrite, multi_axis)
         display_results(results)
 
 with tab2:
@@ -232,7 +284,7 @@ with tab2:
             for i,q in enumerate(queries):
                 status_text.text(f"[{i+1}/{len(queries)}] {q[:80]}...")
                 progress.progress((i+1)/len(queries))
-                all_results.append(process_query(q, rt, client, model, use_rewrite))
+                all_results.append(process_query(q, rt, client, model, use_rewrite, multi_axis))
             progress.empty(); status_text.empty()
             st.markdown("### Résumé")
             rows = []
