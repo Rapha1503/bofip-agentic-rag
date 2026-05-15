@@ -1,121 +1,128 @@
-# BOFIP RAG Cleanroom
+# BOFIP RAG — Assistant Fiscal 🇫🇷
 
-RAG pipeline for French fiscal documents (BOFIP — Bulletin Officiel des Finances Publiques) with hybrid retrieval, cross-encoder reranking, LLM query rewriting, and coverage-aware generation.
+RAG pipeline for French fiscal documents (BOFIP — *Bulletin Officiel des Finances Publiques*) with hybrid retrieval, cross-encoder reranking, LLM query rewriting, and coverage-aware generation.
+
+[![Tests](https://img.shields.io/badge/tests-102%20passing-brightgreen)]()
+[![Python](https://img.shields.io/badge/python-3.11-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+## Quick Start
+
+```powershell
+# Clone + setup
+git clone https://github.com/Rapha1503/bofip-rag.git
+cd bofip-rag
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# Set API key (any provider: DeepSeek, OpenAI, Anthropic, Mistral, Google, Groq, Together)
+echo DEEPSEEK_API_KEY=sk-... > .env.local
+
+# Place data files in data/interim/ (see Data Setup below)
+# Then run the Streamlit UI:
+$env:PYTHONPATH='src'; streamlit run app.py
+```
+
+## Data Setup
+
+The pipeline needs BOFIP corpus files in `data/interim/`. These are NOT included in the repo (too large). You need:
+
+| File | Size | Description |
+|------|------|-------------|
+| `raw_docs_sample_5666.jsonl` | ~300 MB | 5,666 parsed BOFIP documents |
+| `chunks_section_window_sample_5666.jsonl` | ~200 MB | 66,289 section-window chunks |
+| `doc_dense_cache_5666_sections_firstpara_e5large.npy` | ~23 MB | Document embeddings (E5-large) |
+| `chunk_dense_cache_5666_full_e5.npy` | ~200 MB | Chunk embeddings (E5-base) |
+
+**To generate from BOFIP source**: Set `RAW_BOFIP_ROOT` to your BOFIP documents directory and run the extraction pipeline (scripts in git history).
+
+**Models** are downloaded automatically from HuggingFace on first use: `intfloat/multilingual-e5-large`, `intfloat/multilingual-e5-base`, `BAAI/bge-reranker-v2-m3` (~4 GB total).
 
 ## Architecture
 
 ```
 user question
     │
-    ▼ QUERY REWRITING (DeepSeek: informal → BOFIP vocabulary)
+    ▼ QUERY REWRITING (LLM: informal → legal vocabulary)
     │
-    ▼ STAGE 1 — DOCUMENT RETRIEVAL
-    ├── Lexical BM25 (base, sections_leads, sections_leads_stem)
-    ├── Dense E5-large (document embeddings)
-    ├── Chunk-dense E5-base (aggregated to documents)
-    └── Dense-anchor filter → blocks lexical pollution from INT conventions
-        └── Confidence-weighted RRF fusion → top-8 docs
+    ▼ STAGE 1 — HYBRID DOC RETRIEVAL
+    ├── BM25 (base, sections_leads, sections_leads_stem)
+    ├── Dense embeddings (E5-large docs, E5-base chunks)
+    ├── Dense-anchor filter — blocks convention spam
+    └── Confidence-weighted RRF fusion → top-8 docs
     │
     ▼ STAGE 2 — CHUNK CANDIDATES
-    └── Local BM25 inside each top doc → 8 chunks/doc → 64 candidates
+    └── Local BM25 inside top-8 docs → 64 candidates
     │
-    ▼ RERANKER — Cross-encoder bge-reranker-v2-m3 (GPU)
-    └── Section path prepended to chunk text → top-8 chunks
+    ▼ RERANKER — bge-reranker-v2-m3 cross-encoder
+    └── Section-path-aware scoring → top-8 chunks
     │
-    ▼ LLM — DeepSeek-chat (coverage-aware prompt)
-    └── Identifies required fiscal axes → checks coverage
-        → status: supported | partial | insufficient_evidence
-        → cited justification with gap analysis
+    ▼ LLM — Coverage-aware generation
+    └── axes_requis/couverts/manquants
+        → supported | partial | insufficient_evidence
+        → cited bullets with gap analysis
 ```
 
-## Key Metrics
+## Providers
 
-**15-query benchmark** (realistic accountant questions across BOFIP domains):  
-12 correct · 2 partial · 1 honest · 0 wrong — report: `data/reports/batch_final_v1.json`
+Supports 7 LLM providers via OpenAI-compatible API. Enter your API key in the Streamlit sidebar (password field, never saved).
 
-**102 unit tests** passing.
-
-## Corpus
-
-- **5666 commentary** BOFIP documents
-- **66289 chunks** (section_window strategy)
-- Dense embeddings: E5-large for docs, E5-base for chunks
+| Provider | Key Env | Default Model |
+|----------|---------|--------------|
+| DeepSeek | `DEEPSEEK_API_KEY` | deepseek-chat |
+| OpenAI | `OPENAI_API_KEY` | gpt-4o-mini |
+| Anthropic | `ANTHROPIC_API_KEY` | claude-3-5-haiku |
+| Mistral | `MISTRAL_API_KEY` | mistral-small-latest |
+| Google | `GEMINI_API_KEY` | gemini-2.5-flash |
+| Groq | `GROQ_API_KEY` | llama-4-scout |
+| Together | `TOGETHER_API_KEY` | Llama-4-Maverick |
 
 ## Commands
 
 ```powershell
-# Single query
-$env:PYTHONPATH='src'
-python scripts/preview_answer.py --query "votre question fiscale"
+# Streamlit UI (multi-provider, single + batch)
+$env:PYTHONPATH='src'; streamlit run app.py
 
-# Batch (with resume support)
+# CLI single query
+$env:PYTHONPATH='src'; python scripts/preview_answer.py --query "votre question"
+
+# CLI batch with resume
 python scripts/preview_answer.py --input data/interim/batch_final.jsonl --output data/reports/batch.json
+python scripts/preview_answer.py --input data/interim/batch.jsonl --resume data/reports/batch.json
 
-# Resume failed batch
-python scripts/preview_answer.py --input data/interim/batch.jsonl --resume data/reports/batch.json --output data/reports/batch_v2.json
+# Evaluation
+python scripts/evaluate.py --runtime rag --limit 15
 
-# Standardized evaluation
-python scripts/evaluate.py --runtime rag --case-ids q001,q002 --limit 10
+# Profile (per-stage timing)
+$env:PYTHONPATH='src'; python scripts/profile.py
 
 # Tests
 $env:PYTHONPATH='src'; python -m unittest discover -s tests -v
 ```
 
-## Setup
+## Key Metrics
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
+**Benchmark**: 15 realistic accountant questions → 12 correct, 2 partial, 1 honest, 0 wrong.
 
-Configure DeepSeek API key in `.env.local`:
-```
-DEEPSEEK_API_KEY=sk-...
-```
+**Ablation** (15 queries, 4 configs): reranker improves MRR_pass from 0.22→0.26.
 
-## Project Layout
+**102 unit tests** passing.
 
-```
-src/bofip_cleanroom/
-├── rag_runtime.py          # Clean retrieval runtime (dense-anchor, configurable weights)
-├── reranker.py              # CrossEncoderReranker (bge-reranker-v2-m3)
-├── dense_retrieval.py       # DenseEncoder, DenseIndex, DenseDocumentIndex
-├── lexical_retrieval.py     # BM25 with French stemming
-├── hybrid_retrieval.py      # Confidence-weighted RRF fusion
-├── direct_chunk_retrieval.py# Local chunk BM25 inside top docs
-├── chunking.py              # section_window, paragraph_preserving, parent_child
-├── models.py                # RawDocument, ChunkNode, dataclasses
-├── eval_harness.py          # EvalMetrics, QueryGold, evaluate()
-├── env_utils.py             # .env.local / .env loader with BOM safety
-├── jsonio.py                # JSON/JSONL read/write
-├── settings.py              # Project paths
-├── text_utils.py            # Normalization, token counting
-├── html_parser.py           # BOFIP HTML parsing
-├── xml_parser.py            # BOFIP XML metadata extraction
-├── document_builder.py      # RawDocument assembly
-├── discovery.py             # BOFIP file discovery
-├── sampling.py              # Stratified sampling
-├── llm_preview.py           # Legacy LLM interface (Gemini/OpenAI/DeepSeek)
-├── pre_llm_verification.py  # Stack integrity checks
-└── versioning.py            # Manifest builder
+## Docs
 
-scripts/
-├── preview_answer.py        # Main entry point: single-query, batch, resume
-├── evaluate.py              # Standardized eval with eval_harness
-└── phase*.py                # Historical pipeline scripts (Phases 0-8b)
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — Full pipeline design, component reference, data flow
+- [ROADMAP.md](ROADMAP.md) — Phase history and delivered features
+- [NEXT_CODEX_START_HERE.md](NEXT_CODEX_START_HERE.md) — Session handoff guide
 
-data/
-├── interim/
-│   ├── eval_queries_v1.jsonl    # 50 diverse queries (5 categories)
-│   ├── passage_gold_v3.jsonl    # Gold passage annotations
-│   ├── batch_final.jsonl        # 15-query benchmark input
-│   ├── raw_docs_sample_5666.jsonl
-│   ├── chunks_section_window_sample_5666.jsonl
-│   ├── doc_dense_cache_5666_*.npy
-│   └── chunk_dense_cache_5666_*.npy
-├── models/
-│   └── intfloat--multilingual-e5-large/
-└── reports/
-    └── batch_final_v1.json      # 15-query benchmark results
-```
+## Known Limitations
+
+- 47s cold start (runtime loads 4 models + builds BM25 indexes — cached after first run)
+- ~30s/query latency (rewrite + retrieval + reranker + LLM)
+- French-only (BOFIP is French tax doctrine)
+- "dictionnaire en ligne" → "livres numériques" terminology gap
+
+## Deployment
+
+Run locally with GPU (RTX 3060+ recommended). For sharing, use HuggingFace Spaces (free, CPU-only — slower but functional).
+

@@ -1,4 +1,0 @@
-{"case_id":"sh001","query":"Qui est le redevable legal de la TVA lors d une vente de biens entre deux entreprises francaises ?","category":"direct","note":"TVA redevable - q001"}
-{"case_id":"sh002","query":"Quel est le plafond de la deduction pour epargne de precaution en agriculture ?","category":"direct","note":"DEP agricole - q013"}
-{"case_id":"sh003","query":"Notre startup est JEI et engage des depenses de recherche. Peut-elle obtenir immediatement le remboursement de sa creance de CIR ?","category":"paraphrase","note":"JEI + CIR - cross-doc"}
-{"case_id":"sh004","query":"Une association a but non lucratif qui vend des produits derives doit-elle facturer la TVA et laquelle ?","category":"cross_document","note":"Association + TVA - q031"}
