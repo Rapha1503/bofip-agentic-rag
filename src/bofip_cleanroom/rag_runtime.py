@@ -30,12 +30,6 @@ CORPUS_PATHS: dict[str, dict[str, str]] = {
         "doc_dense_cache": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
         "chunk_dense_cache": "data/interim/chunk_dense_cache_5666_full_e5.npy",
     },
-    "demo": {
-        "raw_docs": "data/interim/raw_docs_sample_200.jsonl",
-        "chunks": "data/interim/chunks_section_window_sample_200.jsonl",
-        "doc_dense_cache": "data/interim/doc_dense_cache_200_sections_firstpara_e5large.npy",
-        "chunk_dense_cache": "data/interim/chunk_dense_cache_200_full_e5.npy",
-    },
 }
 
 DEFAULT_RANK_CONSTANT = 60

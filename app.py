@@ -69,11 +69,8 @@ st.set_page_config(page_title="BOFIP RAG", layout="wide")
 def get_runtime():
     import torch
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    # Auto-detect corpus: full (5666) or demo (200)
-    from pathlib import Path as P
-    corpus = "commentary" if (P("data/interim/raw_docs_sample_5666.jsonl").exists() and P("data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy").exists()) else "demo"
-    st.caption(f"Corpus: {corpus} ({'GPU' if device == 'cuda' else 'CPU'})")
-    return RagRuntime.from_local_corpus(corpus=corpus, device=device)
+    st.caption(f"Appareil: {'GPU' if device == 'cuda' else 'CPU'}")
+    return RagRuntime.from_local_corpus(corpus="commentary", device=device)
 
 
 def build_prompt(query: str, chunks: list[dict]) -> str:
