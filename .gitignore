@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Data (too large)
+data/interim/*.npy
+data/interim/*.jsonl
+!data/interim/pilot_5.jsonl
+data/raw/
+data/models/
+data/logs/
+data/reports/*.json
+
+# Caches
+.bofip_cache/
+~/.cache/bofip_rag/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
