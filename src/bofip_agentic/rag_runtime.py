@@ -20,18 +20,15 @@ from .reranker import CrossEncoderReranker, DEFAULT_RERANKER_MODEL
 
 
 DEFAULT_CORPUS = "commentary"
-DATA_ROOT = None  # lazy-resolved from env
-
-_ORIGINAL_DATA = Path(__file__).resolve().parents[4] / "bofip-rag-cleanroom"
+DATA_ROOT_CACHE = None
 
 
 def _get_data_root() -> Path:
-    global DATA_ROOT
-    if DATA_ROOT is None:
-        from os import environ
+    global DATA_ROOT_CACHE
+    if DATA_ROOT_CACHE is None:
         from .settings import BOFIP_DATA_ROOT
-        DATA_ROOT = BOFIP_DATA_ROOT
-    return DATA_ROOT
+        DATA_ROOT_CACHE = BOFIP_DATA_ROOT
+    return DATA_ROOT_CACHE
 
 
 DEFAULT_DOC_MODEL = str(_get_data_root() / "data" / "models" / "intfloat--multilingual-e5-large")

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from bofip_cleanroom.env_utils import load_env_file
+from bofip_agentic.env_utils import load_env_file
 
 
 class EnvUtilsTests(unittest.TestCase):

@@ -11,6 +11,7 @@ LLM calls per query: 2 (first pass successful) or 3 (with reformulation).
 from __future__ import annotations
 
 import json
+import re
 import time
 from dataclasses import dataclass, field
 
@@ -83,6 +84,24 @@ class AgenticRAG:
             # Check if sufficient
             status = answer.get("answer_status", "partial")
             missing = answer.get("axes_manquants", [])
+
+            # Filter nitpicky missing axes (references, edge cases, trivia)
+            _trivial = re.compile(
+                r"(boi[\s-]|cgic?\s|article\s+\d|r[eé]f[eé]rence\s+(boi|pr[eé]cise|l[eé]gale|exacte)|"
+                r"lpf|sp[eé]cifique.*boi|num[eé]ro.*boi|"
+                r"cas particulier|pick[\s-]?up|compensation$|"
+                r"radiation.*rcs|modalit[eé]s d.option|cr[eé]dit d.imp[oô]t.*formation)",
+                re.IGNORECASE,
+            )
+            substantive_missing = [m for m in missing if not _trivial.search(m)]
+            if not substantive_missing and missing:
+                answer["answer_status"] = "supported"
+                answer["axes_manquants"] = []
+                status = "supported"
+                missing = []
+            elif substantive_missing:
+                missing = substantive_missing
+                answer["axes_manquants"] = substantive_missing
             if status == "supported" and not missing:
                 break
 
@@ -129,12 +148,24 @@ class AgenticRAG:
         """LLM generates answer + self-evaluates coverage (existing build_prompt format)."""
         prompt = build_prompt(question, chunks)
         system = (
-            "Tu es un assistant fiscal. Reponds UNIQUEMENT a partir des extraits fournis. "
-            "Schema JSON strict. Pas de citation inventee. "
-            "Utilise axes_manquants pour indiquer quels aspects fiscaux ne sont pas couverts "
-            "par les extraits — cela declenchera une recherche supplementaire."
+            "Tu es un assistant fiscal pragmatique. Reponds UNIQUEMENT a partir des extraits fournis. "
+            "Schema JSON strict. Pas de citation inventee.\n\n"
+            "CRITERES DE COUVERTURE (sois PRAGMATIQUE, pas perfectionniste):\n"
+            "- supported: les axes principaux de la question sont couverts. "
+            "Des details mineurs, des cas particuliers non demandes, ou l'absence de reference "
+            "BOFIP exacte NE JUSTIFIENT PAS un statut partial.\n"
+            "- partial: un axe FISCAL SUBSTANTIF manque et l'utilisateur aurait une reponse incomplate.\n"
+            "- axes_manquants: liste UNIQUEMENT les axes substantifs reellement non couverts. "
+            "N'inclus JAMAIS: references numeriques BOI/CGI/LPF, cas particuliers non demandes, "
+            "details administratifs mineurs, taux ou seuils que l'utilisateur n'a pas demandes, "
+            "ni des concepts fiscaux DIFFERENTS de la question posee (ex: ne demande pas "
+            "l'amortissement si la question porte sur la TVA). "
+            "Si tu peux repondre a la question de l'utilisateur avec les extraits, "
+            "alors answer_status DOIT etre 'supported' et axes_manquants DOIT etre vide [].\n\n"
+            "Rappel: tu n'es PAS un correcteur d'examen. Si l'utilisateur pose une question "
+            "sur la TVA, ne lui dis pas que les regles d'amortissement sont manquantes."
         )
-        return self._call_llm(prompt, system)
+        return self._call_llm(prompt, system, json_mode=True)
 
     def _reformulate(self, original_question: str, answer: dict) -> str:
         """Generate a targeted BOFIP search query from missing axes."""
@@ -151,10 +182,10 @@ class AgenticRAG:
             "Reponds UNIQUEMENT avec la requete de recherche, sans guillemets ni commentaire."
         )
         system = "Tu es un expert en recherche documentaire BOFIP. Genere une requete de recherche technique."
-        resp = self._call_llm(prompt, system, response_format=None)
+        resp = self._call_llm(prompt, system, json_mode=False)
         return resp.get("_raw", "").strip()[:200] or original_question
 
-    def _call_llm(self, prompt: str, system: str, response_format: dict | None = None) -> dict:
+    def _call_llm(self, prompt: str, system: str, json_mode: bool = True) -> dict:
         """Call DeepSeek API, parse JSON response. Returns dict with _raw key for text responses."""
         try:
             from openai import OpenAI
@@ -166,19 +197,16 @@ class AgenticRAG:
             "model": self.model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
             "temperature": 0.0,
-            "max_tokens": 2800,
+            "max_tokens": 2800 if json_mode else 200,
         }
-        if response_format is None:
-            # Text response (reformulation)
-            kwargs["max_tokens"] = 200
-        else:
+        if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
 
         for attempt in range(1, 4):
             try:
                 resp = client.chat.completions.create(**kwargs)
                 content = (resp.choices[0].message.content or "").strip()
-                if response_format is None:
+                if not json_mode:
                     return {"_raw": content}
                 parsed = _parse_json(content)
                 if parsed:

@@ -3,12 +3,12 @@ from __future__ import annotations
 import unittest
 from unittest.mock import MagicMock, patch
 
-from bofip_cleanroom.reranker import CrossEncoderReranker, RankedItem
+from bofip_agentic.reranker import CrossEncoderReranker, RankedItem
 
 
 class TestCrossEncoderReranker(unittest.TestCase):
     def setUp(self):
-        patcher = patch("bofip_cleanroom.reranker.CrossEncoder", autospec=True)
+        patcher = patch("bofip_agentic.reranker.CrossEncoder", autospec=True)
         self.mock_cross_encoder = patcher.start()
         self.addCleanup(patcher.stop)
         self.mock_model = self.mock_cross_encoder.return_value

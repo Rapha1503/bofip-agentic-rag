@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from bofip_cleanroom.direct_chunk_retrieval import DirectChunkRetriever, Stage1DocumentHit
-from bofip_cleanroom.models import ChunkNode
+from bofip_agentic.direct_chunk_retrieval import DirectChunkRetriever, Stage1DocumentHit
+from bofip_agentic.models import ChunkNode
 
 
 class DirectChunkRetrievalTests(unittest.TestCase):

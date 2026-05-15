@@ -11,12 +11,12 @@ INTERIM_DIR = DATA_DIR / "interim"
 REPORTS_DIR = DATA_DIR / "reports"
 
 # Where the BOFIP corpus lives (raw_docs JSONL, chunks JSONL, .npy caches, models)
-# Default: sibling project bofip-rag-cleanroom
+# Default: project's own data/ directory. Override with BOFIP_DATA_ROOT env var.
 _DATA_ROOT = os.environ.get("BOFIP_DATA_ROOT", "")
 if _DATA_ROOT:
     BOFIP_DATA_ROOT = Path(_DATA_ROOT).expanduser().resolve()
 else:
-    BOFIP_DATA_ROOT = PROJECT_ROOT.parent / "bofip-rag-cleanroom"
+    BOFIP_DATA_ROOT = PROJECT_ROOT
 
 
 def get_raw_bofip_root(explicit: str | Path | None = None) -> Path:

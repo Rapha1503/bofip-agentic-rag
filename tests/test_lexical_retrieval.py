@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from bofip_cleanroom.lexical_retrieval import (
+from bofip_agentic.lexical_retrieval import (
     DocumentLexicalIndex,
     LexicalBM25Index,
     get_document_search_text_fn,
     tokenize,
 )
-from bofip_cleanroom.models import ChunkNode, RawDocument, RawParagraph, RawSectionNode
+from bofip_agentic.models import ChunkNode, RawDocument, RawParagraph, RawSectionNode
 
 
 class LexicalRetrievalTests(unittest.TestCase):

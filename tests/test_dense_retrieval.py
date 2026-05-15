@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from bofip_cleanroom.dense_retrieval import (
+from bofip_agentic.dense_retrieval import (
     DenseDocumentIndex,
     DenseIndex,
     _dense_prompt_style,
@@ -13,7 +13,7 @@ from bofip_cleanroom.dense_retrieval import (
     build_dense_chunk_text,
     build_dense_document_text,
 )
-from bofip_cleanroom.models import ChunkNode, RawDocument, RawSectionNode
+from bofip_agentic.models import ChunkNode, RawDocument, RawSectionNode
 
 
 class DenseRetrievalTests(unittest.TestCase):

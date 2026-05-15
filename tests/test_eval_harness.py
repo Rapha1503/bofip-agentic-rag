@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from bofip_cleanroom.eval_harness import (
+from bofip_agentic.eval_harness import (
     QueryGold,
     _binary_relevance,
     _first_hit_rank,

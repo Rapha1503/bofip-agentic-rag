@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from bofip_cleanroom.hybrid_retrieval import (
+from bofip_agentic.hybrid_retrieval import (
     RankedDoc,
     compute_source_rank_profiles,
     confidence_weighted_reciprocal_rank_fuse,
