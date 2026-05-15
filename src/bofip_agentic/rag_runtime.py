@@ -31,6 +31,18 @@ def _get_data_root() -> Path:
     return DATA_ROOT_CACHE
 
 
+def _resolve_path(root: Path, paths: dict, fallbacks: dict, key: str) -> Path:
+    """Resolve corpus path with fallback to generic filenames."""
+    primary = root / paths.get(key, "")
+    if primary.exists():
+        return primary
+    for alt in fallbacks.get(key, []):
+        alt_path = root / alt
+        if alt_path.exists():
+            return alt_path
+    return primary  # return original even if missing — let FileNotFoundError surface
+
+
 DEFAULT_DOC_MODEL = str(_get_data_root() / "data" / "models" / "intfloat--multilingual-e5-large")
 DEFAULT_CHUNK_MODEL = DEFAULT_DOC_MODEL
 STAGE2_CANDIDATES_PER_DOC = 8
@@ -42,6 +54,14 @@ CORPUS_PATHS: dict[str, dict[str, str]] = {
         "doc_dense_cache": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
         "chunk_dense_cache": "data/interim/chunk_dense_cache_5666_full_e5large.npy",
     },
+}
+
+# Fallback to generic filenames (produced by setup.py)
+_CORPUS_FALLBACKS: dict[str, list[str]] = {
+    "raw_docs": ["data/interim/raw_docs.jsonl"],
+    "chunks": ["data/interim/chunks.jsonl"],
+    "doc_dense_cache": ["data/interim/doc_dense_cache.npy"],
+    "chunk_dense_cache": ["data/interim/chunk_dense_cache.npy"],
 }
 
 DEFAULT_RANK_CONSTANT = 60
@@ -160,10 +180,10 @@ class RagRuntime:
     ) -> "RagRuntime":
         root = (project_root or _get_data_root()).resolve()
         paths = CORPUS_PATHS.get(corpus, {})
-        raw = raw_docs_path or (root / paths.get("raw_docs", ""))
-        chk = chunks_path or (root / paths.get("chunks", ""))
-        doc_dense = doc_dense_path or (root / paths.get("doc_dense_cache", ""))
-        chunk_dense = chunk_dense_path or (root / paths.get("chunk_dense_cache", ""))
+        raw = raw_docs_path or _resolve_path(root, paths, _CORPUS_FALLBACKS, "raw_docs")
+        chk = chunks_path or _resolve_path(root, paths, _CORPUS_FALLBACKS, "chunks")
+        doc_dense = doc_dense_path or _resolve_path(root, paths, _CORPUS_FALLBACKS, "doc_dense_cache")
+        chunk_dense = chunk_dense_path or _resolve_path(root, paths, _CORPUS_FALLBACKS, "chunk_dense_cache")
 
         documents = [raw_document_from_dict(item) for item in read_jsonl(Path(raw))]
         chunks = [chunk_node_from_dict(item) for item in read_jsonl(Path(chk))]

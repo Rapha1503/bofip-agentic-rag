@@ -73,8 +73,8 @@ Evaluated on 50 realistic French tax questions across 10 themes (TVA, BIC, CF, I
 ### Prerequisites
 
 - Python 3.10+ with CUDA 12.x (GPU recommended, CPU supported)
-- NVIDIA GPU with ≥6 GB VRAM (RTX 3060 tested)
-- BOFIP corpus files (download from [BOFIP](https://bofip.impots.gouv.fr))
+- NVIDIA GPU with >=6 GB VRAM (RTX 3060 tested)
+- DeepSeek API key (get one at [platform.deepseek.com](https://platform.deepseek.com))
 
 ### Setup
 
@@ -87,19 +87,37 @@ cd bofip-agentic-rag
 python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt
-
-# Copy BOFIP corpus to data/interim/ (from your local BOFIP download)
-# Required files:
-#   data/interim/raw_docs_sample_5666.jsonl
-#   data/interim/chunks_section_window_sample_5666.jsonl
-#   data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
-#   data/interim/chunk_dense_cache_5666_full_e5large.npy
-
-# Copy or download models to data/models/
-#   intfloat/multilingual-e5-large (~2.1 GB)
-#   BAAI/bge-reranker-v2-m3 (~2.2 GB)
-# Or use HuggingFace: the pipeline auto-downloads on first run
 ```
+
+### Data Pipeline
+
+**One-click setup** (downloads BOFIP from French open data portal, parses, chunks, builds embeddings):
+
+```powershell
+$env:PYTHONPATH="src"
+python scripts/setup.py  # ~5-20 min depending on internet + GPU
+```
+
+**Or step by step:**
+
+```powershell
+# Download BOFIP from data.economie.gouv.fr API (~9000 publications, free, no auth)
+python scripts/setup.py --download-only
+
+# Parse + chunk + build embeddings (GPU recommended for embeddings)
+python scripts/setup.py --skip-download --device cuda
+
+# Or copy from sibling project if you already have the data
+python scripts/setup.py --from-sibling
+```
+
+**Data source:** BOFIP is published as open data by DGFIP under Licence Ouverte v2.0 at [data.economie.gouv.fr](https://data.economie.gouv.fr/explore/dataset/bofip-vigueur/). The `bofip-vigueur` dataset provides structured JSON with full doctrinal text, updated weekly, no authentication required.
+
+### Models
+
+On first run, HuggingFace auto-downloads models (~4 GB):
+- `intfloat/multilingual-e5-large` (document + chunk embeddings)
+- `BAAI/bge-reranker-v2-m3` (cross-encoder reranker)
 
 ### Run evaluation
 
