@@ -1,6 +1,6 @@
 """BOFIP RAG — Assistant Fiscal"""
 from __future__ import annotations
-import hashlib, json, logging, os, sys, time
+import hashlib, json, logging, os, re, sys, time
 from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -82,19 +82,26 @@ def rewrite_query(query, client, model):
         temperature=0.0, max_tokens=400,
     )
     content = (resp.choices[0].message.content or "").strip()
-    # Strip markdown code blocks if present
-    if content.startswith("```"):
-        lines = content.split("\n")
-        content = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+    # Robust JSON extraction
     try:
         data = json.loads(content)
-        rewritten = data.get("rewritten_query", query) or query
-        facets = data.get("facets", [])
-        facet_queries = [f.get("query", rewritten) for f in facets if f.get("query")]
-        return rewritten, facet_queries if facet_queries else [rewritten]
-    except (json.JSONDecodeError, TypeError) as e:
-        st.warning(f"Réécriture: JSON invalide ({e}). Question originale utilisée.")
-        return query, [query]
+    except json.JSONDecodeError:
+        # Strip markdown code blocks
+        cleaned = re.sub(r"```(?:json)?\s*", "", content).replace("```", "").strip()
+        # Find first { and last }
+        start = cleaned.find("{")
+        end = cleaned.rfind("}")
+        if start >= 0 and end > start:
+            cleaned = cleaned[start:end+1]
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError as e2:
+            _log("REWRITE_PARSE_ERROR", {"raw": content[:200], "error": str(e2)})
+            return query, [query]
+    rewritten = data.get("rewritten_query", query) or query
+    facets = data.get("facets", [])
+    facet_queries = [f.get("query", rewritten) for f in facets if f.get("query")]
+    return rewritten, facet_queries if facet_queries else [rewritten]
 
 
 def _detect_multi_axis(query: str) -> bool:
@@ -121,7 +128,7 @@ def call_llm(prompt, client, model):
         model=model,
         messages=[{"role":"system","content":"Tu es un assistant fiscal prudent. Schema JSON strict."},
                   {"role":"user","content":prompt}],
-        temperature=0.0, max_tokens=1200,
+        temperature=0.0, max_tokens=1600,
         response_format={"type":"json_object"},
     )
     content = resp.choices[0].message.content or ""
