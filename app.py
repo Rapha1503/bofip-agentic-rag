@@ -54,26 +54,31 @@ def get_runtime():
 def rewrite_query(query, client, model):
     """Rewrite query + optionally detect legal facets. Returns (rewritten_str, facet_queries_list)."""
     system = (
-        "Analyse cette question fiscale. Retourne UNIQUEMENT un JSON valide sans markdown:\n"
+        "Analyse cette question fiscale. Retourne UNIQUEMENT un JSON valide sans markdown ni commentaire:\n"
         '{"rewritten_query":"question reformulee en francais administratif formel",'
         '"facets":[{"name":"axe","query":"sous-requete pour cet axe"}]}\n'
-        "Identifie les axes juridiques distincts necessaires (1 a 5). "
-        "Si la question est simple, retourne 1 seul facet. "
-        "Les facets doivent couvrir: regle de fond, procedure, doctrine, garanties, sanctions si presents."
+        "Identifie les axes juridiques distincts (1 a 5). "
+        "Si question simple, 1 seul facet. "
+        "Noms de facets possibles: regle_de_fond, procedure, doctrine, garanties, sanctions, prescription."
     )
     resp = client.chat.completions.create(
         model=model,
         messages=[{"role":"system","content":system},{"role":"user","content":query}],
-        temperature=0.0, max_tokens=300,
+        temperature=0.0, max_tokens=400,
     )
     content = (resp.choices[0].message.content or "").strip()
+    # Strip markdown code blocks if present
+    if content.startswith("```"):
+        lines = content.split("\n")
+        content = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
     try:
         data = json.loads(content)
         rewritten = data.get("rewritten_query", query) or query
         facets = data.get("facets", [])
         facet_queries = [f.get("query", rewritten) for f in facets if f.get("query")]
         return rewritten, facet_queries if facet_queries else [rewritten]
-    except (json.JSONDecodeError, TypeError):
+    except (json.JSONDecodeError, TypeError) as e:
+        st.warning(f"Réécriture: JSON invalide ({e}). Question originale utilisée.")
         return query, [query]
 
 
@@ -148,25 +153,33 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
         facet_queries = [rewritten]
     results["rewritten"] = rewritten
     results["facet_queries"] = facet_queries
-    # Retrieval — per facet, merge
-    all_chunks = []; all_stage1 = []; seen_docs = set()
-    main_log = {}
+    # Retrieval — per facet, merge with diversity
+    all_chunks_raw = []; all_stage1 = []; seen_docs = set(); main_log = {}
     for fq in facet_queries:
         try:
             res = rt.retrieve(fq, top_docs=5)
             for h in res.stage1_hits:
                 if h.boi_reference not in seen_docs:
                     all_stage1.append(h); seen_docs.add(h.boi_reference)
-            for c in res.stage2_chunks: all_chunks.append(c)
+            for c in res.stage2_chunks: all_chunks_raw.append(c)
             main_log = getattr(res, "pipeline_log", {})
         except Exception as e:
             return {**results,"error":f"Erreur retrieval: {e}"}
+    # Post-merge diversity: max 3 chunks per document
+    merged = []
+    doc_counts = {}
+    for c in all_chunks_raw:
+        d = c.boi_reference
+        doc_counts[d] = doc_counts.get(d, 0) + 1
+        if doc_counts[d] <= 3:
+            merged.append(c)
+    all_chunks_raw = merged
     results["stage1"] = all_stage1[:8]
     results["pipeline_log"] = main_log
     chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
                "publication_date":c.publication_date,"section_path":c.section_path,
                "text":c.text,"chunk_id":c.chunk_id,"score":float(getattr(c,"score",0))}
-              for c in all_chunks[:16]]
+              for c in all_chunks_raw[:16]]
     results["chunks"] = chunks
     if not chunks:
         results["parsed"] = {"answer_status":"insufficient_evidence","conclusion":"Aucun extrait trouvé.",
@@ -203,8 +216,8 @@ def display_results(results):
     chunks = results.get("chunks",[])
     with st.expander(f"✂️ CHUNKS — Stage 2 + Reranker ({len(chunks)} final)", expanded=True):
         for i,c in enumerate(chunks):
-            bg = "#e8f5e9" if i==0 else "#f0f2f6"
-            st.markdown(f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px">'
+            bg = "#1a472a" if i==0 else "#1a1a2e"
+            st.markdown(f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px;color:#e0e0e0">'
                         f'<b>[{c["rank"]}] {c["boi_reference"]}</b> — score: {c["score"]:.4f}<br>'
                         f'<span style="font-size:12px;color:#666">📂 {c["section_path"]}</span><br>'
                         f'<span style="font-size:13px">{c["text"][:300]}{"..." if len(c["text"])>300 else ""}</span></div>',
