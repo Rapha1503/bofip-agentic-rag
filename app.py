@@ -1,22 +1,15 @@
-"""BOFIP RAG — Assistant Fiscal (Streamlit UI v3 — multi-provider, deployable)"""
+"""BOFIP RAG — Assistant Fiscal"""
 from __future__ import annotations
-
-import json
-import os
-import sys
+import json, os, sys
 from pathlib import Path
-
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
 import streamlit as st
 from openai import OpenAI
-
 from bofip_cleanroom.env_utils import load_default_env_files
 from bofip_cleanroom.rag_runtime import RagRuntime
 from bofip_cleanroom.prompt_utils import build_prompt
 
-# ── Provider configuration ──────────────────────────────────────────
 PROVIDERS = {
     "DeepSeek": {
         "base_url": "https://api.deepseek.com/v1",
@@ -26,8 +19,8 @@ PROVIDERS = {
     },
     "OpenAI": {
         "base_url": "https://api.openai.com/v1",
-        "models": ["gpt-5.2", "gpt-4.1-mini", "gpt-4.1", "o4-mini"],
-        "default_model": "gpt-4.1-mini",
+        "models": ["gpt-5.5", "gpt-5.4-mini", "gpt-5-mini", "gpt-4.1"],
+        "default_model": "gpt-5.4-mini",
         "env_key": "OPENAI_API_KEY",
     },
     "Anthropic": {
@@ -44,204 +37,173 @@ PROVIDERS = {
     },
     "Google": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite"],
-        "default_model": "gemini-2.5-flash",
+        "models": ["gemini-3.1-flash-lite", "gemini-3.1-flash", "gemini-3.1-pro"],
+        "default_model": "gemini-3.1-flash",
         "env_key": "GEMINI_API_KEY",
     },
 }
 
 st.set_page_config(page_title="BOFIP RAG", layout="wide")
 
-
 @st.cache_resource(show_spinner="Chargement du runtime (~50s, une seule fois)...")
 def get_runtime():
     import torch
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    st.caption(f"Appareil: {'GPU' if device == 'cuda' else 'CPU'}")
     return RagRuntime.from_local_corpus(corpus="commentary", device=device)
 
+def rewrite_query(query, client, model):
+    resp = client.chat.completions.create(
+        model=model,
+        messages=[{"role":"system","content":"Reecris cette question en francais administratif et fiscal formel. Developpe les sigles et abreviations. Reponds UNIQUEMENT avec la question reformulee, sans guillemets ni commentaire."},
+                  {"role":"user","content":query}],
+        temperature=0.0, max_tokens=200,
+    )
+    return (resp.choices[0].message.content or "").strip() or query
 
-def render_answer(parsed: dict) -> None:
-    status = parsed.get("answer_status", "?").upper()
-    conclusion = parsed.get("conclusion", "")
-    bullets = parsed.get("justification_bullets", [])
-    limits = parsed.get("limits", "")
-    axes_req = parsed.get("axes_requis", [])
-    axes_cov = parsed.get("axes_couverts", [])
-    axes_manq = parsed.get("axes_manquants", [])
+def call_llm(prompt, client, model):
+    resp = client.chat.completions.create(
+        model=model,
+        messages=[{"role":"system","content":"Tu es un assistant fiscal prudent. Schema JSON strict."},
+                  {"role":"user","content":prompt}],
+        temperature=0.0, max_tokens=800,
+        response_format={"type":"json_object"},
+    )
+    content = resp.choices[0].message.content or ""
+    usage = getattr(resp, "usage", None)
+    return {"raw":content,"ptokens":getattr(usage,"prompt_tokens",None) if usage else None,
+            "ctokens":getattr(usage,"completion_tokens",None) if usage else None}
 
-    color_map = {"SUPPORTED": "green", "PARTIAL": "orange", "INSUFFICIENT_EVIDENCE": "red"}
-    st.markdown(f"### Statut: :{color_map.get(status, 'grey')}[**{status}**]")
-    st.markdown(f"**{conclusion}**")
-
-    if axes_req:
-        cols = st.columns(3)
-        cols[0].metric("Axes requis", len(axes_req))
-        cols[1].metric("Axes couverts", len(axes_cov))
-        cols[2].metric("Axes manquants", len(axes_manq))
-        with st.expander("Détail des axes", expanded=False):
-            st.caption("Requis: " + " | ".join(axes_req))
-            st.caption("Couverts: " + (" | ".join(axes_cov) if axes_cov else "—"))
-            st.caption("Manquants: " + (" | ".join(axes_manq) if axes_manq else "—"))
-
+def render_answer(parsed):
+    status = parsed.get("answer_status","?").upper()
+    c = parsed.get("conclusion","")
+    bullets = parsed.get("justification_bullets",[])
+    limits = parsed.get("limits","")
+    axr, axc, axm = parsed.get("axes_requis",[]), parsed.get("axes_couverts",[]), parsed.get("axes_manquants",[])
+    color = {"SUPPORTED":"green","PARTIAL":"orange","INSUFFICIENT_EVIDENCE":"red"}
+    st.markdown(f"### Statut: :{color.get(status,'grey')}[**{status}**]")
+    st.markdown(f"**{c}**")
+    if axr:
+        c1,c2,c3 = st.columns(3)
+        c1.metric("Axes requis",len(axr)); c2.metric("Axes couverts",len(axc)); c3.metric("Axes manquants",len(axm))
+        with st.expander("Détail des axes",expanded=False):
+            st.caption("Requis: "+" | ".join(axr))
+            st.caption("Couverts: "+(" | ".join(axc) if axc else "—"))
+            st.caption("Manquants: "+(" | ".join(axm) if axm else "—"))
     st.markdown("**Justification:**")
     for b in bullets:
         st.markdown(f"- {b}")
     st.caption(f"Limites: {limits}")
 
-
-def process_query(query: str, rt, client, llm_model: str, use_rewrite: bool) -> dict:
-    """Run full pipeline. Returns dict with results or error."""
-    results = {"query": query, "error": None}
-
-    # 1. Rewrite
+def process_query(query, rt, client, llm_model, use_rewrite):
+    results = {"query":query,"error":None}
+    # Rewrite
     if use_rewrite:
         try:
-            rewritten = rewrite_query_cached(query, client, llm_model)
+            rewritten = rewrite_query(query, client, llm_model)
         except Exception as e:
-            return {**results, "error": f"Erreur réécriture: {e}"}
+            return {**results,"error":f"Erreur réécriture: {e}"}
     else:
         rewritten = query
     results["rewritten"] = rewritten
-
-    # 2. Retrieval
+    # Retrieval
     try:
         result = rt.retrieve(rewritten, top_docs=8)
     except Exception as e:
-        return {**results, "error": f"Erreur retrieval: {e}"}
+        return {**results,"error":f"Erreur retrieval: {e}"}
     results["stage1"] = result.stage1_hits
-
-    # 3. Chunks
-    chunks = [
-        {"rank": c.rank, "boi_reference": c.boi_reference, "title": c.title,
-         "publication_date": c.publication_date, "section_path": c.section_path,
-         "text": c.text, "chunk_id": c.chunk_id, "score": getattr(c, "score", 0)}
-        for c in result.stage2_chunks
-    ]
+    # Chunks
+    chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
+               "publication_date":c.publication_date,"section_path":c.section_path,
+               "text":c.text,"chunk_id":c.chunk_id,"score":float(getattr(c,"score",0))}
+              for c in result.stage2_chunks]
     results["chunks"] = chunks
-
     if not chunks:
-        results["parsed"] = {"answer_status": "insufficient_evidence", "conclusion": "Aucun extrait trouvé.",
-                              "justification_bullets": ["La recherche n'a retourné aucun résultat."],
-                              "limits": "Aucune source disponible.", "axes_requis": [], "axes_couverts": [], "axes_manquants": []}
+        results["parsed"] = {"answer_status":"insufficient_evidence","conclusion":"Aucun extrait trouvé.",
+                              "justification_bullets":["La recherche n'a retourné aucun résultat."],
+                              "limits":"Aucune source disponible.","axes_requis":[],"axes_couverts":[],"axes_manquants":[]}
         return results
-
-    # 4. LLM
+    # LLM
     prompt = build_prompt(query, chunks)
     results["prompt"] = prompt
     try:
-        llm_result = call_llm(prompt, client, llm_model)
+        llm_r = call_llm(prompt, client, llm_model)
     except Exception as e:
-        return {**results, "error": f"Erreur LLM: {e}"}
-    results["llm_raw"] = llm_result["raw"]
-    results["ptokens"] = llm_result["ptokens"]
-    results["ctokens"] = llm_result["ctokens"]
-
-    # 5. Parse
+        return {**results,"error":f"Erreur LLM: {e}"}
+    results["llm_raw"] = llm_r["raw"]
+    results["ptokens"] = llm_r["ptokens"]
+    results["ctokens"] = llm_r["ctokens"]
     try:
-        parsed = json.loads(llm_result["raw"])
+        parsed = json.loads(llm_r["raw"])
     except json.JSONDecodeError:
         parsed = None
     results["parsed"] = parsed
-
     return results
 
-
-def display_results(results: dict):
+def display_results(results):
     if results.get("error"):
-        st.error(results["error"])
-        return
-
+        st.error(results["error"]); return
     with st.expander("🔄 RÉÉCRITURE", expanded=True):
         st.info(results["rewritten"])
         if results["rewritten"] != results["query"]:
             st.caption(f"Original: « {results['query']} »")
-
     with st.expander(f"📚 DOCUMENTS — Stage 1 ({len(results.get('stage1',[]))} docs)", expanded=True):
-        rows = [{"#": h.rank, "Score": f"{h.score:.4f}", "BOFIP": h.boi_reference, "Titre": h.title[:120]}
-                for h in results.get("stage1", [])]
-        if rows:
-            st.dataframe(rows, use_container_width=True, hide_index=True)
-
-    chunks = results.get("chunks", [])
+        rows = [{"#":h.rank,"Score":f"{h.score:.4f}","BOFIP":h.boi_reference,"Titre":h.title[:120]} for h in results.get("stage1",[])]
+        if rows: st.dataframe(rows, use_container_width=True, hide_index=True)
+    chunks = results.get("chunks",[])
     with st.expander(f"✂️ CHUNKS — Stage 2 + Reranker ({len(chunks)} final)", expanded=True):
-        for i, c in enumerate(chunks):
-            bg = "#e8f5e9" if i == 0 else "#f0f2f6"
-            st.markdown(
-                f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px">'
-                f'<b>[{c["rank"]}] {c["boi_reference"]}</b> — score: {c["score"]:.4f}<br>'
-                f'<span style="font-size:12px;color:#666">📂 {c["section_path"]}</span><br>'
-                f'<span style="font-size:13px">{c["text"][:300]}{"..." if len(c["text"])>300 else ""}</span>'
-                f'</div>', unsafe_allow_html=True)
-
+        for i,c in enumerate(chunks):
+            bg = "#e8f5e9" if i==0 else "#f0f2f6"
+            st.markdown(f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px">'
+                        f'<b>[{c["rank"]}] {c["boi_reference"]}</b> — score: {c["score"]:.4f}<br>'
+                        f'<span style="font-size:12px;color:#666">📂 {c["section_path"]}</span><br>'
+                        f'<span style="font-size:13px">{c["text"][:300]}{"..." if len(c["text"])>300 else ""}</span></div>',
+                        unsafe_allow_html=True)
     with st.expander("🤖 PROMPT ENVOYÉ AU LLM", expanded=False):
-        st.code(results.get("prompt", ""), language="text")
-
+        st.code(results.get("prompt",""), language="text")
     with st.expander("✅ RÉPONSE", expanded=True):
-        parsed = results.get("parsed")
-        if parsed:
-            render_answer(parsed)
-        else:
-            st.warning("JSON invalide")
-            st.text(results.get("llm_raw", "")[:500])
-
+        p = results.get("parsed")
+        if p: render_answer(p)
+        else: st.warning("JSON invalide"); st.text(results.get("llm_raw","")[:500])
     with st.expander("📋 DÉBOGAGE", expanded=False):
-        c1, c2 = st.columns(2)
-        c1.metric("Prompt tokens", results.get("ptokens", "?"))
-        c2.metric("Completion tokens", results.get("ctokens", "?"))
-        st.code(results.get("llm_raw", ""), language="json")
+        c1,c2 = st.columns(2)
+        c1.metric("Prompt tokens", results.get("ptokens","?"))
+        c2.metric("Completion tokens", results.get("ctokens","?"))
+        st.code(results.get("llm_raw",""), language="json")
 
-
-# ── UI ───────────────────────────────────────────────────────────────
+# ── UI ──
 st.title("BOFIP RAG — Assistant Fiscal 🇫🇷")
 
-# Sidebar
 with st.sidebar:
     st.header("⚙️ Configuration")
-
-    provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), index=0)
+    provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider_select")
     provider = PROVIDERS[provider_id]
-
-    env_key = provider["env_key"]
     load_default_env_files()
-    default_key = os.environ.get(env_key, "")
-
-    api_key = st.text_input(
-        f"Clé API ({env_key})",
-        value=default_key,
-        type="password",
-        help=f"Chargée depuis .env.local si disponible. Non sauvegardée.",
-    )
-
-    model = st.selectbox("Modèle", provider["models"], index=0)
-
+    api_key = st.text_input(f"Clé API ({provider['env_key']})", value=os.environ.get(provider["env_key"],""),
+                            type="password", key="api_key_input",
+                            help="Chargée depuis .env.local si disponible. Non sauvegardée.")
+    model = st.selectbox("Modèle", provider["models"], key=f"model_{provider_id}")
     use_rewrite = st.checkbox("Réécriture de la question", value=True,
-                              help="Reformule la question en vocabulaire fiscal BOFIP avant la recherche.")
-
+                              help="Reformule la question en vocabulaire fiscal avant la recherche.")
     st.divider()
-    st.caption("Corpus: 5666 documents BOFIP (commentaire)")
-    st.caption("Modèle doc: multilingual-e5-large")
-    st.caption("Modèle chunk: multilingual-e5-base")
+    st.caption("Corpus: 5666 documents BOFIP")
+    st.caption("Modèles: E5-large (docs) / E5-base (chunks)")
     st.caption("Reranker: bge-reranker-v2-m3")
 
 if not api_key:
-    st.warning(f"Entrez une clé API **{env_key}** dans la barre latérale pour commencer.")
+    st.warning(f"Entrez une clé API **{provider['env_key']}** dans la barre latérale.")
     st.stop()
 
-# Init runtime + client
 rt = get_runtime()
+import torch
+st.caption(f"Appareil: {'GPU' if torch.cuda.is_available() else 'CPU'}")
 
 base_url = provider["base_url"]
-# Anthropic uses different auth header
-if provider_id == "Anthropic":
-    client = OpenAI(api_key=api_key, base_url=base_url, default_headers={"x-api-key": api_key})
-else:
-    client = OpenAI(api_key=api_key, base_url=base_url)
+client = OpenAI(api_key=api_key, base_url=base_url, **({"default_headers":{"x-api-key":api_key}} if provider_id=="Anthropic" else {}))
 
 tab1, tab2 = st.tabs(["🔍 Question unique", "📋 Test par lot"])
 
 with tab1:
-    query = st.text_input("Votre question", placeholder="Quel taux de TVA pour une pompe à chaleur ?", key="single_query")
+    query = st.text_input("Votre question", placeholder="Quel taux de TVA pour une pompe à chaleur ?")
     if st.button("Rechercher", type="primary", disabled=not query.strip()):
         with st.spinner("Recherche en cours..."):
             results = process_query(query, rt, client, model, use_rewrite)
@@ -253,25 +215,20 @@ with tab2:
     if st.button("Lancer le lot", type="primary", disabled=not batch_text.strip()):
         queries = [q.strip() for q in batch_text.strip().split("\n") if q.strip()]
         if queries:
-            progress = st.progress(0)
-            status_text = st.empty()
-            all_results = []
-            for i, q in enumerate(queries):
+            progress = st.progress(0); status_text = st.empty(); all_results = []
+            for i,q in enumerate(queries):
                 status_text.text(f"[{i+1}/{len(queries)}] {q[:80]}...")
-                progress.progress((i+1) / len(queries))
+                progress.progress((i+1)/len(queries))
                 all_results.append(process_query(q, rt, client, model, use_rewrite))
-            progress.empty()
-            status_text.empty()
-
+            progress.empty(); status_text.empty()
             st.markdown("### Résumé")
-            summary_rows = []
+            rows = []
             for res in all_results:
                 parsed = res.get("parsed")
-                status = parsed.get("answer_status", "error") if parsed else "error"
-                conclusion = (parsed.get("conclusion", "")[:80] if parsed else str(res.get("error", "")))
-                summary_rows.append({"Question": res["query"][:80], "Statut": status, "Réponse": conclusion})
-            st.dataframe(summary_rows, use_container_width=True, hide_index=True)
-
-            for i, res in enumerate(all_results):
+                sts = parsed.get("answer_status","error") if parsed else "error"
+                conc = (parsed.get("conclusion","")[:80] if parsed else str(res.get("error","")))
+                rows.append({"Question":res["query"][:80],"Statut":sts,"Réponse":conc})
+            st.dataframe(rows, use_container_width=True, hide_index=True)
+            for i,res in enumerate(all_results):
                 st.markdown(f"---\n### Q{i+1}: {res['query'][:100]}")
                 display_results(res)
