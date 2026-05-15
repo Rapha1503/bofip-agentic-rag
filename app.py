@@ -147,7 +147,7 @@ def render_answer(parsed):
     axr, axc, axm = parsed.get("axes_requis",[]), parsed.get("axes_couverts",[]), parsed.get("axes_manquants",[])
     color = {"SUPPORTED":"green","PARTIAL":"orange","INSUFFICIENT_EVIDENCE":"red"}
     st.markdown(f"### Statut: :{color.get(status,'grey')}[**{status}**]")
-    st.markdown(f"> 💬 **{c}**")
+    st.markdown(f"#### ANSWER: {c}")
     if axr:
         c1,c2,c3 = st.columns(3)
         c1.metric("Axes requis",len(axr)); c2.metric("Axes couverts",len(axc)); c3.metric("Axes manquants",len(axm))
