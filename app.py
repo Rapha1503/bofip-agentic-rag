@@ -212,7 +212,8 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
             main_log = getattr(res, "pipeline_log", {})
         except Exception as e:
             return {**results,"error":f"Erreur retrieval: {e}"}
-    # Post-merge diversity: max 3 chunks per document
+    # Post-merge diversity: sort by score, then max 3 chunks per document
+    all_chunks_raw.sort(key=lambda c: float(getattr(c, "score", 0)), reverse=True)
     merged = []
     doc_counts = {}
     for c in all_chunks_raw:
