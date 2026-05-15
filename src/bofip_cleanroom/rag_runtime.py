@@ -92,15 +92,38 @@ class RagRuntime:
         self.chunk_embeddings = chunk_embeddings
         self.reranker = reranker
 
-        self.lexical_indexes = {
-            "base": DocumentLexicalIndex(documents, search_text_fn=get_document_search_text_fn("base")),
-            "sections_leads": DocumentLexicalIndex(documents, search_text_fn=get_document_search_text_fn("sections_leads")),
-            "sections_leads_stem": DocumentLexicalIndex(
-                documents,
-                search_text_fn=get_document_search_text_fn("sections_leads"),
-                tokenize_fn=(lambda text: tokenize(text, stem=True)),
-            ),
+        self.lexical_indexes = self._init_lexical(documents)
+
+    def _init_lexical(self, documents: list[RawDocument]) -> dict[str, DocumentLexicalIndex]:
+        """Load BM25 indexes from cache if available, otherwise build + save."""
+        indexes = {}
+        modes = {
+            "base": ("base", None),
+            "sections_leads": ("sections_leads", None),
+            "sections_leads_stem": ("sections_leads", lambda text: tokenize(text, stem=True)),
         }
+        for mode_key, (search_mode, tok_fn) in modes.items():
+            cache_path = Path("data") / "interim" / f"bm25_cache_5666_{mode_key}.pkl"
+            try:
+                if cache_path.exists():
+                    indexes[mode_key] = DocumentLexicalIndex.load(
+                        cache_path,
+                        search_text_fn=get_document_search_text_fn(search_mode),
+                        tokenize_fn=tok_fn,
+                    )
+                    continue
+            except Exception:
+                pass
+            indexes[mode_key] = DocumentLexicalIndex(
+                documents,
+                search_text_fn=get_document_search_text_fn(search_mode),
+                tokenize_fn=tok_fn,
+            )
+            try:
+                indexes[mode_key].save(cache_path)
+            except Exception:
+                pass
+        return indexes
         self.doc_dense_index = DenseDocumentIndex(documents, document_embeddings)
         self.chunk_dense_index = DenseIndex(chunks, chunk_embeddings)
         self.chunk_retriever = DirectChunkRetriever(chunks, local_chunk_mode="full")
@@ -168,7 +191,7 @@ class RagRuntime:
         self,
         query: str,
         *,
-        top_docs: int = 5,
+        top_docs: int = 8,
         chunks_per_doc: int = STAGE2_CANDIDATES_PER_DOC,
         max_chunks: int = 8,
         rank_constant: int = DEFAULT_RANK_CONSTANT,

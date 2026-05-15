@@ -14,6 +14,7 @@ from openai import OpenAI
 
 from bofip_cleanroom.env_utils import load_default_env_files
 from bofip_cleanroom.rag_runtime import RagRuntime
+from bofip_cleanroom.prompt_utils import build_prompt
 
 # ── Provider configuration ──────────────────────────────────────────
 PROVIDERS = {
@@ -71,64 +72,6 @@ def get_runtime():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     st.caption(f"Appareil: {'GPU' if device == 'cuda' else 'CPU'}")
     return RagRuntime.from_local_corpus(corpus="commentary", device=device)
-
-
-def build_prompt(query: str, chunks: list[dict]) -> str:
-    blocks = []
-    for c in chunks:
-        blocks.append(
-            f"[{c['rank']}] BOI: {c['boi_reference']}\n"
-            f"Titre: {c['title']}\n"
-            f"Date: {c['publication_date'] or 'inconnue'}\n"
-            f"Section: {c['section_path'] or '(sans section)'}\n"
-            f"Texte: {c['text']}"
-        )
-    return (
-        "Question utilisateur:\n" + query + "\n\n"
-        "Extraits BOFiP fournis:\n" + "\n\n".join(blocks) + "\n\n"
-        "Instructions:\n"
-        "- Tu es un assistant fiscal. Reponds UNIQUEMENT a partir des extraits fournis.\n"
-        "- N'invente ni source, ni article, ni taux, ni reponse.\n"
-        "- Renvoie un objet JSON valide et rien d'autre. Pas de markdown autour.\n\n"
-        'Schema JSON: {"answer_status":"supported|partial|insufficient_evidence","axes_requis":["..."],"axes_couverts":["..."],"axes_manquants":["..."],"conclusion":"...","justification_bullets":["..."],"limits":"..."}\n\n'
-        "Etape 1 - Identifier les axes fiscaux requis (1 a 5).\n"
-        "Etape 2 - Verifier la couverture: supported (tous couverts) | partial (mixte) | insufficient_evidence.\n"
-        "Etape 3 - 2-4 puces avec citations [n] pour axes couverts. Puce explicative pour chaque axe manquant.\n"
-        "- limits obligatoire <= 40 mots. Lister axes manquants si partial.\n"
-    )
-
-
-def call_llm(prompt: str, client, model: str) -> dict:
-    resp = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": "Tu es un assistant fiscal prudent. Schema JSON strict."},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.0, max_tokens=800,
-        response_format={"type": "json_object"},
-    )
-    content = resp.choices[0].message.content or ""
-    usage = getattr(resp, "usage", None)
-    return {
-        "raw": content,
-        "ptokens": getattr(usage, "prompt_tokens", None) if usage else None,
-        "ctokens": getattr(usage, "completion_tokens", None) if usage else None,
-    }
-
-
-def rewrite_query_cached(query: str, client, model: str) -> str:
-    system = (
-        "Reecris cette question en francais administratif et fiscal formel. "
-        "Developpe les sigles et abreviations. "
-        "Reponds UNIQUEMENT avec la question reformulee, sans guillemets ni commentaire."
-    )
-    resp = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": query}],
-        temperature=0.0, max_tokens=200,
-    )
-    return (resp.choices[0].message.content or "").strip() or query
 
 
 def render_answer(parsed: dict) -> None:

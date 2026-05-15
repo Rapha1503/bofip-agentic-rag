@@ -19,6 +19,7 @@ from openai import APIError, APITimeoutError, OpenAI, RateLimitError
 from bofip_cleanroom.env_utils import load_default_env_files
 from bofip_cleanroom.jsonio import read_jsonl, write_json
 from bofip_cleanroom.rag_runtime import RagRuntime
+from bofip_cleanroom.prompt_utils import build_prompt
 from bofip_cleanroom.settings import REPORTS_DIR, ensure_data_dirs
 
 BASE_URL = "https://api.deepseek.com/v1"
@@ -65,49 +66,6 @@ def rewrite_query(query: str, api_key: str) -> str:
                 continue
             return query
     return query
-
-
-def build_prompt(query, chunks):
-    blocks = []
-    for c in chunks:
-        blocks.append(
-            f"[{c['rank']}] BOI: {c['boi_reference']}\n"
-            f"Titre: {c['title']}\n"
-            f"Date: {c['publication_date'] or 'inconnue'}\n"
-            f"Section: {c['section_path'] or '(sans section)'}\n"
-            f"Texte: {c['text']}"
-        )
-    return (
-        "Question utilisateur:\n" + query + "\n\n"
-        "Extraits BOFiP fournis:\n" + "\n\n".join(blocks) + "\n\n"
-        "Instructions:\n"
-        "- Tu es un assistant fiscal. Reponds UNIQUEMENT a partir des extraits fournis.\n"
-        "- N'invente ni source, ni article, ni taux, ni reponse.\n"
-        "- Si la question contient une premisse fausse et que les extraits la contredisent, corrige-la.\n"
-        "- Renvoie un objet JSON valide et rien d'autre. Pas de markdown autour.\n"
-        "\n"
-        "Schema JSON attendu:\n"
-        '{"answer_status":"supported|partial|insufficient_evidence","axes_requis":["..."],"axes_couverts":["..."],"axes_manquants":["..."],"conclusion":"...","justification_bullets":["..."],"limits":"..."}\n'
-        "\n"
-        "Etape 1 - Identifier les axes fiscaux requis:\n"
-        "- Decompose la question en axes distincts (ex: nature du bien/service, taux applicable, conditions, territorialite, redevable, exoneration).\n"
-        "- Remplis axes_requis avec 1 a 5 axes en phrases nominales courtes.\n"
-        "\n"
-        "Etape 2 - Verifier la couverture des extraits:\n"
-        "- Pour chaque axe, determine si au moins un extrait le traite.\n"
-        "- Remplis axes_couverts et axes_manquants.\n"
-        "- answer_status selon la regle:\n"
-        "  - supported: TOUS les axes sont couverts (axes_manquants = [])\n"
-        "  - partial: AU MOINS UN axe couvert ET au moins un axe manquant\n"
-        "  - insufficient_evidence: AUCUN axe couvert (axes_couverts = [])\n"
-        "\n"
-        "Etape 3 - Conclusion et justification:\n"
-        "- conclusion <= 30 mots. Si partial, nuance: 'Sous reserve des axes manquants...'\n"
-        "- Si supported/partial: 2-4 puces. Chaque puce sur un axe COUVERT DOIT contenir [n] ou [n,m] en debut de puce.\n"
-        "- Si partial: pour chaque axe MANQUANT, une puce EXPLICATIVE (sans citation obligatoire).\n"
-        "- limits obligatoire <= 40 mots. Si partial: lister les axes manquants.\n"
-        "- Citations [n] referencent UNIQUEMENT les extraits fournis.\n"
-    )
 
 
 def _retry_delay(error):

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import pickle
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 from nltk.stem.snowball import FrenchStemmer
@@ -281,3 +283,31 @@ class DocumentLexicalIndex:
             )
             for rank, idx in enumerate(ranked_indices)
         ]
+
+    def save(self, path: str | Path) -> None:
+        """Persist BM25 index to disk for fast reload."""
+        with open(path, "wb") as f:
+            pickle.dump({
+                "documents": self.documents,
+                "search_texts": self.search_texts,
+                "bm25": self.bm25,
+            }, f)
+
+    @classmethod
+    def load(
+        cls,
+        path: str | Path,
+        *,
+        search_text_fn: Callable[[RawDocument], str] | None = None,
+        tokenize_fn: Callable[[str], list[str]] | None = None,
+    ) -> "DocumentLexicalIndex":
+        """Load a persisted BM25 index from disk."""
+        with open(path, "rb") as f:
+            data = pickle.load(f)
+        index = cls.__new__(cls)
+        index.documents = data["documents"]
+        index.search_texts = data["search_texts"]
+        index.bm25 = data["bm25"]
+        index.search_text_fn = search_text_fn or document_search_text
+        index.tokenize_fn = tokenize_fn or tokenize
+        return index
