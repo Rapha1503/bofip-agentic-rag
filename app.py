@@ -131,7 +131,7 @@ def call_llm(prompt, client, model):
         model=model,
         messages=[{"role":"system","content":"Tu es un assistant fiscal prudent. Schema JSON strict."},
                   {"role":"user","content":prompt}],
-        temperature=0.0, max_tokens=1600,
+        temperature=0.0, max_tokens=2000,
         response_format={"type":"json_object"},
     )
     content = resp.choices[0].message.content or ""
@@ -242,7 +242,7 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
     chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
                "publication_date":c.publication_date,"section_path":c.section_path,
                "text":c.text,"chunk_id":c.chunk_id,"score":float(getattr(c,"score",0))}
-              for c in all_chunks_raw[:16]]
+              for c in all_chunks_raw[:8]]
     results["chunks"] = chunks
     if not chunks:
         results["parsed"] = {"answer_status":"insufficient_evidence","conclusion":"Aucun extrait trouvé.",
