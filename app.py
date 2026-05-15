@@ -196,19 +196,17 @@ def process_query(query, rt, client, llm_model, use_rewrite):
         if compute_q not in facet_queries:
             facet_queries.append(compute_q)
             _log("COMPUTE_FACET", {"added": compute_q[:120]})
-    # Multi-component detection: split into per-topic sub-queries
+    # Multi-component sub-queries (only if under 3 total facets)
     _COMPONENT_PAIRS = [("intérêt","intérêt de retard taux calcul"),
                         ("majoration","majoration pourcentage taux calcul"),
                         ("amende","amende montant calcul"),
-                        ("pénalité","pénalité taux calcul")] 
+                        ("pénalité","pénalité taux calcul")]
     qt = query.lower()
-    if any(qt.count(w) >= 1 for w, _ in _COMPONENT_PAIRS):
-        for keyword, subq in _COMPONENT_PAIRS:
-            if keyword in qt:
-                q = subq
-                if q not in facet_queries:
-                    facet_queries.append(q)
-                    _log("COMPONENT_FACET", {"keyword": keyword, "query": q})
+    for keyword, subq in _COMPONENT_PAIRS:
+        if len(facet_queries) >= 3:
+            break
+        if keyword in qt and subq not in facet_queries:
+            facet_queries.append(subq)
     _log("REWRITE", {"original": query[:120], "rewritten": rewritten[:120], "facets": len(facet_queries)})
     # Retrieval — per facet, merge with diversity
     all_chunks_raw = []; all_stage1 = []; seen_docs = set(); main_log = {}
@@ -399,7 +397,7 @@ with tab2:
             for i,q in enumerate(queries):
                 status_text.text(f"[{i+1}/{len(queries)}] {q[:80]}...")
                 progress.progress((i+1)/len(queries))
-                all_results.append(process_query(q, rt, client, model, use_rewrite, multi_axis))
+                all_results.append(process_query(q, rt, client, model, use_rewrite))
             progress.empty(); status_text.empty()
             st.markdown("### Résumé")
             rows = []
