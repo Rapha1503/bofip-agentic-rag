@@ -147,7 +147,7 @@ def render_answer(parsed):
     axr, axc, axm = parsed.get("axes_requis",[]), parsed.get("axes_couverts",[]), parsed.get("axes_manquants",[])
     color = {"SUPPORTED":"green","PARTIAL":"orange","INSUFFICIENT_EVIDENCE":"red"}
     st.markdown(f"### Statut: :{color.get(status,'grey')}[**{status}**]")
-    st.markdown(f"**{c}**")
+    st.markdown(f"> 💬 **{c}**")
     if axr:
         c1,c2,c3 = st.columns(3)
         c1.metric("Axes requis",len(axr)); c2.metric("Axes couverts",len(axc)); c3.metric("Axes manquants",len(axm))
@@ -370,7 +370,8 @@ with tab2:
                 conc = (parsed.get("conclusion","")[:80] if parsed else str(res.get("error","")))
                 rows.append({"Question":res["query"][:80],"Statut":sts,"Réponse":conc})
             st.dataframe(rows, use_container_width=True, hide_index=True)
+            expand_all = st.checkbox("📂 Tout développer", value=False, key="expand_batch")
             for i,res in enumerate(all_results):
                 st.markdown(f"---\n### Q{i+1}: {res['query'][:100]}")
-                with st.expander(f"Afficher les détails", expanded=False):
+                with st.expander(f"Afficher les détails", expanded=expand_all):
                     display_results(res)
