@@ -160,11 +160,11 @@ def render_answer(parsed):
         st.markdown(f"- {b}")
     st.caption(f"Limites: {limits}")
 
-def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
+def process_query(query, rt, client, llm_model, use_rewrite):
     results = {"query":query,"error":None}
 
     # Cache check
-    cache_key = hashlib.md5((query + llm_model + str(use_rewrite) + multi_axis).encode()).hexdigest()[:12]
+    cache_key = hashlib.md5((query + llm_model + str(use_rewrite)).encode()).hexdigest()[:12]
     if "result_cache" not in st.session_state:
         st.session_state.result_cache = {}
     if cache_key in st.session_state.result_cache:
@@ -173,7 +173,7 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
         return cached
 
     t0 = time.time()
-    _log("QUERY_START", {"query": query[:200], "model": llm_model, "rewrite": use_rewrite, "multi_axis": multi_axis})
+    _log("QUERY_START", {"query": query[:200], "model": llm_model, "rewrite": use_rewrite})
     # Rewrite + optional facets
     if use_rewrite:
         try:
@@ -182,19 +182,16 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
             return {**results,"error":f"Erreur réécriture: {e}"}
     else:
         rewritten, facet_queries = query, [query]
-    # Auto-detect multi-axis
-    if multi_axis == "auto" and len(facet_queries) <= 1:
-        if _detect_multi_axis(query):
-            facet_queries = [rewritten, query]
-    elif multi_axis == "off":
-        facet_queries = [rewritten]
+    # Auto-detect multi-axis if rewrite didn't produce facets
+    if len(facet_queries) <= 1 and _detect_multi_axis(query):
+        facet_queries = [rewritten, query]
     results["rewritten"] = rewritten
     results["facet_queries"] = facet_queries
-    # Computation-aware: inject a taux/rate sub-query when asking about amounts
+    # Computation-aware: inject taux/rate sub-query
     _COMPUTE_WORDS = {"calculer","montant","intérêt","amende","majoration","taux","pourcentage",
                        "barème","plafond","pénalité","intérêts","somme","quel est le",
                        "combien","due","dû","dus"}
-    if multi_axis != "off" and any(w in query.lower() for w in _COMPUTE_WORDS):
+    if any(w in query.lower() for w in _COMPUTE_WORDS):
         compute_q = (rewritten + " taux pourcentage applicable").strip()
         if compute_q not in facet_queries:
             facet_queries.append(compute_q)
@@ -339,8 +336,6 @@ with st.sidebar:
     model = st.selectbox("Modèle", provider["models"], key=f"model_{provider_id}")
     use_rewrite = st.checkbox("Réécriture de la question", value=True,
                               help="Reformule la question en vocabulaire fiscal avant la recherche.")
-    multi_axis = st.selectbox("Recherche multi-axes", ["auto", "off", "on"], index=0,
-                              help="Auto: activé si question complexe. On: toujours. Off: jamais.")
     st.divider()
     st.caption("Corpus: 5666 documents BOFIP")
     st.caption("Modèles: E5-large (docs) / E5-base (chunks)")
@@ -366,7 +361,7 @@ with tab1:
     query = st.text_input("Votre question", placeholder="Quel taux de TVA pour une pompe à chaleur ?")
     if st.button("Rechercher", type="primary", disabled=not query.strip()):
         with st.spinner("Recherche en cours..."):
-            results = process_query(query, rt, client, model, use_rewrite, multi_axis)
+            results = process_query(query, rt, client, model, use_rewrite)
         st.markdown("---")
         display_results(results)
 
