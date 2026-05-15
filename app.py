@@ -328,9 +328,9 @@ with tab1:
 
 with tab2:
     st.caption("Collez plusieurs questions (une par ligne)")
-    batch_text = st.text_area("Questions", height=120, placeholder="Quel taux de TVA pour une pompe à chaleur ?\nComment sont imposés les gains...")
+    batch_text = st.text_area("Questions", height=120, placeholder="Quel taux de TVA pour une pompe à chaleur ?\n\nComment sont imposés les gains...", help="Séparez les questions par une ligne vide.")
     if st.button("Lancer le lot", type="primary", disabled=not batch_text.strip()):
-        queries = [q.strip() for q in batch_text.strip().split("\n") if q.strip()]
+        queries = [q.strip() for q in batch_text.strip().split("\n\n") if q.strip()]
         if queries:
             progress = st.progress(0); status_text = st.empty(); all_results = []
             for i,q in enumerate(queries):
