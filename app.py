@@ -255,7 +255,7 @@ def display_results(results):
             bg = "#1a472a" if i==0 else "#1a1a2e"
             st.markdown(f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px;color:#e0e0e0">'
                         f'<b>[{c["rank"]}] {c["boi_reference"]}</b> — score: {c["score"]:.4f}<br>'
-                        f'<span style="font-size:12px;color:#666">📂 {c["section_path"]}</span><br>'
+                        f'<span style="font-size:12px;color:#aab">📂 {c["section_path"]}</span><br>'
                         f'<span style="font-size:13px">{c["text"][:300]}{"..." if len(c["text"])>300 else ""}</span></div>',
                         unsafe_allow_html=True)
     with st.expander("🤖 PROMPT ENVOYÉ AU LLM", expanded=False):
@@ -348,4 +348,5 @@ with tab2:
             st.dataframe(rows, use_container_width=True, hide_index=True)
             for i,res in enumerate(all_results):
                 st.markdown(f"---\n### Q{i+1}: {res['query'][:100]}")
-                display_results(res)
+                with st.expander(f"Afficher les détails", expanded=False):
+                    display_results(res)
