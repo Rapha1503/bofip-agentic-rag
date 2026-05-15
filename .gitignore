@@ -3,11 +3,13 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.env.local
 
-# Data (too large)
+# Data (too large for git - document separately)
 data/interim/*.npy
 data/interim/*.jsonl
-!data/interim/pilot_5.jsonl
+data/interim/*.json
+data/interim/*.pkl
 data/raw/
 data/models/
 data/logs/
@@ -17,6 +19,11 @@ data/reports/*.json
 .bofip_cache/
 ~/.cache/bofip_rag/
 
+# Build
+dist/
+build/
+*.egg-info/
+
 # IDE
 .vscode/
 .idea/
@@ -25,3 +32,4 @@ data/reports/*.json
 # OS
 .DS_Store
 Thumbs.db
+*.orig
