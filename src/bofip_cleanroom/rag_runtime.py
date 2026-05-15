@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pickle
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -70,6 +70,7 @@ class RagResult:
     stage1_hits: list[RagStage1Hit]
     stage2_chunks: list[RagChunkHit]
     source_confidences: dict[str, float]
+    pipeline_log: dict = field(default_factory=dict)
 
 
 class RagRuntime:
@@ -259,14 +260,77 @@ class RagRuntime:
         )
 
         candidates = direct_result.chunk_hits
+        log = {}
 
         if use_reranker:
-            ranked = self.reranker.rerank(
+            # Get all scores for diversity pool (top_48 from reranker)
+            ranked_all = self.reranker.rerank(
                 query,
                 candidates,
                 get_text=lambda hit: " > ".join(hit.chunk.section_path) + "\n" + hit.chunk.text,
-                top_k=max_chunks,
+                top_k=len(candidates),
             )
+            reranked_pool = [(r.item, float(r.score)) for r in ranked_all]
+            selected = self._select_diverse(reranked_pool, max_chunks=max_chunks)
+
+            # Log: all reranked scores + selection decisions
+            log["reranker_scores"] = [{"chunk_id": r.item.chunk.chunk_id[:60], "doc": r.item.boi_reference,
+                "raw_score": float(r.score), "selected": r.item in selected} for r in ranked_all]
+            log["diversity_selected"] = len(selected)
+        else:
+            chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
+            selected = [c for c, _ in chunk_items]
+
+        preview_chunks = []
+        for idx, hit in enumerate(selected, start=1):
+            doc = self.documents_by_ref[hit.boi_reference]
+            preview_chunks.append(
+                RagChunkHit(
+                    rank=idx,
+                    boi_reference=hit.boi_reference,
+                    title=doc.title,
+                    section_path=" > ".join(hit.chunk.section_path),
+                    chunk_id=hit.chunk.chunk_id,
+                    chunk_kind=hit.chunk.chunk_kind,
+                    text=hit.chunk.text,
+                    publication_date=doc.publication_date,
+                    score=float(hit.local_score) if not use_reranker else next((s for c, s in reranked_pool if c is hit), 0.0),
+                )
+            )
+
+        # Build pipeline log
+        stage1_refs = [h.boi_reference for h in stage1_hits]
+        final_refs = [c.boi_reference for c in preview_chunks]
+        final_docs = set(final_refs)
+        from collections import Counter
+        doc_dist = dict(Counter(final_refs))
+        log.update({
+            "stage1_docs_found": len(stage1_hits),
+            "stage1_docs_dropped": [ref for ref in stage1_refs if ref not in final_docs],
+            "stage2_candidates": len(candidates),
+            "final_chunks": len(preview_chunks),
+            "unique_docs_final": len(final_docs),
+            "max_chunks_per_doc": max(doc_dist.values()) if doc_dist else 0,
+            "doc_distribution_final": {k[:30]: v for k, v in doc_dist.items()},
+        })
+
+        stage1_out = [
+            RagStage1Hit(
+                rank=h.rank,
+                score=h.score,
+                boi_reference=h.boi_reference,
+                title=self.documents_by_ref[h.boi_reference].title,
+            )
+            for h in stage1_hits
+        ]
+
+        return RagResult(
+            query=query,
+            stage1_hits=stage1_out,
+            stage2_chunks=preview_chunks,
+            source_confidences=confidences,
+            pipeline_log=log,
+        )
             chunk_items = [(r.item, float(r.score)) for r in ranked]
         else:
             chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
@@ -303,7 +367,92 @@ class RagRuntime:
             stage1_hits=stage1_out,
             stage2_chunks=preview_chunks,
             source_confidences=confidences,
+            pipeline_log=log,
         )
+
+    # ── Diversity selection ────────────────────────────────────────
+
+    @staticmethod
+    def _diversity_penalty(candidate, selected: list) -> float:
+        """Compute penalty for adding candidate given already-selected chunks."""
+        doc = candidate.boi_reference
+        doc_count = sum(1 for c in selected if c.boi_reference == doc)
+        if doc_count >= 3:
+            return 999.0
+        penalty = 0.0
+        if doc_count == 2:
+            penalty = 0.30
+        elif doc_count == 1:
+            penalty = 0.15
+        for sel in selected:
+            if sel.boi_reference == doc:
+                if sel.chunk.section_path == candidate.chunk.section_path:
+                    penalty += 0.15
+                elif len(sel.chunk.section_path) > 0 and len(candidate.chunk.section_path) > 0:
+                    if sel.chunk.section_path[:-1] == candidate.chunk.section_path[:-1]:
+                        penalty += 0.05
+        return penalty
+
+    @staticmethod
+    def _select_diverse(chunks_and_scores: list, max_chunks: int = 8) -> list:
+        """Greedy selection by recalculated marginal utility at each step."""
+        remaining = list(chunks_and_scores)  # (DirectChunkHit, float_score)
+        if not remaining:
+            return remaining
+
+        # Normalize scores to [0, 1]
+        scores = [s for _, s in remaining]
+        mn, mx = min(scores), max(scores)
+        if mx - mn < 1e-9:
+            return [c for c, _ in remaining[:max_chunks]]
+        normed = [(c, (s - mn) / (mx - mn)) for (c, s), s in zip(remaining, scores)]
+
+        # Step 1: strict diversity
+        selected = []
+        for _ in range(max_chunks):
+            if not normed:
+                break
+            best_score = -float("inf")
+            best_idx = -1
+            for i, (c, ns) in enumerate(normed):
+                penalty = RagRuntime._diversity_penalty(c, selected)
+                adjusted = ns - penalty
+                if adjusted > best_score:
+                    best_score = adjusted
+                    best_idx = i
+            if best_idx < 0 or best_score < 0:
+                break
+            selected.append(normed[best_idx][0])
+            normed.pop(best_idx)
+
+        # Step 2: if not enough, relax — allow 3rd chunk per doc
+        if len(selected) < max_chunks:
+            for _ in range(max_chunks - len(selected)):
+                if not normed:
+                    break
+                best_score = -float("inf")
+                best_idx = -1
+                for i, (c, ns) in enumerate(normed):
+                    doc_count = sum(1 for s in selected if s.boi_reference == c.boi_reference)
+                    if doc_count >= 4:
+                        continue
+                    adjusted = ns - (0.10 if doc_count >= 3 else 0)
+                    if adjusted > best_score:
+                        best_score = adjusted
+                        best_idx = i
+                if best_idx < 0:
+                    break
+                selected.append(normed[best_idx][0])
+                normed.pop(best_idx)
+
+        # Step 3: last resort — fill by raw score
+        if len(selected) < max_chunks:
+            remaining_raw = [(c, s) for c, s in remaining if c not in selected]
+            remaining_raw.sort(key=lambda x: x[1], reverse=True)
+            for c, _ in remaining_raw[:max_chunks - len(selected)]:
+                selected.append(c)
+
+        return selected
 
     @staticmethod
     def as_dict(result: RagResult) -> dict:
@@ -312,4 +461,5 @@ class RagRuntime:
             "source_confidences": result.source_confidences,
             "stage1_hits": [asdict(h) for h in result.stage1_hits],
             "stage2_chunks": [asdict(chunk) for chunk in result.stage2_chunks],
+            "pipeline_log": result.pipeline_log,
         }

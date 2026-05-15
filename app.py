@@ -111,6 +111,7 @@ def process_query(query, rt, client, llm_model, use_rewrite):
     except Exception as e:
         return {**results,"error":f"Erreur retrieval: {e}"}
     results["stage1"] = result.stage1_hits
+    results["pipeline_log"] = getattr(result, "pipeline_log", {})
     # Chunks
     chunks = [{"rank":c.rank,"boi_reference":c.boi_reference,"title":c.title,
                "publication_date":c.publication_date,"section_path":c.section_path,
@@ -165,6 +166,18 @@ def display_results(results):
         if p: render_answer(p)
         else: st.warning("JSON invalide"); st.text(results.get("llm_raw","")[:500])
     with st.expander("📋 DÉBOGAGE", expanded=False):
+        plog = results.get("pipeline_log", {})
+        if plog:
+            c1,c2,c3 = st.columns(3)
+            c1.metric("Docs uniques", plog.get("unique_docs_final","?"))
+            c2.metric("Max/doc", plog.get("max_chunks_per_doc","?"))
+            c3.metric("Candidats S2", plog.get("stage2_candidates","?"))
+            dropped = plog.get("stage1_docs_dropped",[])
+            if dropped:
+                st.caption("Docs S1 non retenus: " + ", ".join(d[:30] for d in dropped))
+            dist = plog.get("doc_distribution_final",{})
+            if dist:
+                st.caption("Distribution: " + str(dist))
         c1,c2 = st.columns(2)
         c1.metric("Prompt tokens", results.get("ptokens","?"))
         c2.metric("Completion tokens", results.get("ctokens","?"))
