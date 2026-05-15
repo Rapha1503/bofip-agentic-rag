@@ -190,6 +190,15 @@ def process_query(query, rt, client, llm_model, use_rewrite, multi_axis="auto"):
         facet_queries = [rewritten]
     results["rewritten"] = rewritten
     results["facet_queries"] = facet_queries
+    # Computation-aware: inject a taux/rate sub-query when asking about amounts
+    _COMPUTE_WORDS = {"calculer","montant","intérêt","amende","majoration","taux","pourcentage",
+                       "barème","plafond","pénalité","intérêts","somme","quel est le",
+                       "combien","due","dû","dus"}
+    if multi_axis != "off" and any(w in query.lower() for w in _COMPUTE_WORDS):
+        compute_q = (rewritten + " taux pourcentage applicable").strip()
+        if compute_q not in facet_queries:
+            facet_queries.append(compute_q)
+            _log("COMPUTE_FACET", {"added": compute_q[:120]})
     _log("REWRITE", {"original": query[:120], "rewritten": rewritten[:120], "facets": len(facet_queries)})
     # Retrieval — per facet, merge with diversity
     all_chunks_raw = []; all_stage1 = []; seen_docs = set(); main_log = {}
