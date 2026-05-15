@@ -147,18 +147,14 @@ def render_answer(parsed):
     axr, axc, axm = parsed.get("axes_requis",[]), parsed.get("axes_couverts",[]), parsed.get("axes_manquants",[])
     color = {"SUPPORTED":"green","PARTIAL":"orange","INSUFFICIENT_EVIDENCE":"red"}
     st.markdown(f"### Statut: :{color.get(status,'grey')}[**{status}**]")
-    st.markdown(f"#### ANSWER: {c}")
-    if axr:
-        c1,c2,c3 = st.columns(3)
-        c1.metric("Axes requis",len(axr)); c2.metric("Axes couverts",len(axc)); c3.metric("Axes manquants",len(axm))
-        with st.expander("Détail des axes",expanded=False):
-            st.caption("Requis: "+" | ".join(axr))
-            st.caption("Couverts: "+(" | ".join(axc) if axc else "—"))
-            st.caption("Manquants: "+(" | ".join(axm) if axm else "—"))
-    st.markdown("**Justification:**")
+    st.markdown("---")
+    st.markdown(f"### 📝 ANSWER")
+    st.markdown(f"> {c}")
+    st.markdown("")
+    st.markdown("**Analyse détaillée :**")
     for b in bullets:
         st.markdown(f"- {b}")
-    st.caption(f"Limites: {limits}")
+    st.caption(f"*{limits}*")
 
 def process_query(query, rt, client, llm_model, use_rewrite):
     results = {"query":query,"error":None}

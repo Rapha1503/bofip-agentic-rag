@@ -26,7 +26,13 @@ def build_prompt(query: str, chunks: list[dict]) -> str:
         'Schema JSON: {"answer_status":"supported|partial|insufficient_evidence","axes_requis":["..."],"axes_couverts":["..."],"axes_manquants":["..."],"conclusion":"...","justification_bullets":["..."],"limits":"..."}\n\n'
         "Etape 1 - Identifier les axes fiscaux requis (1 a 5 axes).\n"
         "Etape 2 - Verifier couverture: supported (tous couverts) | partial (mixte) | insufficient_evidence (aucun).\n"
-        "Etape 3 - 2-4 puces avec citations [n] pour axes couverts. Puce explicative pour chaque axe manquant.\n"
+        "Etape 3 - Redige une reponse complete comme un comptable ou fiscaliste:\n"
+        "- conclusion: resume la reponse en une phrase (inclure le montant si calcul).\n"
+        "- justification_bullets: 2 a 4 puces detaillees.\n"
+        "  Chaque puce cite ses sources [n] et explique le raisonnement juridique.\n"
+        "  Si c'est un calcul, detaille: formule, valeurs, resultat intermediaire, total.\n"
+        "  Si c'est une procedure, explique les etapes chronologiquement.\n"
+        "  Si c'est une condition, enumere les criteres un par un.\n"
         "- limits obligatoire <= 50 mots. Lister axes manquants si partial.\n"
         "- Citations [n] referencent UNIQUEMENT les extraits fournis.\n"
     )
