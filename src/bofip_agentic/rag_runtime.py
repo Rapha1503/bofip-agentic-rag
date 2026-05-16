@@ -199,7 +199,7 @@ class RagRuntime:
             reranker=CrossEncoderReranker(reranker_model, device=device),
         )
 
-    def _build_rankings(self, query: str, lexical_query: str) -> tuple[dict[str, list[RankedDoc]], dict[str, float]]:
+    def _build_rankings(self, query: str, lexical_query: str, *, branch_hint: str | None = None) -> tuple[dict[str, list[RankedDoc]], dict[str, float]]:
         rankings = {
             mode: [
                 RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source=mode)
@@ -217,6 +217,14 @@ class RagRuntime:
             RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source="chunk_dense")
             for hit in self.chunk_dense_index.search_documents_from_vector(chunk_emb, top_k=20)
         ]
+
+        # Soft branch hint boost (does NOT filter, only boosts)
+        if branch_hint:
+            for source, docs in rankings.items():
+                for doc in docs:
+                    if doc.boi_reference.startswith(branch_hint):
+                        doc.score *= 1.15
+
         profiles = compute_source_rank_profiles(rankings, top_n=5)
         confidences = {name: round(profile.confidence, 6) for name, profile in profiles.items()}
         return rankings, confidences
@@ -235,8 +243,9 @@ class RagRuntime:
         use_chunk_dense: bool = True,
         use_anchor_filter: bool = True,
         use_reranker: bool = True,
+        branch_hint: str | None = None,
     ) -> RagResult:
-        rankings, confidences = self._build_rankings(query, query)
+        rankings, confidences = self._build_rankings(query, query, branch_hint=branch_hint)
         if source_weights is None:
             source_weights = dict(DEFAULT_SOURCE_WEIGHTS)
 
