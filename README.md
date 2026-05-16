@@ -65,6 +65,7 @@ User question (natural language)
 | Avg latency (GPU) | **7s** |
 | Avg iterations | 1.2 |
 | VRAM (GPU) | 3.4 GB / 6 GB |
+| LLM judge (sampled) | 3.6/5 correctness, 3.8/5 faithfulness |
 
 Evaluated on 50 realistic French tax questions across 10 themes (TVA, BIC, CF, IS, IR, ENR, IF, PAT, Sanctions, Mixte). Full results in [`docs/RESULTS.md`](docs/RESULTS.md).
 
