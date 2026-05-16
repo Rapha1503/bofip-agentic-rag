@@ -115,7 +115,12 @@ class DenseEncoder:
         self.model_path = _resolve_local_model_path(model_name)
         self.prompt_style = _dense_prompt_style(model_name)
         self.device = device
-        self.model = SentenceTransformer(self.model_path, local_files_only=True, device=device)
+        self.model = SentenceTransformer(
+            self.model_path,
+            local_files_only=True,
+            device=device,
+            model_kwargs={"torch_dtype": "auto"},
+        )
 
     def encode_queries(self, queries: list[str], *, batch_size: int = 32, show_progress_bar: bool = False) -> np.ndarray:
         return np.asarray(

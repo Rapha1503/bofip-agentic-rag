@@ -21,7 +21,7 @@ from .reranker import CrossEncoderReranker, DEFAULT_RERANKER_MODEL
 
 DEFAULT_CORPUS = "commentary"
 DEFAULT_DOC_MODEL = str(Path(__file__).resolve().parents[2] / "data" / "models" / "intfloat--multilingual-e5-large")
-DEFAULT_CHUNK_MODEL = "intfloat/multilingual-e5-base"
+DEFAULT_CHUNK_MODEL = DEFAULT_DOC_MODEL
 STAGE2_CANDIDATES_PER_DOC = 8
 
 CORPUS_PATHS: dict[str, dict[str, str]] = {
@@ -29,7 +29,7 @@ CORPUS_PATHS: dict[str, dict[str, str]] = {
         "raw_docs": "data/interim/raw_docs_sample_5666.jsonl",
         "chunks": "data/interim/chunks_section_window_sample_5666.jsonl",
         "doc_dense_cache": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
-        "chunk_dense_cache": "data/interim/chunk_dense_cache_5666_full_e5.npy",
+        "chunk_dense_cache": "data/interim/chunk_dense_cache_5666_full_e5large.npy",
     },
 }
 

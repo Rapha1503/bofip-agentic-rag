@@ -28,6 +28,11 @@ class CrossEncoderReranker:
             device=device,
             trust_remote_code=True,
         )
+        # Apply fp16 after loading (CrossEncoder doesn't accept automodel_args)
+        try:
+            self.model.model.half()
+        except Exception:
+            pass
         self.batch_size = batch_size
         self.model_name = model_name
         # Warmup: first predict() loads model to GPU — do it now
