@@ -47,21 +47,16 @@ Downloads BOFIP from `data.economie.gouv.fr`, parses HTML, chunks, embeds.
 
 **Option B — Copy from another machine**
 
-Place these files in `data/interim/`:
+Place these corpus files in `data/interim/`:
 
-| File | Size |
-|---|---|
-| `raw_docs_sample_5666.jsonl` | ~208 MB |
-| `chunks_section_window_sample_5666.jsonl` | ~131 MB |
-| `doc_dense_cache_5666_sections_firstpara_e5large.npy` | ~23 MB |
-| `chunk_dense_cache_5666_full_e5large.npy` | ~272 MB |
+| File | Size | What it is |
+|---|---|---|
+| `raw_docs_sample_5666.jsonl` | ~208 MB | 5,666 parsed BOFIP documents (one JSON per line) |
+| `chunks_section_window_sample_5666.jsonl` | ~131 MB | 66,289 text chunks for retrieval |
+| `doc_dense_cache_5666_sections_firstpara_e5large.npy` | ~23 MB | Document embeddings |
+| `chunk_dense_cache_5666_full_e5large.npy` | ~272 MB | Chunk embeddings |
 
-And models in `data/models/`:
-
-| Directory | Size |
-|---|---|
-| `intfloat--multilingual-e5-large/` | ~12 GB |
-| `BAAI--bge-m3/` | ~2 GB |
+Models auto-download on first run via HuggingFace (~4 GB). To pre-download, place these in `data/models/`:
 
 Or `python scripts/setup.py --copy-from <source-project>`.
 
@@ -186,6 +181,8 @@ Full results: `docs/RESULTS.md`. Architecture: `docs/AGENTIC.md`.
 | **Anthropic** | claude-haiku-4-5, claude-sonnet-4-6, claude-opus-4-7 | `ANTHROPIC_API_KEY` |
 | **Mistral** | mistral-small-4, mistral-large-3 | `MISTRAL_API_KEY` |
 | **Google** | gemini-3.1-flash, gemini-3.1-pro | `GEMINI_API_KEY` |
+| **Groq** | llama-4-maverick | `GROQ_API_KEY` |
+| **Together** | Llama-4-Maverick, DeepSeek-V3 | `TOGETHER_API_KEY` |
 
 All providers use the OpenAI-compatible API. Configure in the Streamlit sidebar.
 
@@ -193,15 +190,15 @@ All providers use the OpenAI-compatible API. Configure in the Streamlit sidebar.
 
 ## Data Sources
 
-| Source | Type | Via | Status |
-|---|---|---|---|
-| **BOFIP** | Doctrinal commentary | `data.economie.gouv.fr` open API | ✅ Synced |
-| **CGI** (Code Général des Impôts) | Tax code | Legifrance / PISTE (`piste.gouv.fr`) | ❌ Requires registration |
-| **LPF** (Livre des Procédures Fiscales) | Procedural law | Legifrance / PISTE | ❌ Requires registration |
+| Source | Type | Full text in corpus | Article references | Via |
+|---|---|---|---|---|
+| **BOFIP** | Doctrinal commentary | ✅ 5,666 documents | ✅ Cross-document refs | `data.economie.gouv.fr` |
+| **CGI** | Tax code law | ❌ | ✅ Extracted from BOFIP text | Legifrance / PISTE |
+| **LPF** | Procedural law | ❌ | ✅ Extracted from BOFIP text | Legifrance / PISTE |
 
-BOFIP is the tax authority's doctrinal interpretation. CGI and LPF are the actual laws. BOFIP cites CGI/LPF articles inline (`legal_refs` field). For full CGI/LPF text, integrate the Legifrance API via PISTE.
+BOFIP is the tax authority's interpretation of the law — it extensively cites CGI and LPF articles. During parsing, `text_utils.extract_legal_refs()` captures patterns like `article 150-0 D du CGI` and stores them in the `legal_refs` field. These references are indexed by BM25 and visible to the LLM in retrieved chunks. The actual CGI/LPF legal text is not in the corpus — only BOFIP's commentary about it.
 
-**Adding a new data source:** implement `parse_<source>() → list[dict]` (RawDocument format), call from `sync.py`. The chunk → embed → swap pipeline is data-agnostic.
+For full CGI/LPF text: register at `piste.gouv.fr`, get Legifrance API credentials, implement a `parse_cgi_lpf()` function. The pipeline (`chunk → embed → swap → index`) is source-agnostic.
 
 ---
 
@@ -255,7 +252,7 @@ data/
 
 | Decision | Rationale |
 |---|---|
-| **LLM-based domain classification** | No hardcoded keyword banks. LLM maps question to BOFIP prefix (e.g., `RPPM-PVBMI-20-10-40`). Designed to generalize across tax domains through LLM-based family classification. |
+| **LLM-based domain classification** | The LLM classifies the question into a BOFIP prefix (`RPPM-PVBMI-20-10-40`). No keyword lists, no hardcoded rules. |
 | **Taxonomy-aware retrieval** | Domain prefix boosts matching documents + bypasses dense-anchor filter. Prevents domain mismatch (BIC docs for individual questions). |
 | **Number extraction + computation** | Generic regex finds numeric values in any question, injects them into prompt. Forces LLM to produce step-by-step calculation. |
 | **Self-evaluating loop** | Coverage analysis embedded in the answer prompt. Saves 1 LLM call vs separate judge. |
@@ -270,19 +267,22 @@ data/
 ## Troubleshooting
 
 **"No module named bofip_agentic"**
-→ Set `$env:PYTHONPATH = "src"` before running any script.
+→ Run from the project root directory. The scripts auto-inject `src/` into the Python path.
 
-**App crashes on start: "raw_docs_sample_5666.jsonl not found"**
-→ Run `python scripts/setup.py` first to build the corpus.
+**App crashes on start: corpus files not found**
+→ Run `python scripts/setup.py` first to build the corpus. Or copy the files manually (see Option B above).
+
+**NLTK data missing on first run**
+→ The first import auto-downloads the French stemmer data. Requires internet. If blocked, run `python -c "import nltk; nltk.download('snowball_data')"`.
 
 **GPU out of memory**
-→ Run with `--device cpu`: `python scripts/eval_full.py --device cpu` (slower but works).
+→ Use CPU: `python scripts/eval_full.py --device cpu` (slower). Models are loaded in fp16 by default.
 
 **API key not found**
-→ Set `$env:DEEPSEEK_API_KEY` or create `.env.local` with the key. Or use the sidebar in the Streamlit app.
+→ Set `$env:DEEPSEEK_API_KEY` or create `.env.local`. Or enter it in the Streamlit sidebar.
 
 **Models not downloading**
-→ HuggingFace auto-downloads on first run (~4 GB compressed). Requires internet. If blocked, pre-download models to `data/models/`.
+→ HuggingFace auto-downloads on first run (~4 GB). If blocked, pre-download to `data/models/` from another machine.
 
 ---
 

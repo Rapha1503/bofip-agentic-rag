@@ -9,6 +9,14 @@ from typing import Callable
 from nltk.stem.snowball import FrenchStemmer
 from rank_bm25 import BM25Okapi
 
+# Ensure NLTK snowball data is available
+try:
+    STEMMER = FrenchStemmer()
+except LookupError:
+    import nltk
+    nltk.download("snowball_data", quiet=True)
+    STEMMER = FrenchStemmer()
+
 from .models import ChunkNode, RawDocument
 from .text_utils import normalize_whitespace, strip_accents
 

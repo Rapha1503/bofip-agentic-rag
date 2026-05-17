@@ -42,6 +42,8 @@ PROVIDERS = {
     "anthropic": {"base_url": "https://api.anthropic.com/v1",    "default_model": "claude-haiku-4-5",  "env_key": "ANTHROPIC_API_KEY"},
     "mistral":   {"base_url": "https://api.mistral.ai/v1",       "default_model": "mistral-small-4",   "env_key": "MISTRAL_API_KEY"},
     "google":    {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/", "default_model": "gemini-3.1-flash", "env_key": "GEMINI_API_KEY"},
+    "groq":      {"base_url": "https://api.groq.com/openai/v1",  "default_model": "llama-4-maverick",  "env_key": "GROQ_API_KEY"},
+    "together":  {"base_url": "https://api.together.xyz/v1",     "default_model": "meta-llama/Llama-4-Maverick", "env_key": "TOGETHER_API_KEY"},
 }
 
 INPUT_PATH = PROJECT_ROOT / "data" / "eval" / "tax_eval_50.jsonl"
