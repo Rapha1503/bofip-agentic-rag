@@ -24,7 +24,7 @@ class DirectChunkRetrievalTests(unittest.TestCase):
             ],
             top_docs=2,
             chunks_per_doc=2,
-            max_chunks=4,
+            max_candidates=4,
         )
 
         self.assertEqual([hit.local_rank for hit in result.chunk_hits[:2]], [1, 1])

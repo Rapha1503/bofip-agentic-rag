@@ -13,7 +13,7 @@ from .models import ChunkNode, RawDocument
 from .text_utils import normalize_whitespace, strip_accents
 
 
-TOKEN_RE = re.compile(r"[A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\-_\.]*")
+TOKEN_RE = re.compile(r"[A-Za-zÀ-ÿ0-9]+")
 STEMMER = FrenchStemmer()
 
 
@@ -178,23 +178,29 @@ class DocumentRetrievalHit:
     best_chunk: ChunkNode
 
 
-class LexicalBM25Index:
+class LexicalIndex:
     def __init__(
         self,
-        chunks: list[ChunkNode],
+        items,
         *,
-        search_text_fn: Callable[[ChunkNode], str] | None = None,
-        tokenize_fn: Callable[[str], list[str]] | None = None,
+        search_text_fn=None,
+        tokenize_fn=None,
+        document_mode=False,
     ):
-        self.chunks = list(chunks)
-        self.search_text_fn = search_text_fn or chunk_search_text
+        self.items = list(items)
+        self.document_mode = document_mode
+        if search_text_fn is None:
+            search_text_fn = document_search_text if document_mode else chunk_search_text
+        self.search_text_fn = search_text_fn
         self.tokenize_fn = tokenize_fn or tokenize
-        self.search_texts = [self.search_text_fn(chunk) for chunk in self.chunks]
-        tokenized = [self.tokenize_fn(text) for text in self.search_texts]
-        self.bm25 = BM25Okapi(tokenized) if tokenized else None
+        self.search_texts = [self.search_text_fn(item) for item in self.items]
+        tokenized_docs = [self.tokenize_fn(text) for text in self.search_texts]
+        self.bm25 = BM25Okapi(tokenized_docs) if tokenized_docs else None
 
     def search(self, query: str, *, top_k: int = 5) -> list[RetrievalHit]:
-        if not self.bm25 or not self.chunks:
+        if self.document_mode:
+            raise TypeError("search() requires chunk mode (document_mode=False)")
+        if not self.bm25 or not self.items:
             return []
         query_tokens = self.tokenize_fn(query)
         if not query_tokens:
@@ -202,23 +208,52 @@ class LexicalBM25Index:
         scores = self.bm25.get_scores(query_tokens)
         ranked_indices = sorted(range(len(scores)), key=lambda idx: scores[idx], reverse=True)[:top_k]
         return [
-            RetrievalHit(rank=rank + 1, score=float(scores[idx]), chunk=self.chunks[idx])
+            RetrievalHit(rank=rank + 1, score=float(scores[idx]), chunk=self.items[idx])
             for rank, idx in enumerate(ranked_indices)
         ]
 
     def search_documents(self, query: str, *, top_k: int = 5) -> list[DocumentRetrievalHit]:
-        if not self.bm25 or not self.chunks:
+        if not self.bm25 or not self.items:
             return []
         query_tokens = self.tokenize_fn(query)
         if not query_tokens:
             return []
+
+        if self.document_mode:
+            scores = self.bm25.get_scores(query_tokens)
+            ranked_indices = sorted(range(len(scores)), key=lambda idx: scores[idx], reverse=True)[:top_k]
+            return [
+                DocumentRetrievalHit(
+                    rank=rank + 1,
+                    score=float(scores[idx]),
+                    boi_reference=self.items[idx].boi_reference,
+                    best_chunk=ChunkNode(
+                        chunk_id=f"{self.items[idx].document_id}__document_title",
+                        source_type="BOFIP",
+                        document_id=self.items[idx].document_id,
+                        boi_reference=self.items[idx].boi_reference,
+                        doc_version=self.items[idx].publication_date,
+                        strategy="document_lexical",
+                        section_id=None,
+                        parent_chunk_id=None,
+                        section_path=[self.items[idx].title],
+                        paragraph_range=[],
+                        text=self.items[idx].title,
+                        token_count=len(tokenize(self.items[idx].title)),
+                        chunk_kind="document_title",
+                        legal_refs=list(self.items[idx].legal_refs),
+                    ),
+                )
+                for rank, idx in enumerate(ranked_indices)
+            ]
+
         scores = self.bm25.get_scores(query_tokens)
         ranked_indices = sorted(range(len(scores)), key=lambda idx: scores[idx], reverse=True)
 
         docs: list[DocumentRetrievalHit] = []
         seen: set[str] = set()
         for idx in ranked_indices:
-            chunk = self.chunks[idx]
+            chunk = self.items[idx]
             boi_reference = chunk.boi_reference
             if boi_reference in seen:
                 continue
@@ -235,60 +270,12 @@ class LexicalBM25Index:
                 break
         return docs
 
-
-class DocumentLexicalIndex:
-    def __init__(
-        self,
-        documents: list[RawDocument],
-        *,
-        search_text_fn: Callable[[RawDocument], str] | None = None,
-        tokenize_fn: Callable[[str], list[str]] | None = None,
-    ):
-        self.documents = list(documents)
-        self.search_text_fn = search_text_fn or document_search_text
-        self.tokenize_fn = tokenize_fn or tokenize
-        self.search_texts = [self.search_text_fn(document) for document in self.documents]
-        tokenized = [self.tokenize_fn(text) for text in self.search_texts]
-        self.bm25 = BM25Okapi(tokenized) if tokenized else None
-
-    def search_documents(self, query: str, *, top_k: int = 5) -> list[DocumentRetrievalHit]:
-        if not self.bm25 or not self.documents:
-            return []
-        query_tokens = self.tokenize_fn(query)
-        if not query_tokens:
-            return []
-        scores = self.bm25.get_scores(query_tokens)
-        ranked_indices = sorted(range(len(scores)), key=lambda idx: scores[idx], reverse=True)[:top_k]
-        return [
-            DocumentRetrievalHit(
-                rank=rank + 1,
-                score=float(scores[idx]),
-                boi_reference=self.documents[idx].boi_reference,
-                best_chunk=ChunkNode(
-                    chunk_id=f"{self.documents[idx].document_id}__document_title",
-                    source_type="BOFIP",
-                    document_id=self.documents[idx].document_id,
-                    boi_reference=self.documents[idx].boi_reference,
-                    doc_version=self.documents[idx].publication_date,
-                    strategy="document_lexical",
-                    section_id=None,
-                    parent_chunk_id=None,
-                    section_path=[self.documents[idx].title],
-                    paragraph_range=[],
-                    text=self.documents[idx].title,
-                    token_count=len(tokenize(self.documents[idx].title)),
-                    chunk_kind="document_title",
-                    legal_refs=list(self.documents[idx].legal_refs),
-                ),
-            )
-            for rank, idx in enumerate(ranked_indices)
-        ]
-
     def save(self, path: str | Path) -> None:
-        """Persist BM25 index to disk for fast reload."""
+        if not self.document_mode:
+            raise TypeError("save() requires document mode")
         with open(path, "wb") as f:
             pickle.dump({
-                "documents": self.documents,
+                "items": self.items,
                 "search_texts": self.search_texts,
                 "bm25": self.bm25,
             }, f)
@@ -298,16 +285,24 @@ class DocumentLexicalIndex:
         cls,
         path: str | Path,
         *,
-        search_text_fn: Callable[[RawDocument], str] | None = None,
-        tokenize_fn: Callable[[str], list[str]] | None = None,
-    ) -> "DocumentLexicalIndex":
-        """Load a persisted BM25 index from disk."""
+        search_text_fn,
+        tokenize_fn=None,
+    ) -> "LexicalIndex":
         with open(path, "rb") as f:
             data = pickle.load(f)
         index = cls.__new__(cls)
-        index.documents = data["documents"]
+        index.items = data["items"]
         index.search_texts = data["search_texts"]
         index.bm25 = data["bm25"]
-        index.search_text_fn = search_text_fn or document_search_text
+        index.search_text_fn = search_text_fn
         index.tokenize_fn = tokenize_fn or tokenize
+        index.document_mode = True
         return index
+
+
+LexicalBM25Index = LexicalIndex
+
+
+def DocumentLexicalIndex(*args, **kwargs):
+    kwargs.setdefault("document_mode", True)
+    return LexicalIndex(*args, **kwargs)

@@ -54,7 +54,7 @@ class DirectChunkRetriever:
         stage1_hits: list[Stage1DocumentHit],
         top_docs: int = 5,
         chunks_per_doc: int = 2,
-        max_chunks: int = 6,
+        max_candidates: int = 6,
     ) -> DirectChunkResult:
         effective_query = lexical_query or query
         chunk_hits: list[DirectChunkHit] = []
@@ -87,7 +87,7 @@ class DirectChunkRetriever:
                 hit.chunk.chunk_id,
             )
         )
-        chunk_hits = chunk_hits[:max_chunks]
+        chunk_hits = chunk_hits[:max_candidates]
         for index, hit in enumerate(chunk_hits, start=1):
             hit.global_rank = index
         return DirectChunkResult(chunk_hits=chunk_hits)

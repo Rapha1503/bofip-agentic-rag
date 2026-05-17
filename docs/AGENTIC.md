@@ -1,102 +1,127 @@
-﻿# Agentic RAG - Architecture
+﻿# Agentic RAG — Architecture
 
-## Design Philosophy
+## Design
 
-**Controlled workflow, not free agent.** The agent doesnt decide dynamically what tools to call. It follows a deterministic loop: retrieve -> answer + evaluate -> reformulate if needed -> retry. This makes the system reproducible and debuggable.
+**Controlled workflow, not free agent.** A deterministic loop: classify domain → retrieve → answer + evaluate → reformulate if needed → retry. No dynamic tool selection. Reproducible and debuggable.
 
-## Architecture
+## Full pipeline
 
 ```
 AgenticRAG.run(question)
   |
+  +-- _classify_domain(question)              → LLM returns "RPPM-PVBMI-20-10-40"
+  |     One cheap call (~200ms) classifies the BOFIP family + sub-family.
+  |
   +-- Iteration 1:
-  |     retrieve(question)           -> RagRuntime (BM25 + Dense + Reranker)
-  |     answer(chunks, question)      -> LLM (build_prompt, JSON response)
-  |     evaluate(answer)             -> inline (same LLM call)
+  |     retrieve(question, boost_prefix)       → RagRuntime
+  |       - BM25 lexical (3 variants) + Dense E5-large + taxonomy ranking
+  |       - boost_prefix bypasses dense-anchor filter for matching docs
+  |     mismatch detection                     → if >50% docs are wrong family, retry
+  |     answer(chunks, question)               → LLM (structured JSON)
+  |     evaluate(answer)                       → inline (same LLM call)
   |     if supported: RETURN
   |
   +-- Iteration 2:
-  |     reformulate(question, answer) -> LLM (generates BOFIP search query)
-  |     retrieve(reformulated_query)  -> RagRuntime
-  |     merge(chunks)                 -> deduplicate by chunk_id, rerank
-  |     answer(merged_chunks, question)
-  |     if supported: RETURN
+  |     reformulate(missing_axes)              → LLM returns {bofip_family, search_query}
+  |     retrieve(reformulated_query)           → RagRuntime (with family prefix)
+  |     merge(new_chunks)                      → deduplicate by chunk_id
+  |     answer(merged_chunks, question)        → LLM
+  |     RETURN best answer
   |
-  +-- Max iterations (2): RETURN best answer
+  +-- Max 2 iterations
 ```
 
-## Agent Self-Evaluation
+## Domain classification (LLM, not keyword banks)
 
-The LLM returns structured JSON in every answer:
+Before any retrieval, the LLM maps the question to a BOFIP document prefix:
 
+```
+Q: "J'ai 10000 euros dans un compte titre... que se passe-t-il ?"
+→ "RPPM-PVBMI-20-10-40"
+```
+
+This prefix is used three ways:
+1. Prepended to the search query → BM25 lexical boost
+2. Passed as `boost_prefix` to `retrieve()` → bypasses dense-anchor filter for matching docs
+3. Compared against actual retrieved families → triggers mismatch retry if wrong
+
+Zero hardcoded keyword lists. Works for any language, any tax domain.
+
+## Retrieval pipeline
+
+```
+User query with domain prefix
+  → BM25 lexical (3 variants: base, sections_leads, sections_leads_stem)
+  → Dense semantic (E5-large, 1024-dim, fp16)
+  → Taxonomy ranking (boost docs matching domain prefix by depth)
+  → Confidence-weighted RRF fusion (dense weight 2.0, lexical 0.5, taxonomy 1.0)
+  → Dense-anchor filter (lexical results kept only if in dense top-20 OR match boost_prefix)
+  → Stage 2 per-document BM25 chunk selection
+  → Cross-encoder reranker (bge-reranker-v2-m3, fp16)
+  → Diversity selection (max 3 chunks/doc, section-path penalty)
+  → Top-8 chunks to Agent
+```
+
+## Prompt engineering
+
+### Number extraction + computation forcing
+
+Generic: detects any numeric values in any question, extracts them with context, injects into prompt as `DONNEES CHIFFREES`. Forces LLM to produce step-by-step calculation in `justification_bullets`.
+
+```
+QUESTION: J'ai 10000 euros... moins value de 5000 euros... plus value de 12000 euros
+DONNEES CHIFFREES:
+- 10000 euros (contexte: J'ai 10000 euros dans un compte titre...)
+- 5000 euros (contexte: ...moins value de 5000 euros...)
+- 12000 euros (contexte: ...plus value latente de 12000 euros...)
+```
+
+### Structured self-evaluation
+
+The LLM returns JSON with coverage analysis:
 ```json
 {
-  "answer_status": "supported",
-  "axes_requis": ["Taux TVA normal", "Exceptions taux reduit"],
-  "axes_couverts": ["Taux TVA normal", "Exceptions taux reduit"],
-  "axes_manquants": [],
-  "conclusion": "Le taux normal de TVA est de 20%...",
-  "justification_bullets": ["[1] Le taux normal est fixe a 20%...", ...],
-  "limits": "Reponse limitee aux extraits fournis."
+  "answer_status": "supported|partial|insufficient_evidence",
+  "axes_requis": ["axe 1", "axe 2"],
+  "axes_couverts": ["axe 1"],
+  "axes_manquants": ["axe 2"],
+  "conclusion": "...",
+  "justification_bullets": ["[1] ...", "[2] ..."],
+  "limits": "..."
 }
 ```
 
-### Pragmatic Coverage Filter
+Pragmatic filter removes nitpicky missing axes (BOFIP reference numbers, edge cases not asked).
 
-LLMs tend to nitpick (want exact BOFIP references, list edge cases not asked). A regex filter catches non-substantive missing axes:
+## Reformulation
 
-- BOFI/CGI/LPF reference numbers
-- Pickup trucks ("pick-up") not asked about
-- Credit dimpot for something not asked
-- RCS radiation - administrative formality
-- Option modalities - minor procedural detail
+When status is `partial` or `insufficient_evidence`, the LLM generates a targeted BOFIP search query:
 
-If all missing axes are trivial, the filter upgrades status to `supported`.
-
-## Retrieval Pipeline
-
+```json
+{"bofip_family": "RPPM", "search_query": "plus-values mobilieres imputation moins-values PVBMI"}
 ```
-User query
-  -> BM25 lexical (3 variants: base, sections_leads, sections_leads_stem)
-  -> Dense semantic (E5-large, 1024-dim, fp16)
-  -> RRF fusion (confidence-weighted reciprocal rank)
-  -> Stage 2 per-document BM25 chunk selection
-  -> Cross-encoder reranker (bge-reranker-v2-m3, fp16)
-  -> Diversity selection (max 3 chunks/doc, section-path penalty)
-  -> Top-8 chunks to Agent
-```
+
+The reformulated query includes the BOFIP family prefix for domain-aware retrieval in the second pass.
 
 ## Models
 
 | Model | Size | VRAM (fp16) | Role |
 |---|---|---|---|
-| intfloat/multilingual-e5-large | 560M params | 1.07 GB | Document + chunk embeddings |
-| BAAI/bge-reranker-v2-m3 | 568M params | 1.08 GB | Cross-encoder reranking |
-| DeepSeek V4 Flash | ~200B params | N/A (API) | Agent planning + answer generation |
+| intfloat/multilingual-e5-large | 560M | 1.07 GB | Document + chunk embeddings |
+| BAAI/bge-reranker-v2-m3 | 568M | 1.08 GB | Cross-encoder reranking |
+| LLM (configurable) | varies | N/A (API) | Domain classification + answer + self-evaluation + reformulation |
 
 ## Performance
 
 | Stage | Time |
 |---|---|
+| Domain classification | ~0.2s |
 | BM25 + Dense retrieval | ~1.0s |
 | Cross-encoder reranker | ~0.5s |
-| LLM answer (1st pass) | ~2-3s |
-| Reformulation (if needed) | ~1s |
-| LLM answer (2nd pass) | ~2-3s |
-| **Total (GPU)** | **5-15s** |
+| LLM answer | 2-10s |
+| Reformulation | ~1s |
+| **Total (GPU, p50)** | **~14s** |
 
 ## Evaluation
 
-The benchmark uses self-reported metrics. No manual annotation needed.
-
-- `coverage_rate = avg(|axes_couverts| / |axes_requis|)`
-- `reformulation_rate` = queries needing iteration 2
-- `answer_status` distribution = supported / partial / insufficient
-
-See `docs/RESULTS.md` for the 50-query benchmark results.
-
-## Inspiration
-
-- Azure AI Search Agentic Retrieval - multi-query decomposition + parallel retrieval
-- Corrective RAG (CRAG) - post-retrieval quality evaluation + corrective actions
-- Self-RAG - self-reflection for retrieval decisions
+See `docs/RESULTS.md` for the 50-query benchmark.

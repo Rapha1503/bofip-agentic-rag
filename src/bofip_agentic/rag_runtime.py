@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import pickle
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -14,7 +15,7 @@ from .hybrid_retrieval import (
     confidence_weighted_reciprocal_rank_fuse,
 )
 from .jsonio import read_jsonl
-from .lexical_retrieval import DocumentLexicalIndex, get_document_search_text_fn, tokenize
+from .lexical_retrieval import LexicalIndex, get_document_search_text_fn, tokenize
 from .models import ChunkNode, RawDocument, chunk_node_from_dict, raw_document_from_dict
 from .reranker import CrossEncoderReranker, DEFAULT_RERANKER_MODEL
 
@@ -130,21 +131,22 @@ class RagRuntime:
         self.chunk_dense_index = DenseIndex(chunks, chunk_embeddings)
         self.chunk_retriever = DirectChunkRetriever(chunks, local_chunk_mode="full")
 
-    def _init_lexical(self, documents: list[RawDocument]) -> dict[str, DocumentLexicalIndex]:
+    def _init_lexical(self, documents: list[RawDocument]) -> dict[str, LexicalIndex]:
         """Load BM25 indexes from cache if available, otherwise build + save."""
         indexes = {}
         cache_dir = Path.home() / ".cache" / "bofip_rag"
         cache_dir.mkdir(parents=True, exist_ok=True)
+        doc_hash = hashlib.md5(str(len(documents)).encode()).hexdigest()[:8]
         modes = {
             "base": ("base", None),
             "sections_leads": ("sections_leads", None),
             "sections_leads_stem": ("sections_leads", lambda text: tokenize(text, stem=True)),
         }
         for mode_key, (search_mode, tok_fn) in modes.items():
-            cache_path = cache_dir / f"bm25_cache_5666_{mode_key}.pkl"
+            cache_path = cache_dir / f"bm25_cache_{doc_hash}_{mode_key}.pkl"
             try:
                 if cache_path.exists():
-                    indexes[mode_key] = DocumentLexicalIndex.load(
+                    indexes[mode_key] = LexicalIndex.load(
                         cache_path,
                         search_text_fn=get_document_search_text_fn(search_mode),
                         tokenize_fn=tok_fn,
@@ -152,10 +154,11 @@ class RagRuntime:
                     continue
             except (pickle.PickleError, OSError, EOFError, ImportError):
                 pass  # Corrupted or incompatible cache — rebuild
-            indexes[mode_key] = DocumentLexicalIndex(
+            indexes[mode_key] = LexicalIndex(
                 documents,
                 search_text_fn=get_document_search_text_fn(search_mode),
                 tokenize_fn=tok_fn,
+                document_mode=True,
             )
             try:
                 indexes[mode_key].save(cache_path)
@@ -235,6 +238,7 @@ class RagRuntime:
         use_chunk_dense: bool = True,
         use_anchor_filter: bool = True,
         use_reranker: bool = True,
+        boost_prefix: str = "",
     ) -> RagResult:
         rankings, confidences = self._build_rankings(query, query)
         if source_weights is None:
@@ -253,10 +257,17 @@ class RagRuntime:
 
         # Dense-anchor: lexical sources may only re-rank documents that dense
         # already found semantically relevant. This prevents term-level matches
-        # on common phrases (e.g. "resident fiscal") from flooding the fusion
-        # with irrelevant conventions et al.
+        # on common phrases from flooding the fusion with irrelevant documents.
+        # When a boost_prefix is provided, documents matching that prefix
+        # bypass the anchor filter so that domain-specific documents are not
+        # unfairly excluded when the dense embeddings don't surface them.
         if use_anchor_filter and rankings.get("dense"):
             dense_anchor_refs = {doc.boi_reference for doc in rankings.get("dense", [])[:20]}
+            if boost_prefix:
+                boost_lower = boost_prefix.lower()
+                for d in self.documents:
+                    if d.boi_reference.lower().startswith(boost_lower):
+                        dense_anchor_refs.add(d.boi_reference)
             for source in list(rankings):
                 if source in ("dense", "chunk_dense"):
                     continue
@@ -264,6 +275,31 @@ class RagRuntime:
                     doc for doc in rankings[source]
                     if doc.boi_reference in dense_anchor_refs
                 ]
+
+        # Taxonomy ranking: when boost_prefix is set, rank documents by how
+        # deeply their BOI reference matches the prefix (more specific = higher).
+        # This prevents generic sub-family docs from outranking the exact chapter.
+        if boost_prefix and boost_prefix.count("-") >= 2:
+            t_ranked = []
+            boost_lower = boost_prefix.lower()
+            for d in self.documents:
+                ref_lower = d.boi_reference.lower()
+                if not ref_lower.startswith(boost_lower):
+                    continue
+                # Score by match depth: how many segments of the document ref
+                # match the boost prefix (up to the prefix length)
+                depth = boost_lower.count("-") + 1
+                t_ranked.append(RankedDoc(
+                    boi_reference=d.boi_reference,
+                    score=0.9 + 0.02 * depth,
+                    rank=0, source="taxonomy",
+                ))
+            if t_ranked:
+                t_ranked.sort(key=lambda x: x.score, reverse=True)
+                for i, doc in enumerate(t_ranked[:20]):
+                    doc.rank = i + 1
+                rankings["taxonomy"] = t_ranked
+                source_weights["taxonomy"] = 1.0
 
         fused = confidence_weighted_reciprocal_rank_fuse(
             rankings,
@@ -286,7 +322,7 @@ class RagRuntime:
             ],
             top_docs=top_docs,
             chunks_per_doc=chunks_per_doc,
-            max_chunks=chunks_per_doc * top_docs,
+            max_candidates=chunks_per_doc * top_docs,
         )
 
         candidates = direct_result.chunk_hits
@@ -365,56 +401,61 @@ class RagRuntime:
     # ── Diversity selection ────────────────────────────────────────
 
     @staticmethod
-    def _diversity_penalty(candidate, selected: list) -> float:
-        """Compute penalty for adding candidate given already-selected chunks."""
-        doc = candidate.boi_reference
-        doc_count = sum(1 for c in selected if c.boi_reference == doc)
-        if doc_count >= 3:
-            return 999.0
-        penalty = 0.0
-        if doc_count == 2:
-            penalty = 0.30
-        elif doc_count == 1:
-            penalty = 0.15
-        for sel in selected:
-            if sel.boi_reference == doc:
-                if sel.chunk.section_path == candidate.chunk.section_path:
-                    penalty += 0.15
-                elif len(sel.chunk.section_path) > 0 and len(candidate.chunk.section_path) > 0:
-                    if sel.chunk.section_path[:-1] == candidate.chunk.section_path[:-1]:
-                        penalty += 0.05
-        return penalty
-
-    @staticmethod
     def _select_diverse(chunks_and_scores: list, max_chunks: int = 8) -> list:
         """Greedy selection by recalculated marginal utility at each step."""
-        remaining = list(chunks_and_scores)  # (DirectChunkHit, float_score)
+        remaining = list(chunks_and_scores)
         if not remaining:
             return remaining
 
-        # Normalize scores to [0, 1]
         scores = [s for _, s in remaining]
         mn, mx = min(scores), max(scores)
         if mx - mn < 1e-9:
             return [c for c, _ in remaining[:max_chunks]]
         normed = [(c, (s - mn) / (mx - mn)) for (c, s), s in zip(remaining, scores)]
 
-        # Step 1: strict diversity
         selected = []
+        doc_counts: dict[str, int] = {}
+        doc_section_paths: dict[str, set] = {}
+        doc_parent_paths: dict[str, set] = {}
+
+        # Step 1: strict diversity — max 2 per doc
         for _ in range(max_chunks):
             if not normed:
                 break
             best_score = -float("inf")
             best_idx = -1
             for i, (c, ns) in enumerate(normed):
-                penalty = RagRuntime._diversity_penalty(c, selected)
+                doc = c.boi_reference
+                cnt = doc_counts.get(doc, 0)
+                if cnt >= 3:
+                    continue
+                penalty = 0.0
+                if cnt == 2:
+                    penalty = 0.30
+                elif cnt == 1:
+                    penalty = 0.15
+
+                sp = tuple(c.chunk.section_path)
+                if doc in doc_section_paths and sp in doc_section_paths[doc]:
+                    penalty += 0.15
+                parent = tuple(c.chunk.section_path[:-1]) if c.chunk.section_path else ()
+                if doc in doc_parent_paths and parent in doc_parent_paths[doc]:
+                    penalty += 0.05
+
                 adjusted = ns - penalty
                 if adjusted > best_score:
                     best_score = adjusted
                     best_idx = i
             if best_idx < 0 or best_score < 0:
                 break
-            selected.append(normed[best_idx][0])
+            best = normed[best_idx][0]
+            selected.append(best)
+            doc = best.boi_reference
+            doc_counts[doc] = doc_counts.get(doc, 0) + 1
+            sp = tuple(best.chunk.section_path)
+            doc_section_paths.setdefault(doc, set()).add(sp)
+            parent = tuple(best.chunk.section_path[:-1]) if best.chunk.section_path else ()
+            doc_parent_paths.setdefault(doc, set()).add(parent)
             normed.pop(best_idx)
 
         # Step 2: if not enough, relax — allow 3rd chunk per doc
@@ -425,23 +466,25 @@ class RagRuntime:
                 best_score = -float("inf")
                 best_idx = -1
                 for i, (c, ns) in enumerate(normed):
-                    doc_count = sum(1 for s in selected if s.boi_reference == c.boi_reference)
-                    if doc_count >= 4:
+                    doc = c.boi_reference
+                    cnt = doc_counts.get(doc, 0)
+                    if cnt >= 4:
                         continue
-                    adjusted = ns - (0.10 if doc_count >= 3 else 0)
+                    adjusted = ns - (0.10 if cnt >= 3 else 0)
                     if adjusted > best_score:
                         best_score = adjusted
                         best_idx = i
                 if best_idx < 0:
                     break
-                selected.append(normed[best_idx][0])
+                best = normed[best_idx][0]
+                selected.append(best)
+                doc_counts[best.boi_reference] = doc_counts.get(best.boi_reference, 0) + 1
                 normed.pop(best_idx)
 
-        # Step 3: last resort — fill by raw score
-        if len(selected) < max_chunks:
-            remaining_raw = [(c, s) for c, s in remaining if c not in selected]
-            remaining_raw.sort(key=lambda x: x[1], reverse=True)
-            for c, _ in remaining_raw[:max_chunks - len(selected)]:
+        # Step 3: last resort — fill from normed leftovers
+        if len(selected) < max_chunks and normed:
+            leftovers = sorted(normed, key=lambda x: x[1], reverse=True)
+            for c, _ in leftovers[:max_chunks - len(selected)]:
                 selected.append(c)
 
         return selected

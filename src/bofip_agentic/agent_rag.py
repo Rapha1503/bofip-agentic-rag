@@ -15,7 +15,7 @@ import re
 import time
 from dataclasses import dataclass, field
 
-from .prompt_utils import build_prompt
+from .prompt_utils import build_prompt, build_system_prompt
 from .rag_runtime import RagRuntime
 
 
@@ -28,16 +28,18 @@ class AgenticRAG:
         self,
         runtime: RagRuntime,
         *,
-        api_key: str,
+        api_key: str = "",
         base_url: str = "https://api.deepseek.com/v1",
         model: str = "deepseek-chat",
         max_iterations: int = 2,
+        client=None,
     ):
         self.rt = runtime
         self.api_key = api_key
         self.base_url = base_url
         self.model = model
         self.max_iterations = max_iterations
+        self._client = client
 
     # ------------------------------------------------------------------
     # Public
@@ -45,18 +47,41 @@ class AgenticRAG:
 
     def run(self, question: str) -> dict:
         """Main entry point. Returns structured result with trace."""
+        original_question = question
         trace: list[dict] = []
         all_chunks: list[dict] = []
         seen_ids: set[str] = set()
 
         t_start = time.time()
 
+        # Before first retrieval: ask the LLM to classify the BOFIP domain.
+        # One cheap call (max_tokens=150) extracts the right family + sub-family prefix.
+        domain = _classify_domain(question, self._call_llm)
+        boost_prefix = domain
+        if domain:
+            question = f"{domain} {question}"
+
         for iteration in range(1, self.max_iterations + 1):
             step_log = {"iteration": iteration}
 
             # --- Retrieve ---
             t0 = time.time()
-            result = self.rt.retrieve(question, top_docs=8, max_chunks=8)
+            result = self.rt.retrieve(question, top_docs=8, max_chunks=8, boost_prefix=boost_prefix)
+
+            # Mismatch detection: compare LLM-predicted domain vs actual retrieved families.
+            # If retrieval pulled mostly wrong documents, retry with the predicted prefix.
+            if iteration == 1 and domain and len(result.stage1_hits) >= 4:
+                expected = domain.split("-")[0] if "-" in domain else domain
+                fams = [h.boi_reference.split("-")[0] if "-" in h.boi_reference else "" for h in result.stage1_hits[:8]]
+                from collections import Counter
+                fam_dist = Counter(fams)
+                total = sum(fam_dist.values())
+                expected_count = fam_dist.get(expected, 0)
+                if expected_count / total < 0.5 and total > 0:
+                    question = f"{domain} {question}"
+                    step_log["mismatch_fix"] = f"retry with {domain} ({expected_count}/{total} {expected})"
+                    result = self.rt.retrieve(question, top_docs=8, max_chunks=8, boost_prefix=boost_prefix)
+
             chunks = _chunks_from_result(result)
             step_log["retrieve_s"] = round(time.time() - t0, 2)
             step_log["docs_found"] = len(result.stage1_hits)
@@ -74,12 +99,6 @@ class AgenticRAG:
             t0 = time.time()
             answer = self._answer(question, all_chunks)
             step_log["answer_s"] = round(time.time() - t0, 2)
-            step_log["answer_status"] = answer.get("answer_status", "?")
-            step_log["axes_requis"] = answer.get("axes_requis", [])
-            step_log["axes_couverts"] = answer.get("axes_couverts", [])
-            step_log["axes_manquants"] = answer.get("axes_manquants", [])
-
-            trace.append(step_log)
 
             # Check if sufficient
             status = answer.get("answer_status", "partial")
@@ -103,7 +122,18 @@ class AgenticRAG:
                 missing = substantive_missing
                 answer["axes_manquants"] = substantive_missing
             if status == "supported" and not missing:
+                step_log["answer_status"] = answer.get("answer_status", "?")
+                step_log["axes_requis"] = answer.get("axes_requis", [])
+                step_log["axes_couverts"] = answer.get("axes_couverts", [])
+                step_log["axes_manquants"] = answer.get("axes_manquants", [])
+                trace.append(step_log)
                 break
+
+            step_log["answer_status"] = answer.get("answer_status", "?")
+            step_log["axes_requis"] = answer.get("axes_requis", [])
+            step_log["axes_couverts"] = answer.get("axes_couverts", [])
+            step_log["axes_manquants"] = answer.get("axes_manquants", [])
+            trace.append(step_log)
 
             if iteration >= self.max_iterations:
                 break
@@ -119,13 +149,13 @@ class AgenticRAG:
 
         total_s = round(time.time() - t_start, 2)
         coverage = (
-            len(answer.get("axes_couverts", [])) / len(answer.get("axes_requis", []))
+            min(1.0, len(answer.get("axes_couverts", [])) / len(answer.get("axes_requis", [])))
             if answer.get("axes_requis")
             else 1.0
         )
 
         return {
-            "question": question,
+            "question": original_question,
             "answer_status": answer.get("answer_status", "?"),
             "axes_requis": answer.get("axes_requis", []),
             "axes_couverts": answer.get("axes_couverts", []),
@@ -148,52 +178,62 @@ class AgenticRAG:
     def _answer(self, question: str, chunks: list[dict]) -> dict:
         """LLM generates answer + self-evaluates coverage (existing build_prompt format)."""
         prompt = build_prompt(question, chunks)
-        system = (
-            "Tu es un assistant fiscal pragmatique. Reponds UNIQUEMENT a partir des extraits fournis. "
-            "Schema JSON strict. Pas de citation inventee.\n\n"
-            "CRITERES DE COUVERTURE (sois PRAGMATIQUE, pas perfectionniste):\n"
-            "- supported: les axes principaux de la question sont couverts. "
-            "Des details mineurs, des cas particuliers non demandes, ou l'absence de reference "
-            "BOFIP exacte NE JUSTIFIENT PAS un statut partial.\n"
-            "- partial: un axe FISCAL SUBSTANTIF manque et l'utilisateur aurait une reponse incomplate.\n"
-            "- axes_manquants: liste UNIQUEMENT les axes substantifs reellement non couverts. "
-            "N'inclus JAMAIS: references numeriques BOI/CGI/LPF, cas particuliers non demandes, "
-            "details administratifs mineurs, taux ou seuils que l'utilisateur n'a pas demandes, "
-            "ni des concepts fiscaux DIFFERENTS de la question posee (ex: ne demande pas "
-            "l'amortissement si la question porte sur la TVA). "
-            "Si tu peux repondre a la question de l'utilisateur avec les extraits, "
-            "alors answer_status DOIT etre 'supported' et axes_manquants DOIT etre vide [].\n\n"
-            "Rappel: tu n'es PAS un correcteur d'examen. Si l'utilisateur pose une question "
-            "sur la TVA, ne lui dis pas que les regles d'amortissement sont manquantes."
-        )
+        system = build_system_prompt()
         return self._call_llm(prompt, system, json_mode=True)
 
     def _reformulate(self, original_question: str, answer: dict) -> str:
-        """Generate a targeted BOFIP search query from missing axes."""
+        """Generate a targeted BOFIP search query from missing axes.
+
+        Uses structured JSON output to force the LLM to produce a clean search query
+        with proper BOFIP vocabulary (RPPM for particuliers, BIC for entreprises, etc.).
+        """
         missing = answer.get("axes_manquants", [])
         if not missing:
             return original_question
 
         prompt = (
             "Question originale: " + original_question + "\n\n"
-            "Les axes suivants ne sont PAS couverts par la recherche initiale. "
-            "Genere UNE SEULE requete de recherche (20 mots max) en vocabulaire technique "
-            "BOFIP/fiscal pour trouver les documents pertinents.\n\n"
-            "Axes manquants:\n" + "\n".join("- " + m for m in missing) + "\n\n"
-            "Reponds UNIQUEMENT avec la requete de recherche, sans guillemets ni commentaire."
+            "Axes fiscaux NON couverts par la recherche precedente:\n"
+            + "\n".join("- " + m for m in missing) + "\n\n"
+            "Genere une requete de recherche BOFIP optimisee. Retourne UN JSON:\n"
+            '{"bofip_family": "RPPM|BIC|IS|TVA|IR|CF|ENR|IF|PAT",'
+            '"search_query": "requete de 8-15 mots en vocabulaire technique BOFIP"}\n\n'
+            "REGLES:\n"
+            "- bofip_family: RPPM pour particuliers/revenus mobiliers, BIC pour benefices"
+            " industriels, IS pour societes, TVA pour taxe valeur ajoutee, IR pour impot revenu\n"
+            "- search_query: UNIQUEMENT des termes techniques BOFIP, pas de phrases.\n"
+            "  Exemple bon: 'particuliers plus-values mobilieres imputation moins-values RPPM PVBMI'\n"
+            "  Exemple mauvais: 'je voudrais savoir comment les particuliers sont imposes sur...'\n"
+            "- MAX 15 mots. Pas de guillemets, pas de phrases, pas de politesse."
         )
-        system = "Tu es un expert en recherche documentaire BOFIP. Genere une requete de recherche technique."
-        resp = self._call_llm(prompt, system, json_mode=False)
-        return resp.get("_raw", "").strip()[:200] or original_question
+        system = (
+            "Tu es un expert en recherche documentaire BOFIP. "
+            "Tu connais les familles: RPPM (particuliers/revenus), BIC (entreprises/benefices), "
+            "IS (societes), TVA, IR, CF (controle fiscal), ENR (enregistrement), IF (impots fonciers), PAT (patrimoine). "
+            "Tu generes des requetes de recherche purement techniques."
+        )
+        resp = self._call_llm(prompt, system, json_mode=True)
+
+        query = resp.get("search_query", "").strip()
+        family = resp.get("bofip_family", "").strip().upper()
+
+        if query:
+            if family:
+                query = f"{family} {query}"
+            return query[:200]
+
+        return original_question
 
     def _call_llm(self, prompt: str, system: str, json_mode: bool = True) -> dict:
-        """Call DeepSeek API, parse JSON response. Returns dict with _raw key for text responses."""
-        try:
-            from openai import OpenAI
-        except ImportError:
-            return {"answer_status": "insufficient_evidence", "axes_requis": [], "error": "openai not installed"}
-
-        client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        """Call LLM API, parse JSON response. Uses shared client if provided."""
+        if self._client is not None:
+            client = self._client
+        else:
+            try:
+                from openai import OpenAI
+            except ImportError:
+                return {"answer_status": "insufficient_evidence", "axes_requis": [], "error": "openai not installed"}
+            client = OpenAI(api_key=self.api_key, base_url=self.base_url)
         kwargs = {
             "model": self.model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
@@ -240,6 +280,30 @@ def _parse_json(raw: str) -> dict | None:
         except json.JSONDecodeError:
             continue
     return None
+
+
+def _classify_domain(question: str, call_llm) -> str:
+    """Ask the LLM to classify the question into a BOFIP document prefix.
+
+    Returns the most specific prefix identifiable, e.g. 'RPPM-PVBMI-20-10-40'
+    for a question about moins-values on securities, or 'RPPM-PVBMI-50'
+    for exit tax. Falls back to family level if sub-family unclear.
+    Costs ~1 token and runs in ~200ms on fast models.
+    """
+    prompt = (
+        "Identifie le prefixe documentaire BOFIP le PLUS PRECIS pour cette question. "
+        "Donne le prefixe complet jusqu'au niveau section si identifiable "
+        "(ex: RPPM-PVBMI-20-10-40 pas juste RPPM-PVBMI). "
+        "Si tu n'es pas sur du sous-chapitre, donne juste la famille (ex: TVA). "
+        "Retourne UNIQUEMENT le prefixe, rien d'autre.\n\n"
+        "Question: " + question
+    )
+    resp = call_llm(prompt, "Tu es un classifieur de taxonomie BOFIP.", json_mode=False)
+    raw = resp.get("_raw", "").strip()
+    raw = raw.split("\n")[0].strip().strip('"').strip("'").strip("`")
+    if not raw or len(raw) < 3 or len(raw) > 40:
+        return ""
+    return raw
 
 
 def _chunks_from_result(result) -> list[dict]:

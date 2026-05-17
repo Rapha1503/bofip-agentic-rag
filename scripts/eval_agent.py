@@ -16,7 +16,15 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-os.environ.setdefault("DEEPSEEK_API_KEY", "sk-1422bc6ce16e41fb8123f4a1723cfa49")
+PROVIDERS = {
+    "deepseek":  {"base_url": "https://api.deepseek.com/v1",    "default_model": "deepseek-v4-flash",  "env_key": "DEEPSEEK_API_KEY"},
+    "openai":    {"base_url": "https://api.openai.com/v1",       "default_model": "gpt-5.4-mini",      "env_key": "OPENAI_API_KEY"},
+    "anthropic": {"base_url": "https://api.anthropic.com/v1",    "default_model": "claude-haiku-4-5",  "env_key": "ANTHROPIC_API_KEY"},
+    "mistral":   {"base_url": "https://api.mistral.ai/v1",       "default_model": "mistral-small-4",   "env_key": "MISTRAL_API_KEY"},
+    "google":    {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/", "default_model": "gemini-3.1-flash", "env_key": "GEMINI_API_KEY"},
+    "groq":      {"base_url": "https://api.groq.com/openai/v1",  "default_model": "llama-4-maverick",  "env_key": "GROQ_API_KEY"},
+    "together":  {"base_url": "https://api.together.xyz/v1",     "default_model": "meta-llama/Llama-4-Maverick", "env_key": "TOGETHER_API_KEY"},
+}
 
 from bofip_agentic.agent_rag import AgenticRAG
 from bofip_agentic.rag_runtime import RagRuntime
@@ -85,12 +93,25 @@ def main():
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--device", type=str, default="cuda")
     p.add_argument("--output", type=str, default="")
+    p.add_argument("--provider", type=str, default="deepseek", help="LLM provider key in PROVIDERS dict")
+    p.add_argument("--model", type=str, default="", help="Model name (defaults to provider default)")
+    p.add_argument("--api-key", type=str, default="", help="API key (or set env var)")
+    p.add_argument("--base-url", type=str, default="", help="Base URL override")
     args = p.parse_args()
 
-    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
-    if not api_key:
-        print("ERROR: set DEEPSEEK_API_KEY")
+    provider_key = args.provider.lower()
+    provider_config = PROVIDERS.get(provider_key, PROVIDERS.get("deepseek", {}))
+    if not provider_config:
+        print(f"ERROR: unknown provider '{args.provider}'. Options: {', '.join(PROVIDERS)}")
         return 1
+
+    api_key = args.api_key or os.environ.get(provider_config.get("env_key", ""), "")
+    if not api_key:
+        print(f"ERROR: set {provider_config.get('env_key', 'API key')} or use --api-key")
+        return 1
+
+    model = args.model or provider_config.get("default_model", "deepseek-chat")
+    base_url = args.base_url or provider_config.get("base_url", "https://api.deepseek.com/v1")
 
     ensure_data_dirs()
     queries = load_queries(INPUT_PATH)
@@ -119,7 +140,7 @@ def main():
 
     print("Init RagRuntime (GPU)...")
     rt = RagRuntime.from_local_corpus(corpus="commentary", device=args.device)
-    agent = AgenticRAG(rt, api_key=api_key, max_iterations=2)
+    agent = AgenticRAG(rt, api_key=api_key, base_url=base_url, model=model, max_iterations=2)
     print("Agent ready.\n")
 
     for idx, q in enumerate(pending, 1):
@@ -150,7 +171,7 @@ def main():
         summary = compute_summary(results)
         report = {
             "generated_at": datetime.now(UTC).isoformat(),
-            "config": {"device": args.device, "max_iterations": 2, "model": "deepseek-chat"},
+            "config": {"device": args.device, "max_iterations": 2, "model": model, "provider": provider_key},
             "summary": summary,
             "per_query": results,
         }
