@@ -39,16 +39,15 @@ pip install -r requirements.txt
 
 **Option A — Build from scratch (~20 min)**
 
-Downloads BOFIP from `data.economie.gouv.fr`, parses HTML, chunks, embeds.
-
 ```powershell
-$env:PYTHONPATH = "src"
 python scripts/setup.py
 ```
 
+Downloads BOFIP from `data.economie.gouv.fr`, parses HTML, chunks, embeds.
+
 **Option B — Copy from another machine**
 
-If you already have the corpus elsewhere, place these files in `data/interim/`:
+Place these files in `data/interim/`:
 
 | File | Size |
 |---|---|
@@ -64,7 +63,7 @@ And models in `data/models/`:
 | `intfloat--multilingual-e5-large/` | ~12 GB |
 | `BAAI--bge-m3/` | ~2 GB |
 
-Or use `python scripts/setup.py --copy-from <source-project>`.
+Or `python scripts/setup.py --copy-from <source-project>`.
 
 ### 3. Set your API key
 
@@ -79,25 +78,25 @@ DEEPSEEK_API_KEY=sk-...
 ### 4. Run
 
 ```powershell
-$env:PYTHONPATH = "src"
-streamlit run app.py
+streamlit run app.py        # no PYTHONPATH needed
 ```
 
----
+Or double-click `run.bat` on Windows.
 
-## Commands
+### Commands (no PYTHONPATH required)
 
 | Command | What it does |
 |---|---|
-| `streamlit run app.py` | Web UI — ask questions, see answers + trace |
-| `python scripts/eval_full.py` | 50-query evaluation — full metrics |
-| `python scripts/eval_full.py --limit 3` | Pilot eval on 3 queries |
-| `python scripts/eval_full.py --resume` | Resume interrupted eval |
-| `python scripts/eval_full.py --provider openai --model gpt-5.4-mini` | Eval with different provider |
-| `python scripts/sync.py` | Update corpus with latest BOFIP data |
-| `python scripts/sync.py --check` | Preview what changed, don't apply |
+| `streamlit run app.py` | Web UI |
+| `python scripts/eval_full.py` | 50-query evaluation |
+| `python scripts/eval_full.py --limit 3` | Pilot eval |
+| `python scripts/eval_full.py --resume` | Resume interrupted |
+| `python scripts/sync.py` | Update corpus |
+| `python scripts/sync.py --check` | Preview changes |
 | `python scripts/setup.py` | First-time corpus build |
-| `pytest tests/ -v` | Run test suite |
+| `pytest tests/ -v` | Run tests |
+
+All scripts auto-inject `src/` into the path. No `$env:PYTHONPATH` needed.
 
 ---
 
@@ -106,9 +105,8 @@ streamlit run app.py
 BOFIP is updated weekly by the DGFIP. `scripts/sync.py` handles the full lifecycle:
 
 ```powershell
-$env:PYTHONPATH = "src"
-python scripts/sync.py              # Full sync: download + diff + rebuild + swap
-python scripts/sync.py --check      # Preview changes only
+python scripts/sync.py              # Full sync
+python scripts/sync.py --check      # Preview changes
 python scripts/sync.py --force      # Skip confirmation
 ```
 

@@ -12,6 +12,9 @@ import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+# Inject project root into path so no PYTHONPATH env var is needed
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 import streamlit as st
@@ -135,10 +138,10 @@ def _parse_json_safe(content: str) -> dict | None:
     return None
 
 
-# --- Sidebar -----------------------------------------------------------
+##### ─── Page config (must be first st call) ───
 st.set_page_config(page_title="BOFIP Agentic RAG", layout="wide", initial_sidebar_state="expanded")
 
-# --- CSS ---------------------------------------------------------------
+# ─── CSS ───
 st.markdown("""
 <style>
 .stApp { background: #0d1117; }
@@ -346,9 +349,7 @@ with tab1:
         key="question_input",
     )
 
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        run_btn = st.button("Analyser", use_container_width=True, disabled=not question.strip(), key="run_btn")
+    run_btn = st.button("Analyser", use_container_width=True, disabled=not question.strip(), key="run_btn")
 
     if run_btn:
         t0 = time.time()
@@ -370,17 +371,15 @@ with tab1:
             badge_class = {"supported": "badge-supported", "partial": "badge-partial",
                            "insufficient_evidence": "badge-insufficient"}
 
-            st.markdown(f"""
-            <div class="result-card">
-                <span class="status-badge {badge_class.get(status, 'badge-partial')}">{status_labels.get(status, status)}</span>
-                <div class="conclusion-text">{parsed.get("conclusion", "")}</div>
-            """, unsafe_allow_html=True)
-
             coverage_val = result.get("coverage", 0)
             elapsed = result.get("total_s", result.get("elapsed", 0))
             iters = result.get("iterations", 1)
             chunks_n = result.get("chunks_used", len(result.get("chunks", [])))
+
             st.markdown(f"""
+            <div class="result-card">
+                <span class="status-badge {badge_class.get(status, 'badge-partial')}">{status_labels.get(status, status)}</span>
+                <div class="conclusion-text">{parsed.get("conclusion", "")}</div>
                 <div class="meta-row">
                     <div class="meta-item">Couverture <strong>{coverage_val:.0%}</strong></div>
                     <div class="meta-item">Extraits <strong>{chunks_n}</strong></div>
