@@ -33,5 +33,7 @@ jobs:
               repo_type="space",
               token=os.environ["HF_TOKEN"],
               commit_message="deploy space runtime",
+              ignore_patterns=["**/__pycache__/**", "**/*.pyc"],
+              delete_patterns=["**/__pycache__/**", "**/*.pyc", "src/streamlit_app.py"],
           )
           PY
