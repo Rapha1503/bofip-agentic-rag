@@ -93,27 +93,27 @@ st.set_page_config(
     page_title="BOFiP Agentic RAG",
     page_icon="§",
     layout="wide",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="collapsed",
 )
 
 st.markdown(
     """
     <style>
       :root {
-        --ink: #101828;
-        --text: #263244;
+        --ink: #111827;
+        --text: #2b3445;
         --muted: #667085;
-        --faint: #98a2b3;
-        --line: #d0d5dd;
-        --line-soft: #e4e7ec;
+        --faint: #9aa4b2;
+        --line: #cfd7e3;
+        --line-soft: #e5eaf0;
         --paper: #ffffff;
-        --canvas: #f6f7f9;
-        --blue: #235789;
-        --blue-dark: #173b5f;
-        --blue-soft: #e8f1fb;
-        --green: #23745d;
-        --amber: #b7791f;
-        --red: #b42318;
+        --canvas: #f1f4f8;
+        --blue: #0f3d66;
+        --blue-dark: #092842;
+        --blue-soft: #e6eef7;
+        --green: #276955;
+        --amber: #b7832f;
+        --red: #aa2e3f;
       }
 
       html, body, [class*="css"] {
@@ -126,7 +126,7 @@ st.markdown(
       }
 
       [data-testid="stHeader"] {
-        background: rgba(246, 247, 249, .96);
+        background: rgba(241, 244, 248, .96);
         border-bottom: 1px solid var(--line-soft);
       }
 
@@ -198,10 +198,11 @@ st.markdown(
 
       .app-shell {
         border: 1px solid var(--line);
+        border-top: 4px solid var(--blue);
         background: var(--paper);
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 18px 45px rgba(16, 24, 40, .05);
+        box-shadow: 0 20px 48px rgba(15, 61, 102, .10);
         margin-bottom: 16px;
       }
 
@@ -217,7 +218,7 @@ st.markdown(
         display: flex;
         align-items: center;
         gap: 10px;
-        color: var(--blue);
+        color: var(--blue-dark);
         font-size: .82rem;
         font-weight: 760;
         margin-bottom: 9px;
@@ -227,15 +228,15 @@ st.markdown(
         width: 34px;
         height: 34px;
         border-radius: 7px;
-        border: 1px solid var(--blue);
-        color: var(--blue-dark);
+        border: 1px solid var(--blue-dark);
+        color: #ffffff;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-family: Georgia, "Times New Roman", serif;
         font-size: 1rem;
         font-weight: 800;
-        background: var(--blue-soft);
+        background: linear-gradient(90deg, var(--red) 0 18%, var(--blue) 18% 100%);
       }
 
       .app-header h1 {
@@ -286,11 +287,72 @@ st.markdown(
         line-height: 1.35;
       }
 
+      .workbench-panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 20px;
+        min-height: 0;
+        box-shadow: 0 18px 45px rgba(15, 61, 102, .06);
+      }
+
+      .workbench-panel.compact {
+        min-height: 0;
+      }
+
+      .panel-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid var(--line-soft);
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+      }
+
+      .panel-heading h2 {
+        color: var(--ink);
+        font-size: 1.22rem;
+        line-height: 1.25;
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      .panel-heading p {
+        color: var(--muted);
+        margin: 5px 0 0;
+        line-height: 1.45;
+        font-size: .92rem;
+      }
+
+      .field-note {
+        color: var(--muted);
+        font-size: .86rem;
+        line-height: 1.45;
+        margin-top: 10px;
+      }
+
+      .inline-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0 14px;
+      }
+
+      .inline-status span {
+        border: 1px solid var(--line-soft);
+        background: #f8fafc;
+        border-radius: 6px;
+        color: var(--text);
+        font-size: .82rem;
+        padding: 6px 9px;
+      }
+
       .system-strip {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         border-bottom: 1px solid var(--line-soft);
-        background: #fbfcfd;
+        background: #f8fafc;
       }
 
       .system-item {
@@ -304,7 +366,7 @@ st.markdown(
 
       .system-item span {
         display: block;
-        color: var(--muted);
+        color: var(--blue);
         font-size: .74rem;
         font-weight: 730;
         margin-bottom: 4px;
@@ -341,7 +403,7 @@ st.markdown(
       }
 
       .section-kicker {
-        color: var(--blue);
+        color: var(--red);
         font-size: .75rem;
         font-weight: 760;
         letter-spacing: 0;
@@ -448,7 +510,7 @@ st.markdown(
 
       .notice-panel {
         padding: 20px 22px;
-        border-left: 4px solid var(--blue);
+        border-left: 4px solid var(--amber);
         margin-top: 14px;
       }
 
@@ -473,6 +535,16 @@ st.markdown(
         color: var(--ink) !important;
         border: 1px solid var(--line) !important;
         border-radius: 6px !important;
+        box-shadow: none !important;
+      }
+
+      .stTextInput [data-baseweb="input"],
+      .stTextInput [data-baseweb="input"] > div,
+      .stTextInput [data-baseweb="input"] button,
+      button[aria-label*="password" i] {
+        background: #ffffff !important;
+        color: var(--muted) !important;
+        border-color: var(--line) !important;
         box-shadow: none !important;
       }
 
@@ -505,10 +577,20 @@ st.markdown(
         border-color: var(--blue-dark);
       }
 
+      div[data-testid="stButton"] > button:disabled,
+      div[data-testid="stButton"] > button[kind="primary"]:disabled {
+        background: #eef2f6 !important;
+        border-color: var(--line) !important;
+        color: var(--faint) !important;
+        opacity: 1 !important;
+      }
+
       @media (max-width: 840px) {
         .app-header { flex-direction: column; padding: 22px; }
         .app-header h1 { font-size: 1.72rem; }
         .model-panel { min-width: 0; width: 100%; }
+        .workbench-panel { min-height: 0; padding: 16px; }
+        .panel-heading { flex-direction: column; }
         .system-strip,
         .source-grid { grid-template-columns: 1fr; }
         .system-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
@@ -910,21 +992,15 @@ def display_results(results):
                 st.code(results.get("llm_raw", ""), language="json")
 
 
-def render_app_shell(provider_name: str, model_name: str, use_reranker: bool):
-    reranker_state = "Reranker actif" if use_reranker else "Reranker desactive"
+def render_app_shell():
     st.markdown(
-        f"""
+        """
         <div class="app-shell">
           <div class="app-header">
             <div>
               <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
               <h1>Recherche citee dans la doctrine fiscale</h1>
-              <p>Posez une question, inspectez les passages retenus, puis lisez une reponse prudente avec statut de preuve.</p>
-            </div>
-            <div class="model-panel">
-              <span>Session</span>
-              <strong>{_escape(provider_name)} / {_escape(model_name)}</strong>
-              <small>{_escape(reranker_state)}</small>
+              <p>Un poste de recherche pour interroger le corpus BOFiP commentaires, verifier les passages retenus et obtenir une reponse prudente avec limites explicites.</p>
             </div>
           </div>
           <div class="system-strip">
@@ -943,7 +1019,7 @@ def render_missing_key(provider: dict):
         f"""
         <div class="notice-panel">
           <div class="section-kicker">Cle API requise</div>
-          <strong>Saisissez une cle {provider['env_key']} dans la barre laterale pour lancer une recherche.</strong>
+          <strong>Saisissez une cle {provider['env_key']} dans le panneau Connexion LLM pour lancer une recherche.</strong>
           <p>La cle reste dans la session Streamlit et sert uniquement a appeler le fournisseur choisi.</p>
         </div>
         """,
@@ -954,11 +1030,63 @@ def render_missing_key(provider: dict):
 # UI
 load_default_env_files()
 
-with st.sidebar:
-    st.markdown("### Configuration")
-    provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider_select")
-    provider = PROVIDERS[provider_id]
 
+def ensure_runtime_ready() -> bool:
+    if _missing_runtime_paths() and should_auto_download_artifacts():
+        with st.spinner("Telechargement des artefacts full corpus..."):
+            try:
+                download_missing_runtime_artifacts(PROJECT_ROOT)
+            except Exception as exc:
+                st.error(f"Telechargement des artefacts impossible: {exc}")
+                return False
+
+    missing_paths = _missing_runtime_paths()
+    if missing_paths:
+        st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la demo.")
+        st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing_paths))
+        st.info("Commande de verification: python scripts/check_setup.py --deep")
+        return False
+
+    check_hashes = os.environ.get("BOFIP_VALIDATE_HASHES", "").strip().lower() in {"1", "true", "yes"}
+    artifact_errors = validate_runtime_artifacts(PROJECT_ROOT, check_hashes=check_hashes)
+    if artifact_errors:
+        st.error("Artefacts full-corpus invalides.")
+        st.code("\n".join(artifact_errors))
+        return False
+    return True
+
+
+with st.sidebar:
+    st.markdown("### BOFiP Agentic RAG")
+    st.caption("Prototype par Raphael Ifergan.")
+    st.caption("Ouvrez ce panneau seulement pour vider le cache ou relire les limites.")
+    if st.button("Vider le cache", use_container_width=True):
+        st.session_state.result_cache = {}
+        st.rerun()
+    st.divider()
+    st.caption("Anonymisez les cas reels avant usage.")
+    st.caption("Prototype de recherche, pas conseil fiscal.")
+
+render_app_shell()
+
+query_col, config_col = st.columns([1.45, 0.85], gap="large")
+
+with config_col:
+    st.markdown(
+        """
+        <div class="workbench-panel compact">
+          <div class="panel-heading">
+            <div>
+              <h2>Connexion LLM</h2>
+              <p>Votre cle reste dans la session Streamlit.</p>
+            </div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    provider_id = st.selectbox("Fournisseur", list(PROVIDERS.keys()), key="provider_select")
+    provider = PROVIDERS[provider_id]
     api_key = st.text_input(
         f"Cle API ({provider['env_key']})",
         value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
@@ -966,7 +1094,6 @@ with st.sidebar:
         key="api_key_input",
         help="Sur HF, le champ reste vide. En local, .env.local peut pre-remplir la valeur.",
     )
-
     model_options = provider["models"]
     default_model = provider["default_model"]
     default_index = model_options.index(default_model) if default_model in model_options else 0
@@ -978,122 +1105,112 @@ with st.sidebar:
         help="Liste limitee aux modeles configures pour ce prototype.",
     )
     st.caption(provider.get("note", ""))
-
+    if not api_key:
+        render_missing_key(provider)
     st.divider()
-    st.markdown("### Recherche")
     use_rewrite = st.checkbox(
-        "Reformuler la question",
+        "Reformulation fiscale",
         value=True,
         help="Reformule la question en vocabulaire fiscal avant retrieval.",
     )
     reranker_available = RERANKER_MODEL_PATH.exists()
-    with st.expander("Mode qualite avance", expanded=False):
-        st.caption("Reclasse les passages candidats. Utile pour la precision des citations, plus lent sur CPU.")
+    with st.expander("Reranking des passages", expanded=False):
+        st.caption("Ameliore parfois la precision des citations, mais ajoute de la latence CPU.")
         use_reranker = st.checkbox(
-            "Activer le reranking des passages",
+            "Activer le reranker",
             value=reranker_available and not RUNNING_ON_SPACE,
             help="A garder desactive sur hebergement gratuit si la latence compte plus que le gain de precision.",
         )
         if use_reranker and not reranker_available:
             st.warning("Modele reranker absent localement: le chargement peut tenter un telechargement Hugging Face.")
 
-    st.divider()
-    st.caption("Anonymisez les cas reels avant usage.")
-    st.caption("Prototype de recherche, pas conseil fiscal.")
-    if st.button("Vider le cache", use_container_width=True):
-        st.session_state.result_cache = {}
-        st.rerun()
-
-render_app_shell(provider_id, model, use_reranker)
-
-if _missing_runtime_paths() and should_auto_download_artifacts():
-    with st.spinner("Telechargement des artefacts full corpus..."):
-        try:
-            download_missing_runtime_artifacts(PROJECT_ROOT)
-        except Exception as exc:
-            st.error(f"Telechargement des artefacts impossible: {exc}")
-
-missing_paths = _missing_runtime_paths()
-if missing_paths:
-    st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la demo.")
-    st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing_paths))
-    st.info("Commande de verification: python scripts/check_setup.py --deep")
-    st.stop()
-
-check_hashes = os.environ.get("BOFIP_VALIDATE_HASHES", "").strip().lower() in {"1", "true", "yes"}
-artifact_errors = validate_runtime_artifacts(PROJECT_ROOT, check_hashes=check_hashes)
-if artifact_errors:
-    st.error("Artefacts full-corpus invalides.")
-    st.code("\n".join(artifact_errors))
-    st.stop()
-
-if not api_key:
-    render_missing_key(provider)
-    st.stop()
-
-reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
-rt = get_runtime(use_reranker, reranker_model)
-import torch
-base_url = provider["base_url"]
-client = OpenAI(api_key=api_key, base_url=base_url)
-
-mode = st.radio("Mode", ["Question unique", "Lot de questions"], horizontal=True, label_visibility="collapsed")
-
-if mode == "Question unique":
-    st.markdown('<div class="workspace-panel"><div class="section-kicker">Analyse</div><div class="section-title">Question fiscale</div></div>', unsafe_allow_html=True)
-    query = st.text_area(
-        "Votre question",
-        placeholder="Quel taux de TVA pour la pose d'une pompe a chaleur chez un particulier ?",
-        height=115,
-        label_visibility="collapsed",
+with query_col:
+    st.markdown(
+        """
+        <div class="workbench-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Question fiscale</h2>
+              <p>Formulez le cas, puis controlez les passages BOFiP utilises avant de lire la conclusion.</p>
+            </div>
+          </div>
+          <div class="inline-status">
+            <span>Corpus: BOFiP commentaires</span>
+            <span>Fraicheur: 28/01/2026</span>
+            <span>Mode BYOK</span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    c1, c2, c3 = st.columns([1, 1, 2])
-    c1.caption(f"Runtime: {'GPU' if torch.cuda.is_available() else 'CPU'}")
-    c2.caption(f"Fournisseur: {provider_id}")
-    submit = c3.button("Analyser", type="primary", disabled=not query.strip(), use_container_width=True)
-    if submit:
-        with st.spinner("Recherche, selection des sources et generation..."):
-            results = process_query(query.strip(), rt, client, model, use_rewrite, use_reranker)
-        display_results(results)
-else:
-    st.markdown('<div class="workspace-panel"><div class="section-kicker">Batch</div><div class="section-title">Plusieurs questions</div></div>', unsafe_allow_html=True)
-    batch_text = st.text_area(
-        "Questions",
-        height=150,
-        placeholder="Une question par paragraphe. Maximum 5 questions pour la demo publique.",
-        label_visibility="collapsed",
-    )
-    submit_batch = st.button("Lancer le lot", type="primary", disabled=not batch_text.strip(), use_container_width=True)
-    if submit_batch:
-        queries = [q.strip() for q in re.split(r"\n\s*\n", batch_text.strip()) if q.strip()]
-        if len(queries) > 5:
-            st.warning("Lot limite a 5 questions pour la demo publique.")
-            queries = queries[:5]
-        progress = st.progress(0)
-        status_text = st.empty()
-        all_results = []
-        for index, question in enumerate(queries, start=1):
-            status_text.text(f"{index}/{len(queries)} - {question[:90]}")
-            all_results.append(process_query(question, rt, client, model, use_rewrite, use_reranker))
-            progress.progress(index / len(queries))
-        progress.empty()
-        status_text.empty()
+    mode = st.radio("Mode", ["Question unique", "Lot de questions"], horizontal=True, label_visibility="collapsed")
 
-        summary_rows = []
-        for res in all_results:
-            parsed = res.get("parsed") or {}
-            status, label, _ = _status_meta(parsed.get("answer_status", "error"))
-            summary_rows.append(
-                {
-                    "question": _truncate(res.get("query", ""), 90),
-                    "statut": label,
-                    "conclusion": _truncate(parsed.get("conclusion", res.get("error", "")), 120),
-                }
-            )
-        st.dataframe(summary_rows, use_container_width=True, hide_index=True)
-        expand_all = st.checkbox("Developper toutes les reponses", value=False, key="expand_batch")
-        for index, res in enumerate(all_results, start=1):
-            with st.expander(f"Question {index}: {_truncate(res.get('query', ''), 100)}", expanded=expand_all):
-                display_results(res)
+    if mode == "Question unique":
+        query = st.text_area(
+            "Votre question",
+            placeholder="Exemple: Quel taux de TVA pour la pose d'une pompe a chaleur chez un particulier ?",
+            height=150,
+            label_visibility="collapsed",
+        )
+        submit = st.button(
+            "Analyser la question",
+            type="primary",
+            disabled=not api_key or not query.strip(),
+            use_container_width=True,
+        )
+        if submit and ensure_runtime_ready():
+            reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
+            rt = get_runtime(use_reranker, reranker_model)
+            client = OpenAI(api_key=api_key, base_url=provider["base_url"])
+            with st.spinner("Recherche, selection des sources et generation..."):
+                results = process_query(query.strip(), rt, client, model, use_rewrite, use_reranker)
+            display_results(results)
+    else:
+        batch_text = st.text_area(
+            "Questions",
+            height=180,
+            placeholder="Une question par paragraphe. Maximum 5 questions pour la demo publique.",
+            label_visibility="collapsed",
+        )
+        submit_batch = st.button(
+            "Lancer le lot",
+            type="primary",
+            disabled=not api_key or not batch_text.strip(),
+            use_container_width=True,
+        )
+        if submit_batch and ensure_runtime_ready():
+            reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
+            rt = get_runtime(use_reranker, reranker_model)
+            client = OpenAI(api_key=api_key, base_url=provider["base_url"])
+            queries = [q.strip() for q in re.split(r"\n\s*\n", batch_text.strip()) if q.strip()]
+            if len(queries) > 5:
+                st.warning("Lot limite a 5 questions pour la demo publique.")
+                queries = queries[:5]
+            progress = st.progress(0)
+            status_text = st.empty()
+            all_results = []
+            for index, question in enumerate(queries, start=1):
+                status_text.text(f"{index}/{len(queries)} - {question[:90]}")
+                all_results.append(process_query(question, rt, client, model, use_rewrite, use_reranker))
+                progress.progress(index / len(queries))
+            progress.empty()
+            status_text.empty()
+
+            summary_rows = []
+            for res in all_results:
+                parsed = res.get("parsed") or {}
+                status, label, _ = _status_meta(parsed.get("answer_status", "error"))
+                summary_rows.append(
+                    {
+                        "question": _truncate(res.get("query", ""), 90),
+                        "statut": label,
+                        "conclusion": _truncate(parsed.get("conclusion", res.get("error", "")), 120),
+                    }
+                )
+            st.dataframe(summary_rows, use_container_width=True, hide_index=True)
+            expand_all = st.checkbox("Developper toutes les reponses", value=False, key="expand_batch")
+            for index, res in enumerate(all_results, start=1):
+                with st.expander(f"Question {index}: {_truncate(res.get('query', ''), 100)}", expanded=expand_all):
+                    display_results(res)
 
 st.markdown('<div class="app-footer">BOFiP Agentic RAG - prototype par Raphael Ifergan - sources BOFiP a verifier avant usage professionnel.</div>', unsafe_allow_html=True)
