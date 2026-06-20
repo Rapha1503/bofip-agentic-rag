@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -115,9 +116,11 @@ class DenseEncoder:
         self.model_path = _resolve_local_model_path(model_name)
         self.prompt_style = _dense_prompt_style(model_name)
         self.device = device
+        model_is_local = Path(self.model_path).exists()
+        local_files_only = os.environ.get("BOFIP_LOCAL_FILES_ONLY", "").strip().lower() in {"1", "true", "yes"}
         self.model = SentenceTransformer(
             self.model_path,
-            local_files_only=True,
+            local_files_only=local_files_only or model_is_local,
             device=device,
             model_kwargs={"torch_dtype": "auto"},
         )

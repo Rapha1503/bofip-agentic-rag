@@ -6,6 +6,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 import streamlit as st
 from openai import OpenAI
+from bofip_cleanroom.artifact_download import (
+    download_missing_runtime_artifacts,
+    should_auto_download_artifacts,
+    validate_runtime_artifacts,
+)
 from bofip_cleanroom.env_utils import load_default_env_files
 from bofip_cleanroom.rag_runtime import RagRuntime
 from bofip_cleanroom.prompt_utils import build_prompt
@@ -13,7 +18,10 @@ from bofip_cleanroom.prompt_utils import build_prompt
 # Optional file logging. Disabled by default for public/demo runs because
 # queries can contain sensitive facts.
 LOG_DIR = PROJECT_ROOT / "data" / "logs"
-ENABLE_PIPELINE_LOG = os.environ.get("BOFIP_PIPELINE_LOG", "").strip().lower() in {"1", "true", "yes"}
+ENABLE_PIPELINE_LOG = (
+    not os.environ.get("SPACE_ID")
+    and os.environ.get("BOFIP_PIPELINE_LOG", "").strip().lower() in {"1", "true", "yes"}
+)
 if ENABLE_PIPELINE_LOG:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -63,8 +71,8 @@ REQUIRED_RUNTIME_PATHS = [
     PROJECT_ROOT / "data" / "interim" / "chunks_section_window_sample_5666.jsonl",
     PROJECT_ROOT / "data" / "interim" / "doc_dense_cache_5666_sections_firstpara_e5large.npy",
     PROJECT_ROOT / "data" / "interim" / "chunk_dense_cache_5666_full_e5large.npy",
-    PROJECT_ROOT / "data" / "models" / "intfloat--multilingual-e5-large",
 ]
+E5_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "intfloat--multilingual-e5-large"
 RERANKER_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "BAAI--bge-reranker-v2-m3"
 
 
@@ -78,7 +86,14 @@ st.set_page_config(page_title="BOFiP Agentic RAG", layout="wide")
 def get_runtime(load_reranker: bool, reranker_model: str | None):
     import torch
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    kwargs = {"corpus": "commentary", "device": device, "load_reranker": load_reranker}
+    doc_model = str(E5_MODEL_PATH) if E5_MODEL_PATH.exists() else "intfloat/multilingual-e5-large"
+    kwargs = {
+        "corpus": "commentary",
+        "device": device,
+        "doc_model": doc_model,
+        "chunk_model": doc_model,
+        "load_reranker": load_reranker,
+    }
     if reranker_model:
         kwargs["reranker_model"] = reranker_model
     return RagRuntime.from_local_corpus(**kwargs)
@@ -383,19 +398,33 @@ with st.sidebar:
     )
     if use_reranker and not reranker_available:
         st.warning("Modele reranker local absent: le chargement peut tenter un telechargement Hugging Face.")
+    st.caption("En demo hebergee, votre cle et vos questions transitent par le serveur Streamlit et le fournisseur choisi.")
     st.divider()
     st.caption("Corpus: 5666 documents BOFIP")
-    st.caption("Modèles: E5-large (docs) / E5-large (chunks)")
+    st.caption("Modeles: E5-large (docs) / E5-large (chunks)")
     st.caption("Reranker: bge-reranker-v2-m3 optionnel")
     if st.button("Vider le cache"):
         st.session_state.result_cache = {}
         st.rerun()
+
+if _missing_runtime_paths() and should_auto_download_artifacts():
+    with st.spinner("Telechargement des artefacts full corpus..."):
+        try:
+            download_missing_runtime_artifacts(PROJECT_ROOT)
+        except Exception as exc:
+            st.error(f"Telechargement des artefacts impossible: {exc}")
 
 missing_paths = _missing_runtime_paths()
 if missing_paths:
     st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la demo.")
     st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing_paths))
     st.info("Commande de verification: python scripts/check_setup.py --deep")
+    st.stop()
+
+artifact_errors = validate_runtime_artifacts(PROJECT_ROOT)
+if artifact_errors:
+    st.error("Artefacts full-corpus invalides.")
+    st.code("\n".join(artifact_errors))
     st.stop()
 
 if not api_key:
@@ -425,6 +454,9 @@ with tab2:
     batch_text = st.text_area("Questions", height=120, placeholder="Quel taux de TVA pour une pompe à chaleur ?\n\nComment sont imposés les gains...", help="Séparez les questions par une ligne vide.")
     if st.button("Lancer le lot", type="primary", disabled=not batch_text.strip()):
         queries = [q.strip() for q in batch_text.strip().split("\n\n") if q.strip()]
+        if len(queries) > 5:
+            st.warning("Lot limite a 5 questions pour la demo publique.")
+            queries = queries[:5]
         if queries:
             progress = st.progress(0); status_text = st.empty(); all_results = []
             for i,q in enumerate(queries):

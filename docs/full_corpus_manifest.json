@@ -3,6 +3,7 @@
   "corpus": "commentary",
   "owner": "Rapha1503",
   "generated_on": "2026-06-20",
+  "artifact_base_url": "https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1",
   "full_corpus_principle": "Deployment must preserve the full 5,666-document commentary corpus; latency must be optimized with prebuilt artifacts and caching, not corpus reduction.",
   "artifacts": [
     {

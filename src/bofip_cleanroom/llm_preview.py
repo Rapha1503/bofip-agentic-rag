@@ -17,7 +17,7 @@ PreviewProvider = Literal["gemini", "openai", "deepseek"]
 
 DEFAULT_PREVIEW_PROVIDER: PreviewProvider = "deepseek"
 DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
-DEFAULT_OPENAI_MODEL = "gpt-5.4-mini"
+DEFAULT_OPENAI_MODEL = "gpt-4.1-mini"
 DEFAULT_DEEPSEEK_MODEL = "deepseek-chat"
 DEFAULT_PREVIEW_MODEL = DEFAULT_DEEPSEEK_MODEL
 GEMINI_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"

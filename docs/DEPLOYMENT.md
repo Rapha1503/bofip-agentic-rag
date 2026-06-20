@@ -56,9 +56,17 @@ The full-corpus file contract is versioned in [full_corpus_manifest.json](full_c
 
 The repository intentionally excludes those large artifacts. A deployment should either:
 
-- download them during build/startup from a controlled artifact store; or
+- download them during startup from the `full-corpus-v1` GitHub release; or
 - mount them into the host environment; or
 - use an external model/cache volume if the host supports it.
+
+The current default artifact URL is:
+
+```text
+https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1
+```
+
+The Docker runtime uses `BOFIP_AUTO_DOWNLOAD_ARTIFACTS=1`.
 
 ## Phase 1 Deployment Status
 
@@ -72,7 +80,6 @@ python scripts/check_setup.py --deep
 
 Before deploying:
 
-- publish or mount the large artifacts referenced by the manifest;
 - split `app.py` into UI, retrieval, LLM, config, and observability boundaries;
 - disable raw query/prompt logging by default;
 - add a visible tax-advice disclaimer;

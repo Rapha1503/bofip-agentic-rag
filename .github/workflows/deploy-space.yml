@@ -1,0 +1,33 @@
+name: Deploy Hugging Face Space
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Space payload
+        run: |
+          mkdir -p /tmp/space
+          cp -R app.py Dockerfile requirements.txt pyproject.toml src docs /tmp/space/
+          cp space/README.md /tmp/space/README.md
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_REPO: Rapha1503/bofip-agentic-rag
+        run: |
+          test -n "$HF_TOKEN"
+          cd /tmp/space
+          git init
+          git config user.name "Rapha1503"
+          git config user.email "raphael@bofip-rag.local"
+          git add .
+          git commit -m "deploy space"
+          git branch -M main
+          git remote add space "https://Rapha1503:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO}"
+          git push --force space main

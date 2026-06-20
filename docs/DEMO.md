@@ -25,6 +25,12 @@ The Streamlit model field is editable. Use a model ID available on the selected 
 
 The demo is intentionally full-corpus. Do not remove BOFiP families to make startup easier.
 
+Recommended path:
+
+```powershell
+python scripts/download_artifacts.py
+```
+
 Required local files:
 
 ```text
@@ -61,7 +67,7 @@ The script exits non-zero when required artifacts are missing and prints exactly
 
 The versioned artifact contract is tracked in [full_corpus_manifest.json](full_corpus_manifest.json).
 
-In Phase 1, the large corpus and embedding artifacts are not publicly downloadable from this repository.
+The public artifact bundle is published as release assets under `full-corpus-v1`.
 
 ## 4. Run the App
 

@@ -17,7 +17,7 @@ The project explores how to answer tax questions from official BOFiP commentary 
 | Core idea | Full-corpus BOFiP RAG with cited answers |
 | Corpus coverage | 5,666 BOFiP commentary documents, not a reduced demo corpus |
 | Fresh clone | Code, tests, docs, and small eval files are included |
-| Required local artifacts | Full BOFiP JSONL, embedding caches, and local E5 model directory |
+| Required local artifacts | Full BOFiP JSONL, embedding caches, and E5 model cache or download |
 | Demo path | Local Streamlit now; hosted full-corpus demo planned |
 | Current proof | Unit tests + setup checker + documented retrieval evaluation harness |
 | Main caveat | Research prototype, not tax advice |
@@ -98,6 +98,13 @@ python scripts/check_setup.py --deep
 
 The reranker is an optional quality layer. If `data/models/BAAI--bge-reranker-v2-m3/` is absent, the Streamlit app can still run full-corpus retrieval with the reranker disabled.
 
+To download the public full-corpus runtime artifacts from the project release:
+
+```powershell
+python scripts/download_artifacts.py
+python scripts/check_setup.py --deep --skip-models
+```
+
 Run the Streamlit app:
 
 ```powershell
@@ -172,7 +179,7 @@ Deployment optimization must preserve full corpus coverage:
 - explicit latency and freshness limits;
 - clear BYOK warning for user-provided API keys.
 
-GitHub Pages should host the static portfolio page. A Python host such as Hugging Face Spaces is the better fit for the Streamlit runtime. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+GitHub Pages hosts the static portfolio page. A Python host such as Hugging Face Spaces is the better fit for the Streamlit runtime. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Limitations
 

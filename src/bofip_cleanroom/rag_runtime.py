@@ -157,8 +157,8 @@ class RagRuntime:
 
         documents = [raw_document_from_dict(item) for item in read_jsonl(Path(raw))]
         chunks = [chunk_node_from_dict(item) for item in read_jsonl(Path(chk))]
-        document_embeddings = np.load(str(doc_dense))
-        chunk_embeddings = np.load(str(chunk_dense))
+        document_embeddings = np.load(str(doc_dense), mmap_mode="r")
+        chunk_embeddings = np.load(str(chunk_dense), mmap_mode="r")
 
         return cls(
             documents=documents,

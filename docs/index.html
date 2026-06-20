@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BOFiP Agentic RAG | Rapha1503</title>
+    <meta
+      name="description"
+      content="Prototype full-corpus de RAG agentique pour la doctrine fiscale BOFiP, par Rapha1503."
+    />
+    <style>
+      :root {
+        --ink: #07111f;
+        --panel: #0d1b2b;
+        --text: #101828;
+        --muted: #5b6678;
+        --line: #d9e2ef;
+        --blue: #2d8dff;
+        --green: #2fb47c;
+        --gold: #c6a34a;
+        --bg: #f7f9fc;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        background: var(--bg);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1160px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(7, 17, 31, 0.88);
+        backdrop-filter: blur(14px);
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 64px;
+        color: var(--white);
+      }
+
+      .brand {
+        display: inline-flex;
+        gap: 12px;
+        align-items: center;
+        font-weight: 760;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        color: #9ed2ff;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 22px;
+        align-items: center;
+        font-size: 14px;
+      }
+
+      .nav-links a {
+        color: rgba(255, 255, 255, 0.78);
+        text-decoration: none;
+      }
+
+      .hero {
+        overflow: hidden;
+        color: var(--white);
+        background:
+          radial-gradient(circle at 18% 12%, rgba(45, 141, 255, 0.2), transparent 34%),
+          linear-gradient(135deg, #07111f 0%, #081827 52%, #0b1724 100%);
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.84fr) minmax(420px, 1.16fr);
+        gap: 48px;
+        align-items: center;
+        min-height: 640px;
+        padding: 86px 0 58px;
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 720px;
+        font-size: clamp(46px, 7vw, 88px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      .hero p {
+        margin: 26px 0 0;
+        max-width: 650px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 19px;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 34px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 7px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .button.primary {
+        border-color: var(--white);
+        background: var(--white);
+        color: var(--ink);
+      }
+
+      .button.secondary {
+        color: var(--white);
+      }
+
+      .hero-visual {
+        position: relative;
+        min-height: 470px;
+      }
+
+      .hero-visual img {
+        width: min(760px, 58vw);
+        max-width: none;
+        border-radius: 10px;
+        opacity: 0.92;
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        border-top: 1px solid rgba(255, 255, 255, 0.11);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .status-item {
+        padding: 22px 24px;
+        background: rgba(7, 17, 31, 0.72);
+      }
+
+      .status-item strong {
+        display: block;
+        font-size: 24px;
+      }
+
+      .status-item span {
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 13px;
+      }
+
+      section {
+        padding: 78px 0;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 28px;
+        align-items: end;
+        margin-bottom: 28px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(30px, 4vw, 48px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      .section-head p {
+        max-width: 520px;
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        border: 1px solid var(--line);
+        background: var(--white);
+      }
+
+      .step {
+        min-height: 185px;
+        padding: 22px;
+        border-right: 1px solid var(--line);
+      }
+
+      .step:last-child {
+        border-right: 0;
+      }
+
+      .step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        margin-bottom: 22px;
+        border-radius: 50%;
+        background: #eaf4ff;
+        color: var(--blue);
+        font-weight: 800;
+      }
+
+      .step h3,
+      .panel h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      .step p,
+      .panel p,
+      .doc-link p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+      }
+
+      .panel,
+      .doc-link {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--white);
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .panel strong {
+        color: var(--ink);
+      }
+
+      .manifest {
+        margin-top: 18px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--white);
+      }
+
+      .manifest-row {
+        display: grid;
+        grid-template-columns: 1fr 170px 170px;
+        gap: 16px;
+        padding: 15px 18px;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+
+      .manifest-row:last-child {
+        border-bottom: 0;
+      }
+
+      .manifest-row span {
+        color: var(--muted);
+      }
+
+      .docs-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .doc-link {
+        min-height: 130px;
+        padding: 20px;
+        text-decoration: none;
+        transition: transform 160ms ease, border-color 160ms ease;
+      }
+
+      .doc-link:hover {
+        border-color: #9fc9ff;
+        transform: translateY(-2px);
+      }
+
+      .callout {
+        color: var(--white);
+        background: var(--ink);
+      }
+
+      .callout-inner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 28px;
+        align-items: center;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 28px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      footer .shell {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      @media (max-width: 880px) {
+        .hero-grid,
+        .section-head,
+        .callout-inner {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-grid {
+          min-height: auto;
+          padding: 42px 0 20px;
+        }
+
+        .hero-visual {
+          min-height: auto;
+        }
+
+        .hero-visual img {
+          width: 100%;
+          max-height: 190px;
+          object-fit: cover;
+        }
+
+        .status-strip,
+        .pipeline,
+        .grid-3,
+        .docs-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .step {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .manifest-row {
+          grid-template-columns: 1fr;
+        }
+
+        .nav-links {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="shell">
+        <div class="brand"><span class="brand-mark">§</span> Rapha1503</div>
+        <div class="nav-links">
+          <a href="#pipeline">Pipeline</a>
+          <a href="#artifacts">Artefacts</a>
+          <a href="#demo">Demo</a>
+          <a href="#docs">Docs</a>
+          <a href="https://github.com/Rapha1503/bofip-agentic-rag">GitHub</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="shell hero-grid">
+          <div>
+            <h1>BOFiP Agentic RAG</h1>
+            <p>
+              Prototype full-corpus pour explorer la recherche augmentee sur la doctrine fiscale BOFiP:
+              parsing structure, hybrid retrieval, embeddings denses, reranking optionnel et reponses citees.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="https://github.com/Rapha1503/bofip-agentic-rag">Voir le repo</a>
+              <a class="button secondary" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEMO.md">Demo locale</a>
+              <a class="button secondary" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEPLOYMENT.md">Deploiement</a>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <img src="assets/corpus-graph.png" alt="" />
+          </div>
+        </div>
+        <div class="status-strip">
+          <div class="status-item"><strong>5 666</strong><span>documents BOFiP commentary</span></div>
+          <div class="status-item"><strong>66 289</strong><span>chunks section-window</span></div>
+          <div class="status-item"><strong>50</strong><span>questions d'evaluation suivies</span></div>
+          <div class="status-item"><strong>BYOK</strong><span>cle API saisie par l'utilisateur</span></div>
+        </div>
+      </div>
+
+      <section id="pipeline">
+        <div class="shell">
+          <div class="section-head">
+            <h2>Pipeline</h2>
+            <p>
+              Le projet met en avant une approche RAG fiscalement prudente: retrouver des preuves,
+              les citer, et reconnaitre les limites lorsque la couverture est insuffisante.
+            </p>
+          </div>
+          <div class="pipeline">
+            <article class="step">
+              <span class="step-number">1</span>
+              <h3>Parsing</h3>
+              <p>Extraction XML/HTML du BOFiP vers des documents structures et tracables.</p>
+            </article>
+            <article class="step">
+              <span class="step-number">2</span>
+              <h3>Chunking</h3>
+              <p>Fenetrage par sections pour conserver le contexte juridique local.</p>
+            </article>
+            <article class="step">
+              <span class="step-number">3</span>
+              <h3>Retrieval</h3>
+              <p>BM25 multi-vues, embeddings E5-large, fusion RRF ponderee par confiance.</p>
+            </article>
+            <article class="step">
+              <span class="step-number">4</span>
+              <h3>Selection</h3>
+              <p>Recherche locale dans les documents retenus et diversite des passages.</p>
+            </article>
+            <article class="step">
+              <span class="step-number">5</span>
+              <h3>Generation</h3>
+              <p>Prompt contraint, citations BOFiP et statut supported/partial/insufficient evidence.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="artifacts">
+        <div class="shell">
+          <div class="section-head">
+            <h2>Artefacts full corpus</h2>
+            <p>
+              Pas de demo reduite: la couverture est preservee. Les gros fichiers sont versionnes
+              hors Git et decrits dans un manifest avec tailles, formes et SHA-256.
+            </p>
+          </div>
+          <div class="manifest">
+            <div class="manifest-row"><strong>raw_docs_sample_5666.jsonl</strong><span>5 666 lignes</span><span>197.9 MB</span></div>
+            <div class="manifest-row"><strong>chunks_section_window_sample_5666.jsonl</strong><span>66 289 lignes</span><span>125.3 MB</span></div>
+            <div class="manifest-row"><strong>doc_dense_cache_5666_sections_firstpara_e5large.npy</strong><span>(5666, 1024)</span><span>22.1 MB</span></div>
+            <div class="manifest-row"><strong>chunk_dense_cache_5666_full_e5large.npy</strong><span>(66289, 1024)</span><span>258.9 MB</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="demo">
+        <div class="shell grid-3">
+          <article class="panel">
+            <h3>Local</h3>
+            <p>Clone, place les artefacts ou active le telechargement automatique, ajoute une cle API, puis lance Streamlit.</p>
+          </article>
+          <article class="panel">
+            <h3>Hosted</h3>
+            <p>Le runtime est prepare pour Hugging Face Spaces via Docker, avec reranker desactive par defaut sur CPU gratuit.</p>
+          </article>
+          <article class="panel">
+            <h3>Security</h3>
+            <p>BYOK explicite: la cle n'est pas commitee ni loggee; elle transite par le serveur qui execute la demo.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="docs">
+        <div class="shell">
+          <div class="section-head">
+            <h2>Documentation</h2>
+            <p>Chaque document cible un lecteur different: recruteur, data engineer, reviewer RAG ou futur deployeur.</p>
+          </div>
+          <div class="docs-grid">
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/ARCHITECTURE.md"><h3>Architecture</h3><p>Modules, flux runtime et risques techniques.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DATA_CARD.md"><h3>Data card</h3><p>Portee, qualite, fraicheur et tracabilite corpus.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEMO.md"><h3>Demo locale</h3><p>Installation, checks et premiers essais.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEPLOYMENT.md"><h3>Deployment</h3><p>Pages, Spaces, BYOK et artefacts.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/ROADMAP.md"><h3>Roadmap</h3><p>Prochaines etapes pour productioniser.</p></a>
+            <a class="doc-link" href="full_corpus_manifest.json"><h3>Manifest</h3><p>Contrat machine-readable des artefacts.</p></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="callout">
+        <div class="shell callout-inner">
+          <div>
+            <h2>Prototype de recherche, pas conseil fiscal</h2>
+            <p>
+              Le systeme sert a demontrer une methodologie RAG citee et evaluable. Les reponses doivent etre
+              relues contre les sources officielles BOFiP.
+            </p>
+          </div>
+          <a class="button primary" href="https://github.com/Rapha1503/bofip-agentic-rag">Consulter le code</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell">
+        <span>BOFiP Agentic RAG par Rapha1503</span>
+        <span>MIT License</span>
+      </div>
+    </footer>
+  </body>
+</html>
