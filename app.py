@@ -45,28 +45,28 @@ PROVIDERS = {
         "models": ["deepseek-v4-flash", "deepseek-v4-pro", "deepseek-chat", "deepseek-reasoner"],
         "default_model": "deepseek-v4-flash",
         "env_key": "DEEPSEEK_API_KEY",
-        "note": "DeepSeek v4 au 20/06/2026. deepseek-chat/reasoner restent en aliases compatibilite jusqu'au 24/07/2026.",
+        "note": "DeepSeek v4 au 20/06/2026. deepseek-chat/reasoner restent en alias de compatibilité jusqu'au 24/07/2026.",
     },
     "OpenAI": {
         "base_url": "https://api.openai.com/v1",
         "models": ["gpt-5.4-mini", "gpt-5.5", "gpt-5.4", "gpt-5.4-nano"],
         "default_model": "gpt-5.4-mini",
         "env_key": "OPENAI_API_KEY",
-        "note": "OpenAI frontier models au 20/06/2026. Mini par defaut pour limiter le cout.",
+        "note": "OpenAI frontier models au 20/06/2026. Mini par défaut pour limiter le coût.",
     },
     "Mistral": {
         "base_url": "https://api.mistral.ai/v1",
         "models": ["mistral-medium-latest", "mistral-small-latest", "mistral-large-latest", "magistral-medium-latest"],
         "default_model": "mistral-small-latest",
         "env_key": "MISTRAL_API_KEY",
-        "note": "Aliases Mistral latest pour suivre Medium 3.5 / Small 4 sans figer une version retiree.",
+        "note": "Alias Mistral latest pour suivre Medium 3.5 / Small 4 sans figer une version retirée.",
     },
     "Google": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "models": ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"],
         "default_model": "gemini-3.5-flash",
         "env_key": "GEMINI_API_KEY",
-        "note": "Modele OpenAI-compatible recommande par la doc Gemini au 20/06/2026.",
+        "note": "Modèle OpenAI-compatible recommandé par la doc Gemini au 20/06/2026.",
     },
 }
 
@@ -79,10 +79,7 @@ REQUIRED_RUNTIME_PATHS = [
 E5_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "intfloat--multilingual-e5-large"
 RERANKER_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "BAAI--bge-reranker-v2-m3"
 RUNNING_ON_SPACE = bool(os.environ.get("SPACE_ID"))
-SHOW_DEBUG_DETAILS = (
-    not RUNNING_ON_SPACE
-    or os.environ.get("BOFIP_SHOW_DEBUG", "").strip().lower() in {"1", "true", "yes"}
-)
+SHOW_DEBUG_DETAILS = os.environ.get("BOFIP_SHOW_DEBUG", "").strip().lower() in {"1", "true", "yes"}
 
 
 def _missing_runtime_paths() -> list[Path]:
@@ -91,7 +88,7 @@ def _missing_runtime_paths() -> list[Path]:
 
 st.set_page_config(
     page_title="BOFiP Agentic RAG",
-    page_icon="§",
+    page_icon="B",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -100,20 +97,21 @@ st.markdown(
     """
     <style>
       :root {
-        --ink: #111827;
-        --text: #2b3445;
-        --muted: #667085;
-        --faint: #9aa4b2;
-        --line: #cfd7e3;
-        --line-soft: #e5eaf0;
+        --ink: #14171f;
+        --text: #2d3a46;
+        --muted: #607081;
+        --faint: #98a4af;
+        --line: #bdc9d1;
+        --line-soft: #dfe7eb;
         --paper: #ffffff;
-        --canvas: #f1f4f8;
-        --blue: #0f3d66;
-        --blue-dark: #092842;
-        --blue-soft: #e6eef7;
-        --green: #276955;
-        --amber: #b7832f;
-        --red: #aa2e3f;
+        --canvas: #edf3f2;
+        --blue: #126a63;
+        --blue-dark: #0a4b47;
+        --blue-soft: #e3f2ef;
+        --green: #126a63;
+        --amber: #b46f12;
+        --red: #8f2d52;
+        --plum: #8f2d52;
       }
 
       html, body, [class*="css"] {
@@ -126,7 +124,7 @@ st.markdown(
       }
 
       [data-testid="stHeader"] {
-        background: rgba(241, 244, 248, .96);
+        background: rgba(237, 243, 242, .96);
         border-bottom: 1px solid var(--line-soft);
       }
 
@@ -136,7 +134,7 @@ st.markdown(
       }
 
       .block-container {
-        max-width: 1180px;
+        max-width: 1440px;
         padding-top: 1.1rem;
         padding-bottom: 3rem;
         color: var(--ink);
@@ -198,12 +196,20 @@ st.markdown(
 
       .app-shell {
         border: 1px solid var(--line);
-        border-top: 4px solid var(--blue);
-        background: var(--paper);
+        border-top: 0;
+        background: linear-gradient(120deg, #ffffff 0%, #f4fbf9 58%, #fff4f7 100%);
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 20px 48px rgba(15, 61, 102, .10);
         margin-bottom: 16px;
+        position: relative;
+      }
+
+      .app-shell::before {
+        content: "";
+        display: block;
+        height: 5px;
+        background: linear-gradient(90deg, var(--plum), var(--blue), var(--amber));
       }
 
       .app-header {
@@ -236,7 +242,7 @@ st.markdown(
         font-family: Georgia, "Times New Roman", serif;
         font-size: 1rem;
         font-weight: 800;
-        background: linear-gradient(90deg, var(--red) 0 18%, var(--blue) 18% 100%);
+        background: linear-gradient(135deg, var(--plum) 0 42%, var(--blue) 42% 100%);
       }
 
       .app-header h1 {
@@ -251,7 +257,7 @@ st.markdown(
       .app-header p {
         margin: 0;
         max-width: 760px;
-        color: var(--muted);
+        color: #435466;
         font-size: .98rem;
         line-height: 1.55;
       }
@@ -259,7 +265,7 @@ st.markdown(
       .model-panel {
         min-width: 260px;
         align-self: flex-start;
-        background: #f8fafc;
+        background: rgba(255, 255, 255, .76);
         border: 1px solid var(--line-soft);
         border-radius: 8px;
         padding: 12px 14px;
@@ -287,44 +293,6 @@ st.markdown(
         line-height: 1.35;
       }
 
-      .workbench-panel {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        padding: 20px;
-        min-height: 0;
-        box-shadow: 0 18px 45px rgba(15, 61, 102, .06);
-      }
-
-      .workbench-panel.compact {
-        min-height: 0;
-      }
-
-      .panel-heading {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-        border-bottom: 1px solid var(--line-soft);
-        padding-bottom: 14px;
-        margin-bottom: 16px;
-      }
-
-      .panel-heading h2 {
-        color: var(--ink);
-        font-size: 1.22rem;
-        line-height: 1.25;
-        margin: 0;
-        letter-spacing: 0;
-      }
-
-      .panel-heading p {
-        color: var(--muted);
-        margin: 5px 0 0;
-        line-height: 1.45;
-        font-size: .92rem;
-      }
-
       .field-note {
         color: var(--muted);
         font-size: .86rem;
@@ -341,32 +309,53 @@ st.markdown(
 
       .inline-status span {
         border: 1px solid var(--line-soft);
-        background: #f8fafc;
+        background: #f5faf9;
         border-radius: 6px;
         color: var(--text);
         font-size: .82rem;
         padding: 6px 9px;
       }
 
+      [data-testid="stVerticalBlockBorderWrapper"],
+      div[data-testid="stVerticalBlock"].st-emotion-cache-1ne20ew {
+        background: var(--paper);
+        border-color: var(--line) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 18px 45px rgba(18, 106, 99, .08);
+        padding: 18px !important;
+      }
+
+      [data-testid="stVerticalBlockBorderWrapper"] h2,
+      [data-testid="stVerticalBlockBorderWrapper"] h3 {
+        color: var(--ink);
+        letter-spacing: 0;
+      }
+
       .system-strip {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         border-bottom: 1px solid var(--line-soft);
-        background: #f8fafc;
+        background: rgba(255, 255, 255, .62);
       }
 
       .system-item {
         padding: 15px 18px;
         border-right: 1px solid var(--line-soft);
+        border-top: 3px solid transparent;
       }
 
       .system-item:last-child {
         border-right: 0;
       }
 
+      .system-item:nth-child(1) { border-top-color: var(--plum); }
+      .system-item:nth-child(2) { border-top-color: var(--blue); }
+      .system-item:nth-child(3) { border-top-color: var(--amber); }
+      .system-item:nth-child(4) { border-top-color: #40566e; }
+
       .system-item span {
         display: block;
-        color: var(--blue);
+        color: var(--blue-dark);
         font-size: .74rem;
         font-weight: 730;
         margin-bottom: 4px;
@@ -403,7 +392,7 @@ st.markdown(
       }
 
       .section-kicker {
-        color: var(--red);
+        color: var(--plum);
         font-size: .75rem;
         font-weight: 760;
         letter-spacing: 0;
@@ -589,8 +578,6 @@ st.markdown(
         .app-header { flex-direction: column; padding: 22px; }
         .app-header h1 { font-size: 1.72rem; }
         .model-panel { min-width: 0; width: 100%; }
-        .workbench-panel { min-height: 0; padding: 16px; }
-        .panel-heading { flex-direction: column; }
         .system-strip,
         .source-grid { grid-template-columns: 1fr; }
         .system-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
@@ -646,7 +633,7 @@ def rewrite_query(query, client, model):
     system = (
         "Analyse cette question fiscale. Retourne UNIQUEMENT un JSON valide sans markdown ni commentaire:\n"
         '{"rewritten_query":"question reformulee en francais administratif formel",'
-        '"facets":[{"name":"axe","query":"sous-requete pour cet axe"}]}\n'
+        '"facets":[{"name":"axe","query":"sous-requête pour cet axe"}]}\n'
         "Identifie les axes juridiques distincts (1 a 5). "
         "Si question simple, 1 seul facet. "
         "Noms de facets possibles: regle_de_fond, procedure, doctrine, garanties, sanctions, prescription."
@@ -701,18 +688,70 @@ def _detect_multi_axis(query: str) -> bool:
         signals += 1
     return signals >= 2
 
-def call_llm(prompt, client, model):
+def _extract_json_object(raw: str) -> dict | None:
+    content = (raw or "").strip()
+    if not content:
+        return None
+    candidates = [content]
+    cleaned = re.sub(r"```(?:json)?\s*", "", content).replace("```", "").strip()
+    if cleaned != content:
+        candidates.append(cleaned)
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start >= 0 and end > start:
+        candidates.append(cleaned[start : end + 1])
+    for candidate in candidates:
+        try:
+            payload = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    return None
+
+
+def _compact_answer_prompt(query: str, chunks: list[dict], previous_raw: str = "") -> str:
+    evidence = []
+    for chunk in chunks[:5]:
+        evidence.append(
+            f"[{chunk['rank']}] {chunk['boi_reference']} | {chunk['title']} | "
+            f"{_truncate(chunk.get('text', ''), 520)}"
+        )
+    previous_note = ""
+    if previous_raw:
+        previous_note = (
+            "\nSortie précédente invalide ou tronquée, à corriger sans reprendre le texte long:\n"
+            + _truncate(previous_raw, 900)
+            + "\n"
+        )
+    return (
+        "Question utilisateur:\n"
+        + query
+        + "\n\nExtraits BOFiP:\n"
+        + "\n\n".join(evidence)
+        + previous_note
+        + "\nRéponds en JSON strict uniquement. Pas de markdown. Réponse concise.\n"
+        'Schema: {"answer_status":"supported|partial|insufficient_evidence",'
+        '"axes_requis":["..."],"axes_couverts":["..."],"axes_manquants":["..."],'
+        '"conclusion":"80 mots maximum","justification_bullets":["2 a 3 puces courtes avec citations [n]"],'
+        '"limits":"40 mots maximum"}'
+    )
+
+
+def call_llm(prompt, client, model, *, max_tokens: int = 1800):
     resp = client.chat.completions.create(
         model=model,
         messages=[{"role":"system","content":"Tu es un assistant fiscal prudent. Schema JSON strict."},
                   {"role":"user","content":prompt}],
-        temperature=0.0, max_tokens=2800,
+        temperature=0.0, max_tokens=max_tokens,
         response_format={"type":"json_object"},
     )
-    content = resp.choices[0].message.content or ""
+    choice = resp.choices[0]
+    content = choice.message.content or ""
     usage = getattr(resp, "usage", None)
     return {"raw":content,"ptokens":getattr(usage,"prompt_tokens",None) if usage else None,
-            "ctokens":getattr(usage,"completion_tokens",None) if usage else None}
+            "ctokens":getattr(usage,"completion_tokens",None) if usage else None,
+            "finish_reason": getattr(choice, "finish_reason", None)}
 
 def render_answer(parsed):
     normalized, label, css_class = _status_meta(parsed.get("answer_status"))
@@ -722,7 +761,7 @@ def render_answer(parsed):
 
     bullet_html = "".join(f"<li>{_escape(item)}</li>" for item in bullets)
     if not bullet_html:
-        bullet_html = "<li>Aucune justification detaillee n'a ete retournee.</li>"
+        bullet_html = "<li>Aucune justification détaillée n'a été retournée.</li>"
 
     st.markdown(
         f"""
@@ -871,12 +910,23 @@ def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
     results["llm_raw"] = llm_r["raw"]
     results["ptokens"] = llm_r["ptokens"]
     results["ctokens"] = llm_r["ctokens"]
+    results["finish_reason"] = llm_r.get("finish_reason")
     _log("LLM_DONE", {"ptokens": llm_r["ptokens"], "ctokens": llm_r["ctokens"], 
-          "raw_len": len(llm_r["raw"]), "valid_json": True})
-    try:
-        parsed = json.loads(llm_r["raw"])
-    except json.JSONDecodeError:
-        parsed = None
+          "raw_len": len(llm_r["raw"]), "finish_reason": llm_r.get("finish_reason")})
+    parsed = _extract_json_object(llm_r["raw"])
+    if parsed is None or llm_r.get("finish_reason") == "length":
+        try:
+            retry_prompt = _compact_answer_prompt(query, chunks, llm_r["raw"])
+            retry_r = call_llm(retry_prompt, client, llm_model, max_tokens=1200)
+            retry_parsed = _extract_json_object(retry_r["raw"])
+            results["llm_retry_raw"] = retry_r["raw"]
+            results["retry_finish_reason"] = retry_r.get("finish_reason")
+            if retry_parsed is not None:
+                parsed = retry_parsed
+                results["ctokens"] = retry_r["ctokens"]
+                results["finish_reason"] = retry_r.get("finish_reason")
+        except Exception as e:
+            results["llm_retry_error"] = str(e)
     results["parsed"] = parsed
     elapsed = time.time() - t0
     _log("QUERY_DONE", {"cache_key": cache_key, "elapsed_s": round(elapsed, 1),
@@ -919,7 +969,7 @@ def display_results(results):
     st.markdown(
         f"""
         <div class="notice-panel">
-          <div class="section-kicker">Question analysee</div>
+          <div class="section-kicker">Question analysée</div>
           <strong>{_escape(results.get("query", ""))}</strong>
         </div>
         """,
@@ -928,7 +978,7 @@ def display_results(results):
 
     rewritten = results.get("rewritten")
     if rewritten and rewritten != results.get("query"):
-        with st.expander("Reformulation utilisee", expanded=False):
+        with st.expander("Reformulation utilisée", expanded=False):
             st.write(rewritten)
             facets = results.get("facet_queries", []) or []
             if len(facets) > 1:
@@ -940,56 +990,55 @@ def display_results(results):
     if parsed:
         render_answer(parsed)
     else:
-        st.warning("Le modele n'a pas retourne un JSON exploitable.")
-        st.code(results.get("llm_raw", "")[:1200], language="json")
+        st.warning("Le modèle n'a pas retourné une réponse structurée exploitable. Les sources retrouvées restent affichées ci-dessous.")
+        if SHOW_DEBUG_DETAILS:
+            st.code(results.get("llm_raw", "")[:1200], language="json")
 
     chunks = results.get("chunks", []) or []
     st.markdown('<div class="section-kicker">Sources retenues</div>', unsafe_allow_html=True)
     if chunks:
         render_source_cards(chunks)
     else:
-        st.info("Aucun passage source n'a ete retenu.")
+        st.info("Aucun passage source n'a été retenu.")
 
-    with st.expander(f"Documents candidats stage 1 ({len(results.get('stage1', []))})", expanded=False):
-        rows = [
-            {"rang": h.rank, "score": f"{h.score:.4f}", "reference": h.boi_reference, "titre": h.title[:140]}
-            for h in results.get("stage1", [])
-        ]
-        if rows:
-            st.dataframe(rows, use_container_width=True, hide_index=True)
-        else:
-            st.caption("Aucun document candidat a afficher.")
+    if SHOW_DEBUG_DETAILS:
+        with st.expander(f"Audit retrieval - documents candidats ({len(results.get('stage1', []))})", expanded=False):
+            rows = [
+                {"rang": h.rank, "score": f"{h.score:.4f}", "reference": h.boi_reference, "titre": h.title[:140]}
+                for h in results.get("stage1", [])
+            ]
+            if rows:
+                st.dataframe(rows, use_container_width=True, hide_index=True)
+            else:
+                st.caption("Aucun document candidat à afficher.")
 
-    with st.expander("Trace technique", expanded=False):
-        plog = results.get("pipeline_log", {}) or {}
-        if plog:
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("docs uniques", plog.get("unique_docs_final", "?"))
-            c2.metric("max chunks/doc", plog.get("max_chunks_per_doc", "?"))
-            c3.metric("candidats S2", plog.get("stage2_candidates", "?"))
-            c4.metric("facettes", plog.get("facets_used", "?"))
-            dist = plog.get("doc_distribution_final", {})
-            if dist:
-                st.caption("Distribution finale: " + json.dumps(dist, ensure_ascii=False))
-        st.caption(f"Prompt tokens: {results.get('ptokens', '?')} | Completion tokens: {results.get('ctokens', '?')}")
-        if SHOW_DEBUG_DETAILS:
-            trace_tabs = st.tabs(["Chunks", "Prompt", "JSON brut"])
-            chunk_container = trace_tabs[0]
-        else:
-            st.caption("Prompt et JSON brut masques en demo publique. Activez BOFIP_SHOW_DEBUG=1 pour audit local.")
-            chunk_container = st.container()
-
-        with chunk_container:
-            for chunk in chunks:
-                st.markdown(f"**[{chunk['rank']}] {chunk['boi_reference']}** - {chunk['score']:.4f}")
-                st.caption(chunk.get("section_path", ""))
-                st.write(_truncate(chunk.get("text", ""), 700))
-
-        if SHOW_DEBUG_DETAILS:
+        with st.expander("Audit technique", expanded=False):
+            plog = results.get("pipeline_log", {}) or {}
+            if plog:
+                audit_rows = [
+                    {"métrique": "Documents uniques", "valeur": plog.get("unique_docs_final", "?")},
+                    {"métrique": "Maximum passages par document", "valeur": plog.get("max_chunks_per_doc", "?")},
+                    {"métrique": "Candidats passage", "valeur": plog.get("stage2_candidates", "?")},
+                    {"métrique": "Facettes", "valeur": plog.get("facets_used", "?")},
+                ]
+                st.dataframe(audit_rows, use_container_width=True, hide_index=True)
+                dist = plog.get("doc_distribution_final", {})
+                if dist:
+                    st.json(dist)
+            st.caption(
+                f"Prompt tokens: {results.get('ptokens', '?')} | Completion tokens: {results.get('ctokens', '?')} | "
+                f"finish_reason: {results.get('finish_reason', '?')}"
+            )
+            trace_tabs = st.tabs(["Passages", "Prompt", "JSON brut"])
+            with trace_tabs[0]:
+                for chunk in chunks:
+                    st.markdown(f"**[{chunk['rank']}] {chunk['boi_reference']}** - {chunk['score']:.4f}")
+                    st.caption(chunk.get("section_path", ""))
+                    st.write(_truncate(chunk.get("text", ""), 700))
             with trace_tabs[1]:
                 st.code(results.get("prompt", ""), language="text")
             with trace_tabs[2]:
-                st.code(results.get("llm_raw", ""), language="json")
+                st.code(results.get("llm_retry_raw") or results.get("llm_raw", ""), language="json")
 
 
 def render_app_shell():
@@ -999,15 +1048,15 @@ def render_app_shell():
           <div class="app-header">
             <div>
               <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
-              <h1>Recherche citee dans la doctrine fiscale</h1>
-              <p>Un poste de recherche pour interroger le corpus BOFiP commentaires, verifier les passages retenus et obtenir une reponse prudente avec limites explicites.</p>
+              <h1>Recherche citée dans la doctrine fiscale</h1>
+              <p>Un poste de recherche pour interroger le corpus BOFiP commentaires, vérifier les passages retenus et obtenir une réponse prudente avec limites explicites.</p>
             </div>
           </div>
           <div class="system-strip">
-            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>BOFiP commentaires observes jusqu'au 28/01/2026</small></div>
+            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>BOFiP commentaires observés jusqu'au 28/01/2026</small></div>
             <div class="system-item"><span>Index</span><strong>66 289 passages</strong><small>Recherche documents puis passages</small></div>
-            <div class="system-item"><span>Retrieval</span><strong>BM25 + embeddings E5</strong><small>Fusion RRF, diversite documentaire</small></div>
-            <div class="system-item"><span>Sortie</span><strong>Citations et limites</strong><small>Sources visibles avant interpretation</small></div>
+            <div class="system-item"><span>Retrieval</span><strong>BM25 + embeddings E5</strong><small>Fusion RRF, diversité documentaire</small></div>
+            <div class="system-item"><span>Sortie</span><strong>Citations et limites</strong><small>Sources visibles avant interprétation</small></div>
           </div>
         </div>
         """,
@@ -1018,9 +1067,9 @@ def render_missing_key(provider: dict):
     st.markdown(
         f"""
         <div class="notice-panel">
-          <div class="section-kicker">Cle API requise</div>
-          <strong>Saisissez une cle {provider['env_key']} dans le panneau Connexion LLM pour lancer une recherche.</strong>
-          <p>La cle reste dans la session Streamlit et sert uniquement a appeler le fournisseur choisi.</p>
+          <div class="section-kicker">Clé API requise</div>
+          <strong>Saisissez une clé {provider['env_key']} dans le panneau Connexion LLM pour lancer une recherche.</strong>
+          <p>La clé reste dans la session Streamlit et sert uniquement à appeler le fournisseur choisi.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1033,18 +1082,18 @@ load_default_env_files()
 
 def ensure_runtime_ready() -> bool:
     if _missing_runtime_paths() and should_auto_download_artifacts():
-        with st.spinner("Telechargement des artefacts full corpus..."):
+        with st.spinner("Téléchargement des artefacts full corpus..."):
             try:
                 download_missing_runtime_artifacts(PROJECT_ROOT)
             except Exception as exc:
-                st.error(f"Telechargement des artefacts impossible: {exc}")
+                st.error(f"Téléchargement des artefacts impossible: {exc}")
                 return False
 
     missing_paths = _missing_runtime_paths()
     if missing_paths:
-        st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la demo.")
+        st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la démo.")
         st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing_paths))
-        st.info("Commande de verification: python scripts/check_setup.py --deep")
+        st.info("Commande de vérification : python scripts/check_setup.py --deep")
         return False
 
     check_hashes = os.environ.get("BOFIP_VALIDATE_HASHES", "").strip().lower() in {"1", "true", "yes"}
@@ -1059,158 +1108,82 @@ def ensure_runtime_ready() -> bool:
 with st.sidebar:
     st.markdown("### BOFiP Agentic RAG")
     st.caption("Prototype par Raphael Ifergan.")
-    st.caption("Ouvrez ce panneau seulement pour vider le cache ou relire les limites.")
+    st.caption("Panneau secondaire : cache et limites.")
     if st.button("Vider le cache", use_container_width=True):
         st.session_state.result_cache = {}
+        st.session_state.latest_results = None
         st.rerun()
     st.divider()
-    st.caption("Anonymisez les cas reels avant usage.")
+    st.caption("Anonymisez les cas réels avant usage.")
     st.caption("Prototype de recherche, pas conseil fiscal.")
 
 render_app_shell()
 
-query_col, config_col = st.columns([1.45, 0.85], gap="large")
+query_col, config_col = st.columns([1.7, 0.7], gap="large")
 
 with config_col:
-    st.markdown(
-        """
-        <div class="workbench-panel compact">
-          <div class="panel-heading">
-            <div>
-              <h2>Connexion LLM</h2>
-              <p>Votre cle reste dans la session Streamlit.</p>
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    provider_id = st.selectbox("Fournisseur", list(PROVIDERS.keys()), key="provider_select")
-    provider = PROVIDERS[provider_id]
-    api_key = st.text_input(
-        f"Cle API ({provider['env_key']})",
-        value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
-        type="password",
-        key="api_key_input",
-        help="Sur HF, le champ reste vide. En local, .env.local peut pre-remplir la valeur.",
-    )
-    model_options = provider["models"]
-    default_model = provider["default_model"]
-    default_index = model_options.index(default_model) if default_model in model_options else 0
-    model = st.selectbox(
-        "Modele",
-        model_options,
-        index=default_index,
-        key=f"model_{provider_id}_select",
-        help="Liste limitee aux modeles configures pour ce prototype.",
-    )
-    st.caption(provider.get("note", ""))
-    if not api_key:
-        render_missing_key(provider)
-    st.divider()
-    use_rewrite = st.checkbox(
-        "Reformulation fiscale",
-        value=True,
-        help="Reformule la question en vocabulaire fiscal avant retrieval.",
-    )
-    reranker_available = RERANKER_MODEL_PATH.exists()
-    with st.expander("Reranking des passages", expanded=False):
-        st.caption("Ameliore parfois la precision des citations, mais ajoute de la latence CPU.")
-        use_reranker = st.checkbox(
-            "Activer le reranker",
-            value=reranker_available and not RUNNING_ON_SPACE,
-            help="A garder desactive sur hebergement gratuit si la latence compte plus que le gain de precision.",
+    with st.container(border=True):
+        st.markdown("### Connexion LLM")
+        st.caption("Votre clé reste dans la session Streamlit.")
+        provider_id = st.selectbox("Fournisseur", list(PROVIDERS.keys()), key="provider_select")
+        provider = PROVIDERS[provider_id]
+        api_key = st.text_input(
+            f"Clé API ({provider['env_key']})",
+            value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
+            type="password",
+            key="api_key_input",
+            help="Sur HF, le champ reste vide. En local, .env.local peut pré-remplir la valeur.",
         )
-        if use_reranker and not reranker_available:
-            st.warning("Modele reranker absent localement: le chargement peut tenter un telechargement Hugging Face.")
+        model_options = provider["models"]
+        default_model = provider["default_model"]
+        default_index = model_options.index(default_model) if default_model in model_options else 0
+        model = st.selectbox(
+            "Modèle",
+            model_options,
+            index=default_index,
+            key=f"model_{provider_id}_select",
+            help="Liste limitée aux modèles configurés pour ce prototype.",
+        )
+        st.caption(provider.get("note", ""))
+
+    use_rewrite = True
+    use_reranker = False
 
 with query_col:
-    st.markdown(
-        """
-        <div class="workbench-panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Question fiscale</h2>
-              <p>Formulez le cas, puis controlez les passages BOFiP utilises avant de lire la conclusion.</p>
+    with st.container(border=True):
+        st.markdown("### Question fiscale")
+        st.caption("Formulez le cas, puis contrôlez les passages BOFiP utilisés avant de lire la conclusion.")
+        st.markdown(
+            """
+            <div class="inline-status">
+              <span>Corpus : BOFiP commentaires</span>
+              <span>Fraîcheur : 28/01/2026</span>
+              <span>Reformulation : automatique</span>
             </div>
-          </div>
-          <div class="inline-status">
-            <span>Corpus: BOFiP commentaires</span>
-            <span>Fraicheur: 28/01/2026</span>
-            <span>Mode BYOK</span>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    mode = st.radio("Mode", ["Question unique", "Lot de questions"], horizontal=True, label_visibility="collapsed")
-
-    if mode == "Question unique":
+            """,
+            unsafe_allow_html=True,
+        )
         query = st.text_area(
             "Votre question",
-            placeholder="Exemple: Quel taux de TVA pour la pose d'une pompe a chaleur chez un particulier ?",
+            placeholder="Exemple : quel taux de TVA pour la pose d'une pompe à chaleur chez un particulier ?",
             height=150,
             label_visibility="collapsed",
+            key="single_question",
         )
-        submit = st.button(
-            "Analyser la question",
-            type="primary",
-            disabled=not api_key or not query.strip(),
-            use_container_width=True,
-        )
-        if submit and ensure_runtime_ready():
-            reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
-            rt = get_runtime(use_reranker, reranker_model)
-            client = OpenAI(api_key=api_key, base_url=provider["base_url"])
-            with st.spinner("Recherche, selection des sources et generation..."):
-                results = process_query(query.strip(), rt, client, model, use_rewrite, use_reranker)
-            display_results(results)
-    else:
-        batch_text = st.text_area(
-            "Questions",
-            height=180,
-            placeholder="Une question par paragraphe. Maximum 5 questions pour la demo publique.",
-            label_visibility="collapsed",
-        )
-        submit_batch = st.button(
-            "Lancer le lot",
-            type="primary",
-            disabled=not api_key or not batch_text.strip(),
-            use_container_width=True,
-        )
-        if submit_batch and ensure_runtime_ready():
-            reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
-            rt = get_runtime(use_reranker, reranker_model)
-            client = OpenAI(api_key=api_key, base_url=provider["base_url"])
-            queries = [q.strip() for q in re.split(r"\n\s*\n", batch_text.strip()) if q.strip()]
-            if len(queries) > 5:
-                st.warning("Lot limite a 5 questions pour la demo publique.")
-                queries = queries[:5]
-            progress = st.progress(0)
-            status_text = st.empty()
-            all_results = []
-            for index, question in enumerate(queries, start=1):
-                status_text.text(f"{index}/{len(queries)} - {question[:90]}")
-                all_results.append(process_query(question, rt, client, model, use_rewrite, use_reranker))
-                progress.progress(index / len(queries))
-            progress.empty()
-            status_text.empty()
+        submit = st.button("Analyser la question", type="primary", use_container_width=True)
+        if submit:
+            if not query.strip():
+                st.warning("Saisissez une question avant de lancer l'analyse.")
+            elif not api_key:
+                st.warning("Saisissez une clé API dans le panneau Connexion LLM.")
+            elif ensure_runtime_ready():
+                rt = get_runtime(False, None)
+                client = OpenAI(api_key=api_key, base_url=provider["base_url"])
+                with st.spinner("Recherche, sélection des sources et génération..."):
+                    st.session_state.latest_results = process_query(query.strip(), rt, client, model, True, False)
 
-            summary_rows = []
-            for res in all_results:
-                parsed = res.get("parsed") or {}
-                status, label, _ = _status_meta(parsed.get("answer_status", "error"))
-                summary_rows.append(
-                    {
-                        "question": _truncate(res.get("query", ""), 90),
-                        "statut": label,
-                        "conclusion": _truncate(parsed.get("conclusion", res.get("error", "")), 120),
-                    }
-                )
-            st.dataframe(summary_rows, use_container_width=True, hide_index=True)
-            expand_all = st.checkbox("Developper toutes les reponses", value=False, key="expand_batch")
-            for index, res in enumerate(all_results, start=1):
-                with st.expander(f"Question {index}: {_truncate(res.get('query', ''), 100)}", expanded=expand_all):
-                    display_results(res)
+latest_results = st.session_state.get("latest_results")
+if latest_results:
+    display_results(latest_results)
 
-st.markdown('<div class="app-footer">BOFiP Agentic RAG - prototype par Raphael Ifergan - sources BOFiP a verifier avant usage professionnel.</div>', unsafe_allow_html=True)
+st.markdown('<div class="app-footer">BOFiP Agentic RAG - prototype par Raphael Ifergan - sources BOFiP à vérifier avant usage professionnel.</div>', unsafe_allow_html=True)

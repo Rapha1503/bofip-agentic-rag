@@ -23,7 +23,7 @@ The Streamlit app exposes a model dropdown for each provider. Use a model availa
 
 ## 2. Place Full-Corpus Artifacts
 
-The demo is intentionally full-corpus. Do not remove BOFiP families to make startup easier.
+The runtime expects the 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
 
 Recommended path:
 
@@ -47,7 +47,7 @@ Optional quality layer:
 data/models/BAAI--bge-reranker-v2-m3/
 ```
 
-If the optional reranker directory is absent, leave `Activer le reranking des passages` disabled in the Streamlit advanced quality section. Retrieval still covers the full 5,666-document corpus.
+The optional reranker is not exposed in the public Streamlit UI. Retrieval still covers the full 5,666-document corpus without it.
 
 ## 3. Check Setup
 

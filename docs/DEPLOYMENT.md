@@ -11,7 +11,7 @@ GitHub Pages should not host the RAG runtime because it serves static assets and
 
 ## Full-Corpus Requirement
 
-The demo must preserve the full 5,666-document commentary corpus. A reduced corpus makes the app unreliable: a user can ask about a BOFiP topic that was removed, and the system would fail for an artificial reason.
+The hosted app is designed for the full 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
 
 Optimize the full-corpus runtime instead:
 
@@ -19,7 +19,7 @@ Optimize the full-corpus runtime instead:
 - validate artifact counts and shapes at startup;
 - use cached BM25 indexes;
 - prefer memory-mapped embeddings where possible;
-- expose reranker mode as configurable;
+- keep the reranker off in the public UI until benchmarks justify the latency;
 - report cold-start and query latency honestly;
 - fail with clear diagnostics when artifacts are missing.
 

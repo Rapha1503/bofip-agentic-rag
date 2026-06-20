@@ -15,7 +15,7 @@ The project explores how to answer tax questions from official BOFiP commentary 
 | Topic | Status |
 | --- | --- |
 | Core idea | Full-corpus BOFiP RAG with cited answers |
-| Corpus coverage | 5,666 BOFiP commentary documents, not a reduced demo corpus |
+| Corpus coverage | 5,666 BOFiP commentary documents observed through `2026-01-28` |
 | Fresh clone | Code, tests, docs, and small eval files are included |
 | Required local artifacts | Full BOFiP JSONL, embedding caches, and E5 model cache or download |
 | Demo path | Local Streamlit and hosted BYOK Space |
@@ -28,7 +28,7 @@ Example question:
 Quel taux de TVA pour la pose d'une pompe a chaleur chez un particulier ?
 ```
 
-Expected answer shape: a JSON-backed response rendered in Streamlit with `supported`, `partial`, or `insufficient_evidence` status, cited BOFiP chunks, and a technical retrieval trace.
+Expected answer shape: a JSON-backed response rendered in Streamlit with `supported`, `partial`, or `insufficient_evidence` status and cited BOFiP chunks. Local debug mode can expose the technical retrieval trace.
 
 ## Why This Project Exists
 
@@ -96,7 +96,7 @@ python scripts/check_setup.py
 python scripts/check_setup.py --deep
 ```
 
-The reranker is an optional quality layer. If `data/models/BAAI--bge-reranker-v2-m3/` is absent, the Streamlit app can still run full-corpus retrieval with the reranker disabled.
+The reranker remains an experimental quality layer in the codebase. The public Streamlit app keeps it off by default until a benchmark shows a clear gain for the hosted flow.
 
 To download the public full-corpus runtime artifacts from the project release:
 
@@ -168,9 +168,9 @@ Tracked public metrics are still pending because the full local artifact bundle 
 
 ## Full-Corpus Deployment Principle
 
-The live demo should not use a reduced corpus. If a user asks about a BOFiP family removed from the demo, the RAG system becomes misleading.
+The live app is built around the full 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
 
-Deployment optimization must preserve full corpus coverage:
+Deployment optimization must preserve that coverage:
 
 - prebuilt data artifacts;
 - memory-mapped or cached embeddings;

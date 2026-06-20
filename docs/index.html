@@ -396,7 +396,7 @@
         <div class="nav-links">
           <a href="#pipeline">Pipeline</a>
           <a href="#artifacts">Artefacts</a>
-          <a href="#demo">Demo</a>
+          <a href="#demo">Démo</a>
           <a href="#docs">Docs</a>
           <a href="https://github.com/Rapha1503/bofip-agentic-rag">GitHub</a>
         </div>
@@ -409,13 +409,13 @@
           <div>
             <h1>BOFiP Agentic RAG</h1>
             <p>
-              Prototype full-corpus pour explorer la recherche augmentee sur la doctrine fiscale BOFiP:
-              parsing structure, hybrid retrieval, embeddings denses, reranking optionnel et reponses citees.
+              Prototype full-corpus pour explorer la recherche augmentée sur la doctrine fiscale BOFiP :
+              parsing structuré, hybrid retrieval, embeddings denses, reranking expérimental et réponses citées.
             </p>
             <div class="hero-actions">
               <a class="button primary" href="https://github.com/Rapha1503/bofip-agentic-rag">Voir le repo</a>
-              <a class="button secondary" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEMO.md">Demo locale</a>
-              <a class="button secondary" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEPLOYMENT.md">Deploiement</a>
+              <a class="button secondary" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEMO.md">Démo locale</a>
+              <a class="button secondary" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEPLOYMENT.md">Déploiement</a>
             </div>
           </div>
           <div class="hero-visual" aria-hidden="true">
@@ -425,8 +425,8 @@
         <div class="status-strip">
           <div class="status-item"><strong>5 666</strong><span>documents BOFiP commentary</span></div>
           <div class="status-item"><strong>66 289</strong><span>chunks section-window</span></div>
-          <div class="status-item"><strong>50</strong><span>questions d'evaluation suivies</span></div>
-          <div class="status-item"><strong>BYOK</strong><span>cle API saisie par l'utilisateur</span></div>
+          <div class="status-item"><strong>50</strong><span>questions d'évaluation suivies</span></div>
+          <div class="status-item"><strong>BYOK</strong><span>clé API saisie par l'utilisateur</span></div>
         </div>
       </div>
 
@@ -435,34 +435,34 @@
           <div class="section-head">
             <h2>Pipeline</h2>
             <p>
-              Le projet met en avant une approche RAG fiscalement prudente: retrouver des preuves,
-              les citer, et reconnaitre les limites lorsque la couverture est insuffisante.
+              Le projet met en avant une approche RAG fiscalement prudente : retrouver des preuves,
+              les citer, et reconnaître les limites lorsque la couverture est insuffisante.
             </p>
           </div>
           <div class="pipeline">
             <article class="step">
               <span class="step-number">1</span>
               <h3>Parsing</h3>
-              <p>Extraction XML/HTML du BOFiP vers des documents structures et tracables.</p>
+              <p>Extraction XML/HTML du BOFiP vers des documents structurés et traçables.</p>
             </article>
             <article class="step">
               <span class="step-number">2</span>
               <h3>Chunking</h3>
-              <p>Fenetrage par sections pour conserver le contexte juridique local.</p>
+              <p>Fenêtrage par sections pour conserver le contexte juridique local.</p>
             </article>
             <article class="step">
               <span class="step-number">3</span>
               <h3>Retrieval</h3>
-              <p>BM25 multi-vues, embeddings E5-large, fusion RRF ponderee par confiance.</p>
+              <p>BM25 multi-vues, embeddings E5-large, fusion RRF pondérée par confiance.</p>
             </article>
             <article class="step">
               <span class="step-number">4</span>
-              <h3>Selection</h3>
-              <p>Recherche locale dans les documents retenus et diversite des passages.</p>
+              <h3>Sélection</h3>
+              <p>Recherche locale dans les documents retenus et diversité des passages.</p>
             </article>
             <article class="step">
               <span class="step-number">5</span>
-              <h3>Generation</h3>
+              <h3>Génération</h3>
               <p>Prompt contraint, citations BOFiP et statut supported/partial/insufficient evidence.</p>
             </article>
           </div>
@@ -474,8 +474,8 @@
           <div class="section-head">
             <h2>Artefacts full corpus</h2>
             <p>
-              Corpus BOFiP commentaire complet pour ce prototype: 5 666 documents observes jusqu'au
-              28 janvier 2026. Les gros fichiers sont versionnes hors Git et decrits dans un manifest
+              Corpus BOFiP commentaire complet pour ce prototype : 5 666 documents observés jusqu'au
+              28 janvier 2026. Les gros fichiers sont versionnés hors Git et décrits dans un manifeste
               avec tailles, formes et SHA-256.
             </p>
           </div>
@@ -492,15 +492,15 @@
         <div class="shell grid-3">
           <article class="panel">
             <h3>Local</h3>
-            <p>Clone, place les artefacts ou active le telechargement automatique, ajoute une cle API, puis lance Streamlit.</p>
+            <p>Clone, place les artefacts ou active le téléchargement automatique, ajoute une clé API, puis lance Streamlit.</p>
           </article>
           <article class="panel">
             <h3>Hosted</h3>
-            <p>Le runtime est prepare pour Hugging Face Spaces via Docker, avec reranker desactive par defaut sur CPU gratuit.</p>
+            <p>Le runtime est préparé pour Hugging Face Spaces via Docker, avec reranker désactivé par défaut sur CPU gratuit.</p>
           </article>
           <article class="panel">
             <h3>Security</h3>
-            <p>BYOK explicite: la cle n'est pas commitee ni loggee; elle transite par le serveur qui execute la demo.</p>
+            <p>BYOK explicite : la clé n'est pas commitée ni loggée ; elle transite par le serveur qui exécute la démo.</p>
           </article>
         </div>
       </section>
@@ -509,14 +509,14 @@
         <div class="shell">
           <div class="section-head">
             <h2>Documentation</h2>
-            <p>Chaque document cible un lecteur different: recruteur, data engineer, reviewer RAG ou futur deployeur.</p>
+            <p>Chaque document cible un lecteur différent : recruteur, data engineer, reviewer RAG ou futur déployeur.</p>
           </div>
           <div class="docs-grid">
             <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/ARCHITECTURE.md"><h3>Architecture</h3><p>Modules, flux runtime et risques techniques.</p></a>
-            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DATA_CARD.md"><h3>Data card</h3><p>Portee, qualite, fraicheur et tracabilite corpus.</p></a>
-            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEMO.md"><h3>Demo locale</h3><p>Installation, checks et premiers essais.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DATA_CARD.md"><h3>Data card</h3><p>Portée, qualité, fraîcheur et traçabilité corpus.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEMO.md"><h3>Démo locale</h3><p>Installation, checks et premiers essais.</p></a>
             <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/DEPLOYMENT.md"><h3>Deployment</h3><p>Pages, Spaces, BYOK et artefacts.</p></a>
-            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/ROADMAP.md"><h3>Roadmap</h3><p>Prochaines etapes pour productioniser.</p></a>
+            <a class="doc-link" href="https://github.com/Rapha1503/bofip-agentic-rag/blob/master/docs/ROADMAP.md"><h3>Roadmap</h3><p>Prochaines étapes pour productioniser.</p></a>
             <a class="doc-link" href="full_corpus_manifest.json"><h3>Manifest</h3><p>Contrat machine-readable des artefacts.</p></a>
           </div>
         </div>
@@ -527,7 +527,7 @@
           <div>
             <h2>Prototype de recherche, pas conseil fiscal</h2>
             <p>
-              Le systeme sert a demontrer une methodologie RAG citee et evaluable. Les reponses doivent etre
+              Le système sert à démontrer une méthodologie RAG citée et évaluable. Les réponses doivent être
               relues contre les sources officielles BOFiP.
             </p>
           </div>
