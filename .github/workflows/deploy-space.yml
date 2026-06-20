@@ -13,7 +13,8 @@ jobs:
       - name: Prepare Space payload
         run: |
           mkdir -p /tmp/space
-          cp -R app.py Dockerfile requirements.txt pyproject.toml src docs /tmp/space/
+          cp -R app.py Dockerfile requirements.txt pyproject.toml src docs scripts /tmp/space/
+          find /tmp/space/scripts -type f ! -name 'download_artifacts.py' -delete
           cp space/README.md /tmp/space/README.md
 
       - name: Push to Hugging Face Space

@@ -23,6 +23,9 @@ RUN python -m pip install --upgrade pip \
 COPY app.py pyproject.toml ./
 COPY src ./src
 COPY docs/full_corpus_manifest.json ./docs/full_corpus_manifest.json
+COPY scripts/download_artifacts.py ./scripts/download_artifacts.py
+
+RUN python scripts/download_artifacts.py
 
 EXPOSE 8501
 
