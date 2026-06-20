@@ -22,12 +22,16 @@ jobs:
           HF_SPACE_REPO: rapha1503/bofip-agentic-rag
         run: |
           test -n "$HF_TOKEN"
-          cd /tmp/space
-          git init
-          git config user.name "Rapha1503"
-          git config user.email "raphael@bofip-rag.local"
-          git add .
-          git commit -m "deploy space"
-          git branch -M main
-          git remote add space "https://rapha1503:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE_REPO}"
-          git push --force space main
+          python -m pip install --upgrade huggingface_hub
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+
+          HfApi().upload_folder(
+              folder_path="/tmp/space",
+              repo_id=os.environ["HF_SPACE_REPO"],
+              repo_type="space",
+              token=os.environ["HF_TOKEN"],
+              commit_message="deploy space runtime",
+          )
+          PY
