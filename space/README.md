@@ -10,6 +10,6 @@ license: mit
 
 # BOFiP Agentic RAG
 
-Streamlit BYOK demo for the BOFiP Agentic RAG portfolio project by Rapha1503.
+Streamlit BYOK demo for the BOFiP Agentic RAG portfolio project by Raphael Ifergan.
 
 The app downloads the full-corpus runtime artifacts from the project release at startup and keeps the reranker disabled by default for free CPU hosting.

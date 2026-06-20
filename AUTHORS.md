@@ -1,5 +1,5 @@
 # Authors
 
-- **Rapha1503** - project author, data/RAG engineering, evaluation, documentation.
+- **Raphael Ifergan** - project author, data/RAG engineering, evaluation, documentation.
 
-This repository is maintained as a portfolio project by Rapha1503.
+This repository is maintained as a portfolio project by Raphael Ifergan.

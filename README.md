@@ -1,6 +1,6 @@
 # BOFiP Agentic RAG
 
-Full-corpus retrieval-augmented generation prototype for French BOFiP doctrine, created by **Rapha1503**.
+Full-corpus retrieval-augmented generation prototype for French BOFiP doctrine, created by **Raphael Ifergan**.
 
 The project explores how to answer tax questions from official BOFiP commentary with cited evidence, hybrid retrieval, dense embeddings, cross-encoder reranking, and coverage-aware generation.
 
@@ -18,7 +18,7 @@ The project explores how to answer tax questions from official BOFiP commentary 
 | Corpus coverage | 5,666 BOFiP commentary documents, not a reduced demo corpus |
 | Fresh clone | Code, tests, docs, and small eval files are included |
 | Required local artifacts | Full BOFiP JSONL, embedding caches, and E5 model cache or download |
-| Demo path | Local Streamlit now; hosted full-corpus demo planned |
+| Demo path | Local Streamlit and hosted BYOK Space |
 | Current proof | Unit tests + setup checker + documented retrieval evaluation harness |
 | Main caveat | Research prototype, not tax advice |
 
@@ -119,7 +119,7 @@ $env:PYTHONPATH='src'
 python scripts/preview_answer.py --query "Quel taux de TVA pour une pompe a chaleur ?"
 ```
 
-The CLI preview currently uses DeepSeek and requires `DEEPSEEK_API_KEY`. The Streamlit app exposes a BYOK interface for OpenAI-compatible providers, with an editable model ID field.
+The CLI preview currently uses DeepSeek and requires `DEEPSEEK_API_KEY`. The Streamlit app exposes a BYOK interface for OpenAI-compatible providers, with a provider-specific model dropdown.
 
 Run retrieval evaluation:
 
@@ -153,7 +153,7 @@ The Streamlit app currently exposes OpenAI-compatible endpoints for these provid
 | Mistral | `MISTRAL_API_KEY` |
 | Google Gemini | `GEMINI_API_KEY` |
 
-API keys can be loaded from `.env.local` or entered in the Streamlit sidebar. Model IDs are editable because provider model names evolve. Keys must not be committed or logged.
+API keys can be loaded from `.env.local` or entered in the Streamlit sidebar. Model IDs are selected from the configured provider dropdown. Keys must not be committed or logged.
 
 ## Evaluation
 
@@ -179,7 +179,7 @@ Deployment optimization must preserve full corpus coverage:
 - explicit latency and freshness limits;
 - clear BYOK warning for user-provided API keys.
 
-GitHub Pages hosts the static portfolio page. A Python host such as Hugging Face Spaces is the better fit for the Streamlit runtime. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+GitHub Pages hosts the static portfolio page. Hugging Face Spaces hosts the Streamlit BYOK runtime. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Limitations
 
@@ -203,4 +203,4 @@ GitHub Pages hosts the static portfolio page. A Python host such as Hugging Face
 
 ## Author
 
-Created and maintained by **Rapha1503**.
+Created and maintained by **Raphael Ifergan**.

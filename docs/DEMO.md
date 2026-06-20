@@ -19,7 +19,7 @@ Add one API key to `.env.local`, for example:
 DEEPSEEK_API_KEY=...
 ```
 
-The Streamlit model field is editable. Use a model ID available on the selected provider account.
+The Streamlit app exposes a model dropdown for each provider. Use a model available on the selected provider account.
 
 ## 2. Place Full-Corpus Artifacts
 

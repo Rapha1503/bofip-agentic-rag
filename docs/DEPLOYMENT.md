@@ -30,6 +30,8 @@ The app supports user-provided API keys for OpenAI-compatible endpoints. Public 
 - the key is entered per session;
 - the key is sent to the server running the Streamlit app for that request;
 - the key is not committed, persisted, or logged by the app;
+- on Hugging Face Spaces, provider API key fields are intentionally not prefilled from server environment variables;
+- prompt and raw JSON debug views stay hidden on the public Space unless `BOFIP_SHOW_DEBUG=1` is explicitly set;
 - users should use restricted or low-budget keys for demos.
 
 Do not build a browser-only OpenAI-key workflow for this project. API keys in client-side JavaScript are not an acceptable security model for a public demo.
@@ -68,9 +70,9 @@ https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1
 
 The Docker runtime uses `BOFIP_AUTO_DOWNLOAD_ARTIFACTS=1`.
 
-## Phase 1 Deployment Status
+## Deployment Status
 
-Phase 1 prepares the repository for portfolio review. It does not start a hosted app.
+The static portfolio page is served by GitHub Pages and the full-corpus BYOK runtime is prepared for Hugging Face Spaces.
 
 Use [DEMO.md](DEMO.md) for local full-corpus testing. The setup checker is:
 
@@ -78,9 +80,7 @@ Use [DEMO.md](DEMO.md) for local full-corpus testing. The setup checker is:
 python scripts/check_setup.py --deep
 ```
 
-Before deploying:
+Next deployment hardening:
 
 - split `app.py` into UI, retrieval, LLM, config, and observability boundaries;
-- disable raw query/prompt logging by default;
-- add a visible tax-advice disclaimer;
 - add screenshots and evaluation report for the static portfolio page.

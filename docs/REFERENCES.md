@@ -23,4 +23,4 @@
 
 ## Project Notes
 
-This repository is a portfolio and research prototype by Rapha1503. It is not affiliated with the French tax administration and does not provide tax advice.
+This repository is a portfolio and research prototype by Raphael Ifergan. It is not affiliated with the French tax administration and does not provide tax advice.

@@ -11,7 +11,7 @@ Goal: make the repository readable, installable, and safe to show.
 - Remove unstable tracked profiler code.
 - Align README and architecture docs with the actual runtime.
 - Add data and deployment documentation.
-- Keep ownership and project presentation under Rapha1503.
+- Keep ownership and project presentation under Raphael Ifergan.
 - Add setup checker, CI workflow, local demo guide, artifact manifest, authorship metadata, and references.
 
 ## Phase 2 - Reproducibility and Runtime Contract

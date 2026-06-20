@@ -1,6 +1,6 @@
 # BOFiP Agentic RAG Architecture
 
-This document describes the current cleanroom architecture for the BOFiP RAG prototype by Rapha1503.
+This document describes the current cleanroom architecture for the BOFiP RAG prototype by Raphael Ifergan.
 
 ## Runtime Flow
 

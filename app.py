@@ -1,5 +1,6 @@
 """BOFiP Agentic RAG - Streamlit app."""
 from __future__ import annotations
+import html
 import hashlib, json, logging, os, re, sys, time
 from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -73,13 +74,306 @@ REQUIRED_RUNTIME_PATHS = [
 ]
 E5_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "intfloat--multilingual-e5-large"
 RERANKER_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "BAAI--bge-reranker-v2-m3"
+RUNNING_ON_SPACE = bool(os.environ.get("SPACE_ID"))
+SHOW_DEBUG_DETAILS = (
+    not RUNNING_ON_SPACE
+    or os.environ.get("BOFIP_SHOW_DEBUG", "").strip().lower() in {"1", "true", "yes"}
+)
 
 
 def _missing_runtime_paths() -> list[Path]:
     return [path for path in REQUIRED_RUNTIME_PATHS if not path.exists()]
 
 
-st.set_page_config(page_title="BOFiP Agentic RAG", layout="wide")
+st.set_page_config(
+    page_title="BOFiP Agentic RAG",
+    page_icon="§",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+st.markdown(
+    """
+    <style>
+      :root {
+        --ink: #172033;
+        --muted: #61708a;
+        --line: #d9e1ec;
+        --paper: #ffffff;
+        --soft: #f5f7fb;
+        --teal: #0f766e;
+        --amber: #b45309;
+        --blue: #1d4ed8;
+        --red: #b91c1c;
+      }
+
+      [data-testid="stAppViewContainer"] {
+        background: linear-gradient(180deg, #f7f9fd 0%, #eef3f8 100%);
+      }
+
+      .block-container {
+        max-width: 1180px;
+        padding-top: 1.8rem;
+        padding-bottom: 3rem;
+      }
+
+      [data-testid="stSidebar"] {
+        background: #fbfcff;
+        border-right: 1px solid var(--line);
+      }
+
+      [data-testid="stSidebar"] h1,
+      [data-testid="stSidebar"] h2,
+      [data-testid="stSidebar"] h3 {
+        color: var(--ink);
+      }
+
+      .bofip-hero {
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(23,32,51,.96), rgba(29,78,216,.86) 58%, rgba(15,118,110,.92));
+        color: #ffffff;
+        padding: 30px 32px;
+        border: 1px solid rgba(255,255,255,.18);
+        box-shadow: 0 18px 50px rgba(28, 44, 70, .16);
+        margin-bottom: 18px;
+      }
+
+      .bofip-hero h1 {
+        font-size: 3rem;
+        line-height: 1.02;
+        margin: 0 0 10px 0;
+        letter-spacing: 0;
+        color: #ffffff;
+      }
+
+      .bofip-hero p {
+        margin: 0;
+        max-width: 780px;
+        color: rgba(255,255,255,.84);
+        font-size: 1.02rem;
+      }
+
+      .hero-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.28);
+        background: rgba(255,255,255,.10);
+        padding: 7px 11px;
+        color: #ffffff;
+        font-size: .86rem;
+        white-space: nowrap;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 10px 0 18px;
+      }
+
+      .metric-card,
+      .workspace-panel,
+      .answer-panel,
+      .source-card,
+      .notice-panel {
+        background: rgba(255,255,255,.92);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 8px 26px rgba(21, 33, 52, .06);
+      }
+
+      .metric-card {
+        padding: 15px 16px;
+        min-height: 92px;
+      }
+
+      .metric-card strong {
+        display: block;
+        color: var(--ink);
+        font-size: 1.45rem;
+        line-height: 1.1;
+      }
+
+      .metric-card span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: .86rem;
+      }
+
+      .workspace-panel {
+        padding: 18px;
+        margin-top: 6px;
+      }
+
+      .section-kicker {
+        color: var(--muted);
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+
+      .section-title {
+        color: var(--ink);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .status-supported {
+        color: #065f46;
+        background: #dff7ec;
+        border: 1px solid #a7f3d0;
+      }
+
+      .status-partial {
+        color: #92400e;
+        background: #fff2d8;
+        border: 1px solid #f7d38a;
+      }
+
+      .status-insufficient,
+      .status-error {
+        color: #991b1b;
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+      }
+
+      .answer-panel {
+        padding: 18px;
+        margin: 16px 0;
+      }
+
+      .answer-panel h3 {
+        color: var(--ink);
+        margin: 10px 0 8px;
+        font-size: 1.08rem;
+      }
+
+      .answer-panel p,
+      .answer-panel li {
+        color: #243149;
+        line-height: 1.55;
+      }
+
+      .answer-panel blockquote {
+        border-left: 4px solid var(--teal);
+        margin: 10px 0;
+        padding: 7px 0 7px 14px;
+        color: #243149;
+        background: #f3fbf9;
+      }
+
+      .source-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .source-card {
+        padding: 14px;
+        min-height: 170px;
+      }
+
+      .source-card .ref {
+        color: var(--blue);
+        font-weight: 800;
+        font-size: .88rem;
+      }
+
+      .source-card h4 {
+        color: var(--ink);
+        margin: 7px 0;
+        font-size: .98rem;
+        line-height: 1.28;
+      }
+
+      .source-card .path {
+        color: var(--muted);
+        font-size: .78rem;
+        margin-bottom: 8px;
+      }
+
+      .source-card p {
+        color: #31405b;
+        font-size: .88rem;
+        line-height: 1.45;
+      }
+
+      .notice-panel {
+        padding: 16px 18px;
+        border-left: 4px solid var(--amber);
+      }
+
+      .app-footer {
+        color: var(--muted);
+        font-size: .83rem;
+        margin-top: 26px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      div[data-testid="stButton"] > button {
+        border-radius: 7px;
+        font-weight: 700;
+      }
+
+      @media (max-width: 840px) {
+        .bofip-hero { padding: 22px; }
+        .bofip-hero h1 { font-size: 2.15rem; }
+        .metric-grid,
+        .source-grid { grid-template-columns: 1fr; }
+        .chip { white-space: normal; }
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+STATUS_META = {
+    "SUPPORTED": ("Preuve suffisante", "status-supported"),
+    "PARTIAL": ("Preuve partielle", "status-partial"),
+    "INSUFFICIENT_EVIDENCE": ("Preuve insuffisante", "status-insufficient"),
+    "PARSE_ERROR": ("Sortie invalide", "status-error"),
+}
+
+
+def _escape(value: object) -> str:
+    return html.escape(str(value or ""), quote=True)
+
+
+def _truncate(value: object, limit: int = 380) -> str:
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "..."
+
+
+def _status_meta(status: object) -> tuple[str, str, str]:
+    normalized = str(status or "INSUFFICIENT_EVIDENCE").upper()
+    label, css_class = STATUS_META.get(normalized, (normalized.replace("_", " ").title(), "status-error"))
+    return normalized, label, css_class
 
 @st.cache_resource(show_spinner="Chargement du runtime full corpus...")
 def get_runtime(load_reranker: bool, reranker_model: str | None):
@@ -173,21 +467,45 @@ def call_llm(prompt, client, model):
             "ctokens":getattr(usage,"completion_tokens",None) if usage else None}
 
 def render_answer(parsed):
-    status = parsed.get("answer_status","?").upper()
-    c = parsed.get("conclusion","")
-    bullets = parsed.get("justification_bullets",[])
-    limits = parsed.get("limits","")
-    axr, axc, axm = parsed.get("axes_requis",[]), parsed.get("axes_couverts",[]), parsed.get("axes_manquants",[])
-    color = {"SUPPORTED":"green","PARTIAL":"orange","INSUFFICIENT_EVIDENCE":"red"}
-    st.markdown(f"### Statut: :{color.get(status,'grey')}[**{status}**]")
-    st.markdown("---")
-    st.markdown(f"### 📝 ANSWER")
-    st.markdown(f"> {c}")
-    st.markdown("")
-    st.markdown("**Analyse détaillée :**")
-    for b in bullets:
-        st.markdown(f"- {b}")
-    st.caption(f"*{limits}*")
+    normalized, label, css_class = _status_meta(parsed.get("answer_status"))
+    conclusion = _escape(parsed.get("conclusion", ""))
+    bullets = parsed.get("justification_bullets", []) or []
+    limits = _escape(parsed.get("limits", ""))
+
+    bullet_html = "".join(f"<li>{_escape(item)}</li>" for item in bullets)
+    if not bullet_html:
+        bullet_html = "<li>Aucune justification detaillee n'a ete retournee.</li>"
+
+    st.markdown(
+        f"""
+        <div class="answer-panel">
+          <span class="status-pill {css_class}">{_escape(label)}</span>
+          <h3>Conclusion</h3>
+          <blockquote>{conclusion}</blockquote>
+          <h3>Raisonnement</h3>
+          <ul>{bullet_html}</ul>
+          <p><strong>Limites:</strong> {limits or "Non precisees."}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    axes = {
+        "Axes requis": parsed.get("axes_requis", []) or [],
+        "Axes couverts": parsed.get("axes_couverts", []) or [],
+        "Axes manquants": parsed.get("axes_manquants", []) or [],
+    }
+    if any(axes.values()):
+        with st.expander("Couverture juridique", expanded=normalized != "SUPPORTED"):
+            cols = st.columns(3)
+            for col, (title, values) in zip(cols, axes.items()):
+                col.markdown(f"**{title}**")
+                if values:
+                    for value in values:
+                        col.markdown(f"- {_escape(value)}")
+                else:
+                    col.caption("Non renseigne")
+
 
 def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
     results = {"query":query,"error":None}
@@ -318,95 +636,205 @@ def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
     st.session_state.result_cache[cache_key] = results
     return results
 
+def _source_card(chunk: dict) -> str:
+    title = _escape(chunk.get("title", "Sans titre"))
+    ref = _escape(chunk.get("boi_reference", "BOFiP"))
+    path = _escape(_truncate(chunk.get("section_path", ""), 120))
+    publication_date = _escape(chunk.get("publication_date") or "date non renseignee")
+    excerpt = _escape(_truncate(chunk.get("text", ""), 430))
+    score = float(chunk.get("score", 0) or 0)
+    return f"""
+    <div class="source-card">
+      <div class="ref">#{chunk.get("rank", "?")} · {ref} · score {score:.3f}</div>
+      <h4>{title}</h4>
+      <div class="path">{publication_date} · {path}</div>
+      <p>{excerpt}</p>
+    </div>
+    """
+
+
 def display_results(results):
     if results.get("error"):
-        st.error(results["error"]); return
+        st.error(results["error"])
+        return
 
-    # 1. Original question
-    st.markdown(f"**❓ Question:** {results['query']}")
+    st.markdown(
+        f"""
+        <div class="notice-panel">
+          <div class="section-kicker">Question analysee</div>
+          <strong>{_escape(results.get("query", ""))}</strong>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # 2. Rewrite (only if different)
-    if results.get("rewritten") and results["rewritten"] != results["query"]:
-        st.caption(f"🔄 Reformulée: {results['rewritten'][:200]}")
+    rewritten = results.get("rewritten")
+    if rewritten and rewritten != results.get("query"):
+        with st.expander("Reformulation utilisee", expanded=False):
+            st.write(rewritten)
+            facets = results.get("facet_queries", []) or []
+            if len(facets) > 1:
+                st.write("Facettes de recherche:")
+                for facet in facets:
+                    st.markdown(f"- {facet}")
 
-    # 3. ANSWER
-    p = results.get("parsed")
-    if p:
-        render_answer(p)
+    parsed = results.get("parsed")
+    if parsed:
+        render_answer(parsed)
     else:
-        st.warning("JSON invalide"); st.text(results.get("llm_raw","")[:500])
-        p = {"answer_status": "parse_error"}
+        st.warning("Le modele n'a pas retourne un JSON exploitable.")
+        st.code(results.get("llm_raw", "")[:1200], language="json")
 
-    # 4. Documents utilisés
-    with st.expander(f"📚 Documents utilisés — Stage 1 ({len(results.get('stage1',[]))} docs)", expanded=False):
-        rows = [{"#":h.rank,"Score":f"{h.score:.4f}","BOFIP":h.boi_reference,"Titre":h.title[:120]} for h in results.get("stage1",[])]
-        if rows: st.dataframe(rows, use_container_width=True, hide_index=True)
+    chunks = results.get("chunks", []) or []
+    st.markdown('<div class="section-kicker">Sources retenues</div>', unsafe_allow_html=True)
+    if chunks:
+        st.markdown(
+            '<div class="source-grid">' + "".join(_source_card(chunk) for chunk in chunks[:6]) + '</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.info("Aucun passage source n'a ete retenu.")
 
-    # 5. Technical details (collapsed)
-    with st.expander("🔧 Détails techniques (chunks, prompt, debug)", expanded=False):
-        chunks = results.get("chunks",[])
-        st.caption(f"Chunks finaux: {len(chunks)}")
-        for i,c in enumerate(chunks):
-            bg = "#1a472a" if i==0 else "#1a1a2e"
-            st.markdown(f'<div style="background:{bg};padding:10px;border-radius:5px;margin-bottom:8px;color:#e0e0e0">'
-                        f'<b>[{c["rank"]}] {c["boi_reference"]}</b> — score: {c["score"]:.4f}<br>'
-                        f'<span style="font-size:12px;color:#aab">📂 {c["section_path"]}</span><br>'
-                        f'<span style="font-size:13px">{c["text"][:300]}{"..." if len(c["text"])>300 else ""}</span></div>',
-                        unsafe_allow_html=True)
-        with st.expander("🤖 Prompt LLM"):
-            st.code(results.get("prompt",""), language="text")
-        plog = results.get("pipeline_log", {})
+    with st.expander(f"Documents candidats stage 1 ({len(results.get('stage1', []))})", expanded=False):
+        rows = [
+            {"rang": h.rank, "score": f"{h.score:.4f}", "reference": h.boi_reference, "titre": h.title[:140]}
+            for h in results.get("stage1", [])
+        ]
+        if rows:
+            st.dataframe(rows, use_container_width=True, hide_index=True)
+        else:
+            st.caption("Aucun document candidat a afficher.")
+
+    with st.expander("Trace technique", expanded=False):
+        plog = results.get("pipeline_log", {}) or {}
         if plog:
-            c1,c2,c3 = st.columns(3)
-            c1.metric("Docs uniques", plog.get("unique_docs_final","?"))
-            c2.metric("Max/doc", plog.get("max_chunks_per_doc","?"))
-            c3.metric("Candidats S2", plog.get("stage2_candidates","?"))
-            dropped = plog.get("stage1_docs_dropped",[])
-            if dropped:
-                st.caption("Docs S1 non retenus: " + ", ".join(d[:30] for d in dropped))
-            dist = plog.get("doc_distribution_final",{})
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("docs uniques", plog.get("unique_docs_final", "?"))
+            c2.metric("max chunks/doc", plog.get("max_chunks_per_doc", "?"))
+            c3.metric("candidats S2", plog.get("stage2_candidates", "?"))
+            c4.metric("facettes", plog.get("facets_used", "?"))
+            dist = plog.get("doc_distribution_final", {})
             if dist:
-                st.caption("Distribution: " + str(dist))
-        st.caption(f"Prompt tokens: {results.get('ptokens','?')} | Completion: {results.get('ctokens','?')}")
-        st.code(results.get("llm_raw",""), language="json")
+                st.caption("Distribution finale: " + json.dumps(dist, ensure_ascii=False))
+        st.caption(f"Prompt tokens: {results.get('ptokens', '?')} | Completion tokens: {results.get('ctokens', '?')}")
+        if SHOW_DEBUG_DETAILS:
+            trace_tabs = st.tabs(["Chunks", "Prompt", "JSON brut"])
+            chunk_container = trace_tabs[0]
+        else:
+            st.caption("Prompt et JSON brut masques en demo publique. Activez BOFIP_SHOW_DEBUG=1 pour audit local.")
+            chunk_container = st.container()
 
-# ── UI ──
-st.title("BOFiP Agentic RAG")
-st.caption("Prototype de recherche par Rapha1503. Ne constitue pas un conseil fiscal.")
+        with chunk_container:
+            for chunk in chunks:
+                st.markdown(f"**[{chunk['rank']}] {chunk['boi_reference']}** · {chunk['score']:.4f}")
+                st.caption(chunk.get("section_path", ""))
+                st.write(_truncate(chunk.get("text", ""), 700))
+
+        if SHOW_DEBUG_DETAILS:
+            with trace_tabs[1]:
+                st.code(results.get("prompt", ""), language="text")
+            with trace_tabs[2]:
+                st.code(results.get("llm_raw", ""), language="json")
+
+
+def render_hero(provider_name: str, model_name: str, use_reranker: bool):
+    reranker_label = "reranker active" if use_reranker else "reranker off"
+    st.markdown(
+        f"""
+        <div class="bofip-hero">
+          <h1>BOFiP Agentic RAG</h1>
+          <p>Recherche full-corpus dans la doctrine BOFiP avec citations, statut de couverture et trace de retrieval.</p>
+          <div class="hero-chips">
+            <span class="chip">5 666 documents</span>
+            <span class="chip">66 289 chunks</span>
+            <span class="chip">{_escape(provider_name)} · {_escape(model_name)}</span>
+            <span class="chip">{_escape(reranker_label)}</span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_metrics():
+    st.markdown(
+        """
+        <div class="metric-grid">
+          <div class="metric-card"><strong>Full corpus</strong><span>Pas de demo reduite: la couverture BOFiP reste complete.</span></div>
+          <div class="metric-card"><strong>Hybrid</strong><span>BM25, embeddings E5 et fusion RRF avant selection des passages.</span></div>
+          <div class="metric-card"><strong>Cite</strong><span>Chaque reponse expose les extraits et documents utilises.</span></div>
+          <div class="metric-card"><strong>BYOK</strong><span>La cle API reste fournie par l'utilisateur de la demo.</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_missing_key(provider: dict):
+    st.markdown(
+        f"""
+        <div class="notice-panel">
+          <div class="section-kicker">Configuration requise</div>
+          <strong>Ajoutez une cle {provider['env_key']} dans la barre laterale pour lancer une analyse.</strong>
+          <p>La demo hebergee transmet la question et la cle au serveur Streamlit puis au fournisseur LLM choisi.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# UI
+load_default_env_files()
 
 with st.sidebar:
-    st.header("Configuration")
-    st.caption("Projet portfolio de Rapha1503. Les cles API saisies ne sont pas sauvegardees par l'app.")
+    st.markdown("### Parametres")
     provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider_select")
     provider = PROVIDERS[provider_id]
-    load_default_env_files()
-    api_key = st.text_input(f"Clé API ({provider['env_key']})", value=os.environ.get(provider["env_key"],""),
-                            type="password", key="api_key_input",
-                            help="Chargée depuis .env.local si disponible. Non sauvegardée.")
-    model = st.text_input(
-        "Modele",
-        value=provider["default_model"],
-        key=f"model_{provider_id}",
-        help="ID modifiable. Utilisez un modele disponible sur votre compte fournisseur.",
+
+    api_key = st.text_input(
+        f"Cle API ({provider['env_key']})",
+        value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
+        type="password",
+        key="api_key_input",
+        help="Sur HF, le champ reste vide pour forcer une cle utilisateur. En local, .env.local peut pre-remplir.",
     )
-    use_rewrite = st.checkbox("Réécriture de la question", value=True,
-                              help="Reformule la question en vocabulaire fiscal avant la recherche.")
+
+    model_options = provider["models"]
+    default_model = provider["default_model"]
+    default_index = model_options.index(default_model) if default_model in model_options else 0
+    model = st.selectbox(
+        "Modele",
+        model_options,
+        index=default_index,
+        key=f"model_{provider_id}_select",
+        help="Liste limitee aux modeles configures pour cette demo.",
+    )
+
+    st.divider()
+    st.markdown("### Retrieval")
+    use_rewrite = st.checkbox(
+        "Reecriture de la question",
+        value=True,
+        help="Reformule la question en vocabulaire fiscal avant retrieval.",
+    )
     reranker_available = RERANKER_MODEL_PATH.exists()
     use_reranker = st.checkbox(
         "Cross-encoder reranker",
-        value=reranker_available,
-        help="Ameliore le classement final. Si le modele local est absent, laissez desactive pour un demarrage CPU plus leger.",
+        value=reranker_available and not RUNNING_ON_SPACE,
+        help="Option qualite. Desactive par defaut sur l'hebergement gratuit pour limiter la latence.",
     )
     if use_reranker and not reranker_available:
-        st.warning("Modele reranker local absent: le chargement peut tenter un telechargement Hugging Face.")
-    st.caption("En demo hebergee, votre cle et vos questions transitent par le serveur Streamlit et le fournisseur choisi.")
+        st.warning("Modele reranker absent localement: le chargement peut tenter un telechargement Hugging Face.")
+
     st.divider()
-    st.caption("Corpus: 5666 documents BOFIP")
-    st.caption("Modeles: E5-large (docs) / E5-large (chunks)")
-    st.caption("Reranker: bge-reranker-v2-m3 optionnel")
-    if st.button("Vider le cache"):
+    st.caption("Les questions peuvent contenir des donnees sensibles. N'envoyez pas de cas reel non anonymise.")
+    st.caption("Prototype de recherche, pas conseil fiscal.")
+    if st.button("Vider le cache", use_container_width=True):
         st.session_state.result_cache = {}
         st.rerun()
+
+render_hero(provider_id, model, use_reranker)
+render_metrics()
 
 if _missing_runtime_paths() and should_auto_download_artifacts():
     with st.spinner("Telechargement des artefacts full corpus..."):
@@ -430,52 +858,72 @@ if artifact_errors:
     st.stop()
 
 if not api_key:
-    st.warning(f"Entrez une clé API **{provider['env_key']}** dans la barre latérale.")
+    render_missing_key(provider)
     st.stop()
 
 reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
 rt = get_runtime(use_reranker, reranker_model)
 import torch
-st.caption(f"Appareil: {'GPU' if torch.cuda.is_available() else 'CPU'}")
-
 base_url = provider["base_url"]
 client = OpenAI(api_key=api_key, base_url=base_url)
 
-tab1, tab2 = st.tabs(["Question unique", "Test par lot"])
+mode = st.radio("Mode", ["Question unique", "Lot de questions"], horizontal=True, label_visibility="collapsed")
 
-with tab1:
-    query = st.text_input("Votre question", placeholder="Quel taux de TVA pour une pompe à chaleur ?")
-    if st.button("Rechercher", type="primary", disabled=not query.strip()):
-        with st.spinner("Recherche en cours..."):
-            results = process_query(query, rt, client, model, use_rewrite, use_reranker)
-        st.markdown("---")
+if mode == "Question unique":
+    st.markdown('<div class="workspace-panel"><div class="section-kicker">Analyse</div><div class="section-title">Question fiscale</div></div>', unsafe_allow_html=True)
+    query = st.text_area(
+        "Votre question",
+        placeholder="Quel taux de TVA pour la pose d'une pompe a chaleur chez un particulier ?",
+        height=115,
+        label_visibility="collapsed",
+    )
+    c1, c2, c3 = st.columns([1, 1, 2])
+    c1.caption(f"Runtime: {'GPU' if torch.cuda.is_available() else 'CPU'}")
+    c2.caption(f"Fournisseur: {provider_id}")
+    submit = c3.button("Analyser", type="primary", disabled=not query.strip(), use_container_width=True)
+    if submit:
+        with st.spinner("Recherche, selection des sources et generation..."):
+            results = process_query(query.strip(), rt, client, model, use_rewrite, use_reranker)
         display_results(results)
-
-with tab2:
-    st.caption("Collez plusieurs questions (une par ligne)")
-    batch_text = st.text_area("Questions", height=120, placeholder="Quel taux de TVA pour une pompe à chaleur ?\n\nComment sont imposés les gains...", help="Séparez les questions par une ligne vide.")
-    if st.button("Lancer le lot", type="primary", disabled=not batch_text.strip()):
-        queries = [q.strip() for q in batch_text.strip().split("\n\n") if q.strip()]
+else:
+    st.markdown('<div class="workspace-panel"><div class="section-kicker">Batch</div><div class="section-title">Plusieurs questions</div></div>', unsafe_allow_html=True)
+    batch_text = st.text_area(
+        "Questions",
+        height=150,
+        placeholder="Une question par paragraphe. Maximum 5 questions pour la demo publique.",
+        label_visibility="collapsed",
+    )
+    submit_batch = st.button("Lancer le lot", type="primary", disabled=not batch_text.strip(), use_container_width=True)
+    if submit_batch:
+        queries = [q.strip() for q in re.split(r"\n\s*\n", batch_text.strip()) if q.strip()]
         if len(queries) > 5:
             st.warning("Lot limite a 5 questions pour la demo publique.")
             queries = queries[:5]
-        if queries:
-            progress = st.progress(0); status_text = st.empty(); all_results = []
-            for i,q in enumerate(queries):
-                status_text.text(f"[{i+1}/{len(queries)}] {q[:80]}...")
-                progress.progress((i+1)/len(queries))
-                all_results.append(process_query(q, rt, client, model, use_rewrite, use_reranker))
-            progress.empty(); status_text.empty()
-            st.markdown("### Résumé")
-            rows = []
-            for res in all_results:
-                parsed = res.get("parsed")
-                sts = parsed.get("answer_status","error") if parsed else "error"
-                conc = (parsed.get("conclusion","")[:80] if parsed else str(res.get("error","")))
-                rows.append({"Question":res["query"][:80],"Statut":sts,"Réponse":conc})
-            st.dataframe(rows, use_container_width=True, hide_index=True)
-            expand_all = st.checkbox("📂 Tout développer", value=False, key="expand_batch")
-            for i,res in enumerate(all_results):
-                st.markdown(f"---")
-                with st.expander(f"### Q{i+1}: {res['query'][:100]}", expanded=expand_all):
-                    display_results(res)
+        progress = st.progress(0)
+        status_text = st.empty()
+        all_results = []
+        for index, question in enumerate(queries, start=1):
+            status_text.text(f"{index}/{len(queries)} · {question[:90]}")
+            all_results.append(process_query(question, rt, client, model, use_rewrite, use_reranker))
+            progress.progress(index / len(queries))
+        progress.empty()
+        status_text.empty()
+
+        summary_rows = []
+        for res in all_results:
+            parsed = res.get("parsed") or {}
+            status, label, _ = _status_meta(parsed.get("answer_status", "error"))
+            summary_rows.append(
+                {
+                    "question": _truncate(res.get("query", ""), 90),
+                    "statut": label,
+                    "conclusion": _truncate(parsed.get("conclusion", res.get("error", "")), 120),
+                }
+            )
+        st.dataframe(summary_rows, use_container_width=True, hide_index=True)
+        expand_all = st.checkbox("Developper toutes les reponses", value=False, key="expand_batch")
+        for index, res in enumerate(all_results, start=1):
+            with st.expander(f"Question {index}: {_truncate(res.get('query', ''), 100)}", expanded=expand_all):
+                display_results(res)
+
+st.markdown('<div class="app-footer">BOFiP Agentic RAG - prototype par Raphael Ifergan - sources BOFiP a verifier avant usage professionnel.</div>', unsafe_allow_html=True)
