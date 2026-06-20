@@ -421,7 +421,8 @@ if missing_paths:
     st.info("Commande de verification: python scripts/check_setup.py --deep")
     st.stop()
 
-artifact_errors = validate_runtime_artifacts(PROJECT_ROOT)
+check_hashes = os.environ.get("BOFIP_VALIDATE_HASHES", "").strip().lower() in {"1", "true", "yes"}
+artifact_errors = validate_runtime_artifacts(PROJECT_ROOT, check_hashes=check_hashes)
 if artifact_errors:
     st.error("Artefacts full-corpus invalides.")
     st.code("\n".join(artifact_errors))

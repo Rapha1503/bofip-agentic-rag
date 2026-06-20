@@ -48,7 +48,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def validate_runtime_artifacts(project_root: Path) -> list[str]:
+def validate_runtime_artifacts(project_root: Path, *, check_hashes: bool = True) -> list[str]:
     manifest = _manifest_artifacts(project_root)
     errors = []
     for rel_path in RUNTIME_ARTIFACTS:
@@ -60,7 +60,7 @@ def validate_runtime_artifacts(project_root: Path) -> list[str]:
         if path.stat().st_size != int(expected["size_bytes"]):
             errors.append(f"{rel_path}: size mismatch")
             continue
-        expected_hash = expected.get("sha256")
+        expected_hash = expected.get("sha256") if check_hashes else None
         if expected_hash and _sha256(path) != expected_hash:
             errors.append(f"{rel_path}: sha256 mismatch")
     return errors
