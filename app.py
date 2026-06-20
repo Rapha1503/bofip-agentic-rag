@@ -93,106 +93,238 @@ st.set_page_config(
     page_title="BOFiP Agentic RAG",
     page_icon="§",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 st.markdown(
     """
     <style>
       :root {
-        --ink: #18212f;
-        --muted: #647184;
-        --line: #d8ddd4;
-        --paper: #fffef9;
-        --soft: #f3f5f0;
-        --navy: #14213d;
-        --forest: #2f6f58;
-        --saffron: #c58b22;
-        --burgundy: #8c2f39;
-        --blue: #245c9f;
-        --red: #9f1d2f;
+        --ink: #101828;
+        --text: #263244;
+        --muted: #667085;
+        --faint: #98a2b3;
+        --line: #d0d5dd;
+        --line-soft: #e4e7ec;
+        --paper: #ffffff;
+        --canvas: #f6f7f9;
+        --blue: #235789;
+        --blue-dark: #173b5f;
+        --blue-soft: #e8f1fb;
+        --green: #23745d;
+        --amber: #b7791f;
+        --red: #b42318;
+      }
+
+      html, body, [class*="css"] {
+        font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       }
 
       [data-testid="stAppViewContainer"] {
-        background:
-          linear-gradient(180deg, rgba(255, 254, 249, .96), rgba(243, 245, 240, .96)),
-          repeating-linear-gradient(90deg, rgba(20,33,61,.035) 0, rgba(20,33,61,.035) 1px, transparent 1px, transparent 74px);
+        background: var(--canvas);
+        color: var(--ink);
+      }
+
+      [data-testid="stHeader"] {
+        background: rgba(246, 247, 249, .96);
+        border-bottom: 1px solid var(--line-soft);
+      }
+
+      [data-testid="stDecoration"],
+      [data-testid="stToolbar"] {
+        display: none;
       }
 
       .block-container {
-        max-width: 1220px;
-        padding-top: 1.4rem;
+        max-width: 1180px;
+        padding-top: 1.1rem;
         padding-bottom: 3rem;
         color: var(--ink);
       }
 
       [data-testid="stSidebar"] {
-        background: #fbfaf4;
+        background: var(--paper);
         border-right: 1px solid var(--line);
+      }
+
+      [data-testid="stSidebar"] > div:first-child {
+        padding-top: 1.5rem;
       }
 
       [data-testid="stSidebar"] h1,
       [data-testid="stSidebar"] h2,
       [data-testid="stSidebar"] h3 {
         color: var(--ink);
+        font-size: .95rem;
+        font-weight: 760;
+        margin-bottom: .45rem;
       }
 
-      .bofip-hero {
-        border-radius: 8px;
-        background: var(--navy);
-        color: #fffef9;
-        padding: 26px 30px;
-        border: 1px solid #20304f;
-        border-left: 7px solid var(--saffron);
-        box-shadow: 0 16px 44px rgba(20, 33, 61, .14);
-        margin-bottom: 18px;
+      [data-testid="stSidebar"] label,
+      [data-testid="stSidebar"] p,
+      [data-testid="stSidebar"] span {
+        color: var(--text);
       }
 
-      .bofip-hero h1 {
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 2.65rem;
-        line-height: 1.04;
-        margin: 0 0 10px 0;
-        letter-spacing: 0;
-        color: #fffef9;
-        font-weight: 700;
+      [data-testid="stSidebar"] small,
+      [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+      [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+        color: var(--muted) !important;
       }
 
-      .bofip-hero p {
-        margin: 0;
-        max-width: 780px;
-        color: rgba(255,254,249,.84);
-        font-size: 1rem;
+      [data-testid="stSidebar"] [data-baseweb="select"] > div,
+      [data-testid="stSidebar"] .stTextInput input {
+        background: #ffffff !important;
+        color: var(--ink) !important;
+        border: 1px solid var(--line) !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
       }
 
-      .hero-chips {
+      [data-testid="stSidebar"] [data-baseweb="select"] span,
+      [data-testid="stSidebar"] .stTextInput input::placeholder {
+        color: var(--ink) !important;
+      }
+
+      [data-testid="stSidebar"] svg {
+        color: var(--muted);
+        fill: currentColor;
+      }
+
+      [data-testid="stSidebar"] hr {
+        border-color: var(--line-soft);
+        margin: 1.2rem 0;
+      }
+
+      .app-shell {
+        border: 1px solid var(--line);
+        background: var(--paper);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 18px 45px rgba(16, 24, 40, .05);
+        margin-bottom: 16px;
+      }
+
+      .app-header {
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 18px;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 26px 30px 22px;
+        border-bottom: 1px solid var(--line-soft);
       }
 
-      .chip {
+      .brand-line {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--blue);
+        font-size: .82rem;
+        font-weight: 760;
+        margin-bottom: 9px;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 7px;
+        border: 1px solid var(--blue);
+        color: var(--blue-dark);
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,254,249,.28);
-        background: rgba(255,254,249,.08);
-        padding: 7px 11px;
-        color: #fffef9;
-        font-size: .86rem;
-        white-space: nowrap;
+        justify-content: center;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1rem;
+        font-weight: 800;
+        background: var(--blue-soft);
       }
 
-      .metric-grid {
+      .app-header h1 {
+        color: var(--ink);
+        font-size: 2rem;
+        line-height: 1.1;
+        margin: 0 0 8px;
+        font-weight: 760;
+        letter-spacing: 0;
+      }
+
+      .app-header p {
+        margin: 0;
+        max-width: 760px;
+        color: var(--muted);
+        font-size: .98rem;
+        line-height: 1.55;
+      }
+
+      .model-panel {
+        min-width: 260px;
+        align-self: flex-start;
+        background: #f8fafc;
+        border: 1px solid var(--line-soft);
+        border-radius: 8px;
+        padding: 12px 14px;
+      }
+
+      .model-panel span {
+        display: block;
+        color: var(--muted);
+        font-size: .76rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .model-panel strong {
+        display: block;
+        color: var(--ink);
+        font-size: .93rem;
+        line-height: 1.3;
+      }
+
+      .model-panel small {
+        color: var(--muted);
+        display: block;
+        margin-top: 7px;
+        line-height: 1.35;
+      }
+
+      .system-strip {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        margin: 10px 0 18px;
+        border-bottom: 1px solid var(--line-soft);
+        background: #fbfcfd;
       }
 
-      .metric-card,
+      .system-item {
+        padding: 15px 18px;
+        border-right: 1px solid var(--line-soft);
+      }
+
+      .system-item:last-child {
+        border-right: 0;
+      }
+
+      .system-item span {
+        display: block;
+        color: var(--muted);
+        font-size: .74rem;
+        font-weight: 730;
+        margin-bottom: 4px;
+      }
+
+      .system-item strong {
+        display: block;
+        color: var(--ink);
+        font-size: .98rem;
+        font-weight: 750;
+        line-height: 1.25;
+      }
+
+      .system-item small {
+        display: block;
+        color: var(--muted);
+        margin-top: 4px;
+        line-height: 1.35;
+      }
+
       .workspace-panel,
       .answer-panel,
       .source-card,
@@ -200,81 +332,61 @@ st.markdown(
         background: var(--paper);
         border: 1px solid var(--line);
         border-radius: 8px;
-        box-shadow: 0 8px 24px rgba(20, 33, 61, .06);
-      }
-
-      .metric-card {
-        padding: 15px 16px;
-        min-height: 92px;
-      }
-
-      .metric-card strong {
-        display: block;
-        color: var(--navy);
-        font-size: 1.12rem;
-        line-height: 1.1;
-      }
-
-      .metric-card span {
-        display: block;
-        margin-top: 8px;
-        color: var(--muted);
-        font-size: .86rem;
+        box-shadow: none;
       }
 
       .workspace-panel {
-        padding: 18px;
-        margin-top: 6px;
+        padding: 18px 20px;
+        margin: 14px 0 10px;
       }
 
       .section-kicker {
-        color: var(--muted);
-        font-size: .78rem;
-        font-weight: 700;
+        color: var(--blue);
+        font-size: .75rem;
+        font-weight: 760;
         letter-spacing: 0;
-        text-transform: uppercase;
+        text-transform: none;
         margin-bottom: 6px;
       }
 
       .section-title {
         color: var(--ink);
-        font-size: 1.3rem;
-        font-weight: 700;
+        font-size: 1.16rem;
+        font-weight: 760;
         margin-bottom: 12px;
       }
 
       .status-pill {
         display: inline-flex;
         align-items: center;
-        border-radius: 999px;
+        border-radius: 6px;
         padding: 5px 10px;
         font-size: .78rem;
         font-weight: 700;
         letter-spacing: 0;
-        text-transform: uppercase;
       }
 
       .status-supported {
-        color: #174d3a;
-        background: #e2f2eb;
-        border: 1px solid #b9dacb;
+        color: #075e45;
+        background: #e7f5ef;
+        border: 1px solid #b7dfcf;
       }
 
       .status-partial {
-        color: #81520d;
-        background: #fff4d8;
-        border: 1px solid #e8c36c;
+        color: #8a4b05;
+        background: #fff7e6;
+        border: 1px solid #f2d59b;
       }
 
       .status-insufficient,
       .status-error {
-        color: #991b1b;
-        background: #fee2e2;
-        border: 1px solid #fecaca;
+        color: #9a3412;
+        background: #fff1e8;
+        border: 1px solid #fed7aa;
       }
 
       .answer-panel {
-        padding: 18px;
+        padding: 18px 20px;
         margin: 16px 0;
       }
 
@@ -286,16 +398,16 @@ st.markdown(
 
       .answer-panel p,
       .answer-panel li {
-        color: #243149;
+        color: var(--text);
         line-height: 1.55;
       }
 
       .answer-panel blockquote {
-        border-left: 4px solid var(--teal);
+        border-left: 3px solid var(--blue);
         margin: 10px 0;
-        padding: 7px 0 7px 14px;
-        color: #243149;
-        background: #f3f8f5;
+        padding: 8px 0 8px 14px;
+        color: var(--text);
+        background: #f8fafc;
       }
 
       .source-grid {
@@ -310,7 +422,7 @@ st.markdown(
       }
 
       .source-card .ref {
-        color: var(--forest);
+        color: var(--blue);
         font-weight: 800;
         font-size: .88rem;
       }
@@ -329,14 +441,21 @@ st.markdown(
       }
 
       .source-card p {
-        color: #31405b;
+        color: var(--text);
         font-size: .88rem;
         line-height: 1.45;
       }
 
       .notice-panel {
-        padding: 16px 18px;
-        border-left: 4px solid var(--saffron);
+        padding: 20px 22px;
+        border-left: 4px solid var(--blue);
+        margin-top: 14px;
+      }
+
+      .notice-panel p {
+        color: var(--text);
+        margin: 8px 0 0;
+        line-height: 1.55;
       }
 
       .app-footer {
@@ -347,17 +466,53 @@ st.markdown(
         border-top: 1px solid var(--line);
       }
 
+      .stTextArea textarea,
+      .stTextInput input,
+      [data-baseweb="select"] > div {
+        background: #ffffff !important;
+        color: var(--ink) !important;
+        border: 1px solid var(--line) !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+      }
+
+      .stTextArea textarea:focus,
+      .stTextInput input:focus,
+      [data-baseweb="select"] > div:focus-within {
+        border-color: var(--blue) !important;
+        box-shadow: 0 0 0 3px rgba(35, 87, 137, .12) !important;
+      }
+
+      .stCheckbox [data-testid="stWidgetLabel"] p,
+      .stRadio [data-testid="stWidgetLabel"] p {
+        color: var(--text);
+      }
+
       div[data-testid="stButton"] > button {
-        border-radius: 7px;
-        font-weight: 700;
+        border-radius: 6px;
+        font-weight: 730;
+        border: 1px solid var(--line);
+      }
+
+      div[data-testid="stButton"] > button[kind="primary"] {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: white;
+      }
+
+      div[data-testid="stButton"] > button[kind="primary"]:hover {
+        background: var(--blue-dark);
+        border-color: var(--blue-dark);
       }
 
       @media (max-width: 840px) {
-        .bofip-hero { padding: 22px; }
-        .bofip-hero h1 { font-size: 2.05rem; }
-        .metric-grid,
+        .app-header { flex-direction: column; padding: 22px; }
+        .app-header h1 { font-size: 1.72rem; }
+        .model-panel { min-width: 0; width: 100%; }
+        .system-strip,
         .source-grid { grid-template-columns: 1fr; }
-        .chip { white-space: normal; }
+        .system-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+        .system-item:last-child { border-bottom: 0; }
       }
     </style>
     """,
@@ -755,33 +910,29 @@ def display_results(results):
                 st.code(results.get("llm_raw", ""), language="json")
 
 
-def render_hero(provider_name: str, model_name: str, use_reranker: bool):
-    reranker_chip = '<span class="chip">reranking qualite active</span>' if use_reranker else ""
+def render_app_shell(provider_name: str, model_name: str, use_reranker: bool):
+    reranker_state = "Reranker actif" if use_reranker else "Reranker desactive"
     st.markdown(
         f"""
-        <div class="bofip-hero">
-          <h1>BOFiP Agentic RAG</h1>
-          <p>Assistant de recherche dans la doctrine fiscale BOFiP: retrieval hybride, citations controlees et statut de couverture.</p>
-          <div class="hero-chips">
-            <span class="chip">5 666 documents BOFiP commentaire</span>
-            <span class="chip">Corpus observe jusqu'au 28/01/2026</span>
-            <span class="chip">{_escape(provider_name)} - {_escape(model_name)}</span>
-            {reranker_chip}
+        <div class="app-shell">
+          <div class="app-header">
+            <div>
+              <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
+              <h1>Recherche citee dans la doctrine fiscale</h1>
+              <p>Posez une question, inspectez les passages retenus, puis lisez une reponse prudente avec statut de preuve.</p>
+            </div>
+            <div class="model-panel">
+              <span>Session</span>
+              <strong>{_escape(provider_name)} / {_escape(model_name)}</strong>
+              <small>{_escape(reranker_state)}</small>
+            </div>
           </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_metrics():
-    st.markdown(
-        """
-        <div class="metric-grid">
-          <div class="metric-card"><strong>Corpus BOFiP</strong><span>5 666 documents commentaire, 66 289 passages indexes, fraicheur observee: 28/01/2026.</span></div>
-          <div class="metric-card"><strong>Retrieval hybride</strong><span>BM25, embeddings E5 et fusion RRF pour remonter documents puis passages.</span></div>
-          <div class="metric-card"><strong>Reponse citee</strong><span>Conclusion, limites et extraits sources visibles avant interpretation.</span></div>
-          <div class="metric-card"><strong>Cle utilisateur</strong><span>La demo utilise la cle API saisie dans la session, sans stockage applicatif.</span></div>
+          <div class="system-strip">
+            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>BOFiP commentaires observes jusqu'au 28/01/2026</small></div>
+            <div class="system-item"><span>Index</span><strong>66 289 passages</strong><small>Recherche documents puis passages</small></div>
+            <div class="system-item"><span>Retrieval</span><strong>BM25 + embeddings E5</strong><small>Fusion RRF, diversite documentaire</small></div>
+            <div class="system-item"><span>Sortie</span><strong>Citations et limites</strong><small>Sources visibles avant interpretation</small></div>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -791,9 +942,9 @@ def render_missing_key(provider: dict):
     st.markdown(
         f"""
         <div class="notice-panel">
-          <div class="section-kicker">Configuration requise</div>
-          <strong>Ajoutez une cle {provider['env_key']} dans la barre laterale pour lancer une analyse.</strong>
-          <p>La demo hebergee transmet la question et la cle au serveur Streamlit puis au fournisseur LLM choisi.</p>
+          <div class="section-kicker">Cle API requise</div>
+          <strong>Saisissez une cle {provider['env_key']} dans la barre laterale pour lancer une recherche.</strong>
+          <p>La cle reste dans la session Streamlit et sert uniquement a appeler le fournisseur choisi.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -804,7 +955,7 @@ def render_missing_key(provider: dict):
 load_default_env_files()
 
 with st.sidebar:
-    st.markdown("### Parametres")
+    st.markdown("### Configuration")
     provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider_select")
     provider = PROVIDERS[provider_id]
 
@@ -813,7 +964,7 @@ with st.sidebar:
         value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
         type="password",
         key="api_key_input",
-        help="Sur HF, le champ reste vide pour forcer une cle utilisateur. En local, .env.local peut pre-remplir.",
+        help="Sur HF, le champ reste vide. En local, .env.local peut pre-remplir la valeur.",
     )
 
     model_options = provider["models"]
@@ -824,7 +975,7 @@ with st.sidebar:
         model_options,
         index=default_index,
         key=f"model_{provider_id}_select",
-        help="Liste limitee aux modeles configures pour cette demo.",
+        help="Liste limitee aux modeles configures pour ce prototype.",
     )
     st.caption(provider.get("note", ""))
 
@@ -837,7 +988,7 @@ with st.sidebar:
     )
     reranker_available = RERANKER_MODEL_PATH.exists()
     with st.expander("Mode qualite avance", expanded=False):
-        st.caption("Le reranker reclasse les passages candidats apres retrieval. Utile pour la precision, plus lent sur CPU.")
+        st.caption("Reclasse les passages candidats. Utile pour la precision des citations, plus lent sur CPU.")
         use_reranker = st.checkbox(
             "Activer le reranking des passages",
             value=reranker_available and not RUNNING_ON_SPACE,
@@ -847,14 +998,13 @@ with st.sidebar:
             st.warning("Modele reranker absent localement: le chargement peut tenter un telechargement Hugging Face.")
 
     st.divider()
-    st.caption("Les questions peuvent contenir des donnees sensibles. N'envoyez pas de cas reel non anonymise.")
+    st.caption("Anonymisez les cas reels avant usage.")
     st.caption("Prototype de recherche, pas conseil fiscal.")
     if st.button("Vider le cache", use_container_width=True):
         st.session_state.result_cache = {}
         st.rerun()
 
-render_hero(provider_id, model, use_reranker)
-render_metrics()
+render_app_shell(provider_id, model, use_reranker)
 
 if _missing_runtime_paths() and should_auto_download_artifacts():
     with st.spinner("Telechargement des artefacts full corpus..."):
