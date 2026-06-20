@@ -1,4 +1,4 @@
-"""BOFIP RAG — Assistant Fiscal"""
+"""BOFiP Agentic RAG - Streamlit app."""
 from __future__ import annotations
 import hashlib, json, logging, os, re, sys, time
 from pathlib import Path
@@ -10,18 +10,24 @@ from bofip_cleanroom.env_utils import load_default_env_files
 from bofip_cleanroom.rag_runtime import RagRuntime
 from bofip_cleanroom.prompt_utils import build_prompt
 
-# ── File logging ───────────────────────────────────────────────────
+# Optional file logging. Disabled by default for public/demo runs because
+# queries can contain sensitive facts.
 LOG_DIR = PROJECT_ROOT / "data" / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+ENABLE_PIPELINE_LOG = os.environ.get("BOFIP_PIPELINE_LOG", "").strip().lower() in {"1", "true", "yes"}
+if ENABLE_PIPELINE_LOG:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 _pipeline_logger = logging.getLogger("bofip_pipeline")
 _pipeline_logger.setLevel(logging.DEBUG)
-_fh = logging.FileHandler(LOG_DIR / "pipeline.log", encoding="utf-8")
-_fh.setFormatter(logging.Formatter("%(asctime)s | %(message)s", datefmt="%H:%M:%S"))
-_pipeline_logger.addHandler(_fh)
+if ENABLE_PIPELINE_LOG and not _pipeline_logger.handlers:
+    _fh = logging.FileHandler(LOG_DIR / "pipeline.log", encoding="utf-8")
+    _fh.setFormatter(logging.Formatter("%(asctime)s | %(message)s", datefmt="%H:%M:%S"))
+    _pipeline_logger.addHandler(_fh)
 _pipeline_logger.propagate = False
 
 def _log(step: str, data: dict):
+    if not ENABLE_PIPELINE_LOG:
+        return
     _pipeline_logger.info(f"[{step}] {json.dumps(data, ensure_ascii=False, default=str)[:2000]}")
 
 
@@ -58,7 +64,7 @@ PROVIDERS = {
     },
 }
 
-st.set_page_config(page_title="BOFIP RAG", layout="wide")
+st.set_page_config(page_title="BOFiP Agentic RAG", layout="wide")
 
 @st.cache_resource(show_spinner="Chargement du runtime (~50s, une seule fois)...")
 def get_runtime():
@@ -338,10 +344,12 @@ def display_results(results):
         st.code(results.get("llm_raw",""), language="json")
 
 # ── UI ──
-st.title("BOFIP RAG — Assistant Fiscal 🇫🇷")
+st.title("BOFiP Agentic RAG")
+st.caption("Prototype de recherche par Rapha1503. Ne constitue pas un conseil fiscal.")
 
 with st.sidebar:
     st.header("⚙️ Configuration")
+    st.caption("Projet portfolio de Rapha1503. Les cles API saisies ne sont pas sauvegardees par l'app.")
     provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider_select")
     provider = PROVIDERS[provider_id]
     load_default_env_files()
@@ -353,7 +361,7 @@ with st.sidebar:
                               help="Reformule la question en vocabulaire fiscal avant la recherche.")
     st.divider()
     st.caption("Corpus: 5666 documents BOFIP")
-    st.caption("Modèles: E5-large (docs) / E5-base (chunks)")
+    st.caption("Modèles: E5-large (docs) / E5-large (chunks)")
     st.caption("Reranker: bge-reranker-v2-m3")
     if st.button("🗑️ Vider le cache"):
         st.session_state.result_cache = {}

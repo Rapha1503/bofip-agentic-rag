@@ -1,103 +1,145 @@
-# BOFIP RAG — Assistant Fiscal 🇫🇷
+# BOFiP Agentic RAG
 
-RAG pipeline for French fiscal documents (BOFIP — *Bulletin Officiel des Finances Publiques*) with hybrid retrieval, cross-encoder reranking, LLM query rewriting, and coverage-aware generation.
+Full-corpus retrieval-augmented generation prototype for French BOFiP doctrine, created by **Rapha1503**.
 
-[![Tests](https://img.shields.io/badge/tests-102%20passing-brightgreen)]()
+The project explores how to answer tax questions from official BOFiP commentary with cited evidence, hybrid retrieval, dense embeddings, cross-encoder reranking, and coverage-aware generation.
+
 [![Python](https://img.shields.io/badge/python-3.11-blue)]()
+[![Status](https://img.shields.io/badge/status-research%20prototype-orange)]()
 
-## Architecture
+## Why This Project Exists
 
+French tax doctrine is broad, dense, and citation-sensitive. A useful RAG system cannot rely on a single vector search over loose chunks: it needs structured parsing, legal metadata, robust retrieval under paraphrase, citation traceability, and honest abstention when evidence is missing.
+
+This repository is designed as a portfolio-grade cleanroom version of that work.
+
+## Pipeline
+
+```text
+BOFiP XML/HTML export
+  -> structured RawDocument records
+  -> section-aware chunks
+  -> BM25 document indexes
+  -> dense document and chunk indexes
+  -> confidence-weighted RRF fusion
+  -> local chunk retrieval
+  -> cross-encoder reranking
+  -> cited JSON answer with coverage status
 ```
-user question
-    │
-    ▼ QUERY ANALYSIS (LLM: rewrite + facet + computation detection)
-    │
-    ▼ MULTI-FACET RETRIEVAL (auto-detected per query)
-    ├── BM25 (base, sections_leads, sections_leads_stem)
-    ├── Dense embeddings (E5-large docs, E5-base chunks)
-    ├── Dense-anchor filter — blocks convention spam
-    └── Confidence-weighted RRF fusion → top docs
-    │
-    ▼ CHUNK MERGE + DIVERSITY (sort by score, max 3/doc, dedup)
-    │
-    ▼ RERANKER — bge-reranker-v2-m3 cross-encoder
-    │
-    ▼ LLM — Accountant-style answer (DeepSeek, OpenAI, Anthropic, Mistral, Google)
-    └── axes_requis/couverts/manquants → supported | partial | insufficient_evidence
-        → cited, step-by-step answer with legal reasoning
-```
 
-## Key Features
+Current runtime corpus:
 
-- **Multi-facet retrieval** — auto-detects complex questions, splits into sub-queries per legal axis
-- **Dynamic diversity selection** — prevents document domination (max 3 chunks per doc)
-- **Computation-aware detection** — finds missing taux/rate sections for calculation questions
-- **Chunk deduplication** — merges multi-facet results, keeps best by score
-- **Accountant-style answers** — structured: ANSWER + Analyse détaillée with cited steps
-- **7 LLM providers** — DeepSeek, OpenAI, Anthropic, Mistral, Google, Groq, Together
+| Artifact | Local path | Notes |
+| --- | --- | --- |
+| Raw documents | `data/interim/raw_docs_sample_5666.jsonl` | 5,666 BOFiP commentary documents |
+| Chunks | `data/interim/chunks_section_window_sample_5666.jsonl` | 66,289 section-window chunks |
+| Document embeddings | `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` | E5-large, shape `(5666, 1024)` |
+| Chunk embeddings | `data/interim/chunk_dense_cache_5666_full_e5large.npy` | E5-large, shape `(66289, 1024)` |
+| Evaluation queries | `data/interim/eval_queries_v1.jsonl` | 50 test questions |
+| Passage gold | `data/interim/passage_gold_v3.jsonl` | passage-level labels where available |
+
+Large corpus/model artifacts are intentionally not committed to Git. See [docs/DATA_CARD.md](docs/DATA_CARD.md).
+
+## Retrieval Stack
+
+- Multi-view BM25 over document text, section leads, and stemmed section leads.
+- Dense document retrieval with multilingual E5-large.
+- Dense chunk retrieval for semantic anchors.
+- Dense-anchor filtering to limit lexical false positives.
+- Confidence-weighted reciprocal rank fusion.
+- Local per-document chunk retrieval.
+- Cross-encoder reranking with `BAAI/bge-reranker-v2-m3`.
+- Diversity selection to prevent one document from dominating context.
+
+The current app also performs query rewriting, multi-facet expansion, and computation-aware facet injection before retrieval. A Phase 2 cleanup will move that orchestration out of `app.py` into a shared runtime module.
 
 ## Quick Start
 
 ```powershell
-git clone https://github.com/Rapha1503/bofip-rag.git
-cd bofip-rag
+git clone https://github.com/Rapha1503/bofip-agentic-rag.git
+cd bofip-agentic-rag
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-echo DEEPSEEK_API_KEY=sk-... > .env.local
-
-# Place data files in data/interim/
-$env:PYTHONPATH='src'; streamlit run app.py
+Copy-Item .env.example .env.local
 ```
 
-## Data
+Add one provider key to `.env.local`, then place the required BOFiP artifacts in `data/interim/`.
 
-Place these files in `data/interim/`:
-
-| File | Description |
-|------|-------------|
-| `raw_docs_sample_5666.jsonl` | 5,666 parsed BOFIP documents |
-| `chunks_section_window_sample_5666.jsonl` | 66,289 chunks |
-| `doc_dense_cache_5666_sections_firstpara_e5large.npy` | Doc embeddings |
-| `chunk_dense_cache_5666_full_e5.npy` | Chunk embeddings |
-
-Models auto-download from HuggingFace on first use.
-
-## Commands
+Run the Streamlit app:
 
 ```powershell
-# UI
-$env:PYTHONPATH='src'; streamlit run app.py
-
-# CLI
-$env:PYTHONPATH='src'; python scripts/preview_answer.py --query "votre question"
-
-# Batch
-python scripts/preview_answer.py --input data/interim/batch.jsonl --output data/reports/batch.json
-python scripts/preview_answer.py --input ... --resume data/reports/batch.json
-
-# Profile
-$env:PYTHONPATH='src'; python scripts/profile.py
-
-# Tests
-$env:PYTHONPATH='src'; python -m unittest discover -s tests -v
+$env:PYTHONPATH='src'
+streamlit run app.py
 ```
 
-## Providers
+Run a CLI answer preview:
 
-| Provider | Env Key | Default Model |
-|----------|---------|--------------|
-| DeepSeek | `DEEPSEEK_API_KEY` | deepseek-v4-flash |
-| OpenAI | `OPENAI_API_KEY` | gpt-4.1-mini |
-| Anthropic | `ANTHROPIC_API_KEY` | claude-haiku-4-5 |
-| Mistral | `MISTRAL_API_KEY` | mistral-small-4 |
-| Google | `GEMINI_API_KEY` | gemini-3.1-flash |
-| Groq | `GROQ_API_KEY` | llama-4-scout |
-| Together | `TOGETHER_API_KEY` | Llama-4-Maverick |
+```powershell
+$env:PYTHONPATH='src'
+python scripts/preview_answer.py --query "Quel taux de TVA pour une pompe a chaleur ?"
+```
 
-API keys can be set via `.env.local` or entered in the sidebar (password field, never saved).
+Run retrieval evaluation:
 
-## Docs
+```powershell
+$env:PYTHONPATH='src'
+python scripts/evaluate.py --runtime rag --device cpu --limit 5
+```
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Full pipeline design, data flow, component reference
+Run unit tests:
+
+```powershell
+$env:PYTHONPATH='src'
+python -m unittest discover -s tests -v
+```
+
+## LLM Providers
+
+The Streamlit app currently exposes these providers:
+
+| Provider | Env key |
+| --- | --- |
+| DeepSeek | `DEEPSEEK_API_KEY` |
+| OpenAI | `OPENAI_API_KEY` |
+| Anthropic | `ANTHROPIC_API_KEY` |
+| Mistral | `MISTRAL_API_KEY` |
+| Google Gemini | `GEMINI_API_KEY` |
+
+API keys can be loaded from `.env.local` or entered in the Streamlit sidebar. Keys must not be committed or logged.
+
+## Full-Corpus Deployment Principle
+
+The live demo should not use a reduced corpus. If a user asks about a BOFiP family removed from the demo, the RAG system becomes misleading.
+
+Deployment optimization must preserve full corpus coverage:
+
+- prebuilt data artifacts;
+- memory-mapped or cached embeddings;
+- startup preflight checks;
+- optional reranker or cheaper reranker mode;
+- explicit latency and freshness limits;
+- clear BYOK warning for user-provided API keys.
+
+GitHub Pages should host the static portfolio page. A Python host such as Hugging Face Spaces is the better fit for the Streamlit runtime. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+## Limitations
+
+- Research prototype, not tax advice.
+- Local corpus max publication date observed during audit: `2026-01-28`.
+- Official BOFiP may contain newer publications.
+- The runtime currently indexes the 5,666-document commentary corpus, not every BOFiP content type.
+- Some table content is parsed but not yet first-class in chunk retrieval.
+- Some BOI references are duplicated across different documents; Phase 2 will key retrieval by stable document identity.
+- End-to-end answer grading is not yet as complete as retrieval grading.
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Data card](docs/DATA_CARD.md)
+- [Deployment notes](docs/DEPLOYMENT.md)
+- [Roadmap](docs/ROADMAP.md)
+
+## Author
+
+Created and maintained by **Rapha1503**.
