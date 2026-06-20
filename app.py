@@ -42,27 +42,31 @@ def _log(step: str, data: dict):
 PROVIDERS = {
     "DeepSeek": {
         "base_url": "https://api.deepseek.com/v1",
-        "models": ["deepseek-chat", "deepseek-reasoner"],
-        "default_model": "deepseek-chat",
+        "models": ["deepseek-v4-flash", "deepseek-v4-pro", "deepseek-chat", "deepseek-reasoner"],
+        "default_model": "deepseek-v4-flash",
         "env_key": "DEEPSEEK_API_KEY",
+        "note": "DeepSeek v4 au 20/06/2026. deepseek-chat/reasoner restent en aliases compatibilite jusqu'au 24/07/2026.",
     },
     "OpenAI": {
         "base_url": "https://api.openai.com/v1",
-        "models": ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"],
-        "default_model": "gpt-4.1-mini",
+        "models": ["gpt-5.4-mini", "gpt-5.5", "gpt-5.4", "gpt-5.4-nano"],
+        "default_model": "gpt-5.4-mini",
         "env_key": "OPENAI_API_KEY",
+        "note": "OpenAI frontier models au 20/06/2026. Mini par defaut pour limiter le cout.",
     },
     "Mistral": {
         "base_url": "https://api.mistral.ai/v1",
-        "models": ["mistral-small-latest", "mistral-large-latest"],
+        "models": ["mistral-medium-latest", "mistral-small-latest", "mistral-large-latest", "magistral-medium-latest"],
         "default_model": "mistral-small-latest",
         "env_key": "MISTRAL_API_KEY",
+        "note": "Aliases Mistral latest pour suivre Medium 3.5 / Small 4 sans figer une version retiree.",
     },
     "Google": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
-        "default_model": "gemini-2.5-flash",
+        "models": ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"],
+        "default_model": "gemini-3.5-flash",
         "env_key": "GEMINI_API_KEY",
+        "note": "Modele OpenAI-compatible recommande par la doc Gemini au 20/06/2026.",
     },
 }
 
@@ -96,29 +100,34 @@ st.markdown(
     """
     <style>
       :root {
-        --ink: #172033;
-        --muted: #61708a;
-        --line: #d9e1ec;
-        --paper: #ffffff;
-        --soft: #f5f7fb;
-        --teal: #0f766e;
-        --amber: #b45309;
-        --blue: #1d4ed8;
-        --red: #b91c1c;
+        --ink: #18212f;
+        --muted: #647184;
+        --line: #d8ddd4;
+        --paper: #fffef9;
+        --soft: #f3f5f0;
+        --navy: #14213d;
+        --forest: #2f6f58;
+        --saffron: #c58b22;
+        --burgundy: #8c2f39;
+        --blue: #245c9f;
+        --red: #9f1d2f;
       }
 
       [data-testid="stAppViewContainer"] {
-        background: linear-gradient(180deg, #f7f9fd 0%, #eef3f8 100%);
+        background:
+          linear-gradient(180deg, rgba(255, 254, 249, .96), rgba(243, 245, 240, .96)),
+          repeating-linear-gradient(90deg, rgba(20,33,61,.035) 0, rgba(20,33,61,.035) 1px, transparent 1px, transparent 74px);
       }
 
       .block-container {
-        max-width: 1180px;
-        padding-top: 1.8rem;
+        max-width: 1220px;
+        padding-top: 1.4rem;
         padding-bottom: 3rem;
+        color: var(--ink);
       }
 
       [data-testid="stSidebar"] {
-        background: #fbfcff;
+        background: #fbfaf4;
         border-right: 1px solid var(--line);
       }
 
@@ -130,28 +139,30 @@ st.markdown(
 
       .bofip-hero {
         border-radius: 8px;
-        background:
-          linear-gradient(135deg, rgba(23,32,51,.96), rgba(29,78,216,.86) 58%, rgba(15,118,110,.92));
-        color: #ffffff;
-        padding: 30px 32px;
-        border: 1px solid rgba(255,255,255,.18);
-        box-shadow: 0 18px 50px rgba(28, 44, 70, .16);
+        background: var(--navy);
+        color: #fffef9;
+        padding: 26px 30px;
+        border: 1px solid #20304f;
+        border-left: 7px solid var(--saffron);
+        box-shadow: 0 16px 44px rgba(20, 33, 61, .14);
         margin-bottom: 18px;
       }
 
       .bofip-hero h1 {
-        font-size: 3rem;
-        line-height: 1.02;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 2.65rem;
+        line-height: 1.04;
         margin: 0 0 10px 0;
         letter-spacing: 0;
-        color: #ffffff;
+        color: #fffef9;
+        font-weight: 700;
       }
 
       .bofip-hero p {
         margin: 0;
         max-width: 780px;
-        color: rgba(255,255,255,.84);
-        font-size: 1.02rem;
+        color: rgba(255,254,249,.84);
+        font-size: 1rem;
       }
 
       .hero-chips {
@@ -166,10 +177,10 @@ st.markdown(
         align-items: center;
         gap: 7px;
         border-radius: 999px;
-        border: 1px solid rgba(255,255,255,.28);
-        background: rgba(255,255,255,.10);
+        border: 1px solid rgba(255,254,249,.28);
+        background: rgba(255,254,249,.08);
         padding: 7px 11px;
-        color: #ffffff;
+        color: #fffef9;
         font-size: .86rem;
         white-space: nowrap;
       }
@@ -186,10 +197,10 @@ st.markdown(
       .answer-panel,
       .source-card,
       .notice-panel {
-        background: rgba(255,255,255,.92);
+        background: var(--paper);
         border: 1px solid var(--line);
         border-radius: 8px;
-        box-shadow: 0 8px 26px rgba(21, 33, 52, .06);
+        box-shadow: 0 8px 24px rgba(20, 33, 61, .06);
       }
 
       .metric-card {
@@ -199,8 +210,8 @@ st.markdown(
 
       .metric-card strong {
         display: block;
-        color: var(--ink);
-        font-size: 1.45rem;
+        color: var(--navy);
+        font-size: 1.12rem;
         line-height: 1.1;
       }
 
@@ -244,15 +255,15 @@ st.markdown(
       }
 
       .status-supported {
-        color: #065f46;
-        background: #dff7ec;
-        border: 1px solid #a7f3d0;
+        color: #174d3a;
+        background: #e2f2eb;
+        border: 1px solid #b9dacb;
       }
 
       .status-partial {
-        color: #92400e;
-        background: #fff2d8;
-        border: 1px solid #f7d38a;
+        color: #81520d;
+        background: #fff4d8;
+        border: 1px solid #e8c36c;
       }
 
       .status-insufficient,
@@ -284,7 +295,7 @@ st.markdown(
         margin: 10px 0;
         padding: 7px 0 7px 14px;
         color: #243149;
-        background: #f3fbf9;
+        background: #f3f8f5;
       }
 
       .source-grid {
@@ -299,7 +310,7 @@ st.markdown(
       }
 
       .source-card .ref {
-        color: var(--blue);
+        color: var(--forest);
         font-weight: 800;
         font-size: .88rem;
       }
@@ -325,7 +336,7 @@ st.markdown(
 
       .notice-panel {
         padding: 16px 18px;
-        border-left: 4px solid var(--amber);
+        border-left: 4px solid var(--saffron);
       }
 
       .app-footer {
@@ -343,7 +354,7 @@ st.markdown(
 
       @media (max-width: 840px) {
         .bofip-hero { padding: 22px; }
-        .bofip-hero h1 { font-size: 2.15rem; }
+        .bofip-hero h1 { font-size: 2.05rem; }
         .metric-grid,
         .source-grid { grid-template-columns: 1fr; }
         .chip { white-space: normal; }
@@ -636,7 +647,7 @@ def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
     st.session_state.result_cache[cache_key] = results
     return results
 
-def _source_card(chunk: dict) -> str:
+def _source_card_html(chunk: dict) -> str:
     title = _escape(chunk.get("title", "Sans titre"))
     ref = _escape(chunk.get("boi_reference", "BOFiP"))
     path = _escape(_truncate(chunk.get("section_path", ""), 120))
@@ -645,12 +656,22 @@ def _source_card(chunk: dict) -> str:
     score = float(chunk.get("score", 0) or 0)
     return f"""
     <div class="source-card">
-      <div class="ref">#{chunk.get("rank", "?")} · {ref} · score {score:.3f}</div>
+      <div class="ref">#{chunk.get("rank", "?")} - {ref} - score {score:.3f}</div>
       <h4>{title}</h4>
-      <div class="path">{publication_date} · {path}</div>
+      <div class="path">{publication_date} - {path}</div>
       <p>{excerpt}</p>
     </div>
     """
+
+
+def render_source_cards(chunks: list[dict]):
+    for index in range(0, min(len(chunks), 6), 2):
+        cols = st.columns(2)
+        for offset, col in enumerate(cols):
+            card_index = index + offset
+            if card_index < min(len(chunks), 6):
+                with col:
+                    st.markdown(_source_card_html(chunks[card_index]), unsafe_allow_html=True)
 
 
 def display_results(results):
@@ -688,10 +709,7 @@ def display_results(results):
     chunks = results.get("chunks", []) or []
     st.markdown('<div class="section-kicker">Sources retenues</div>', unsafe_allow_html=True)
     if chunks:
-        st.markdown(
-            '<div class="source-grid">' + "".join(_source_card(chunk) for chunk in chunks[:6]) + '</div>',
-            unsafe_allow_html=True,
-        )
+        render_source_cards(chunks)
     else:
         st.info("Aucun passage source n'a ete retenu.")
 
@@ -726,7 +744,7 @@ def display_results(results):
 
         with chunk_container:
             for chunk in chunks:
-                st.markdown(f"**[{chunk['rank']}] {chunk['boi_reference']}** · {chunk['score']:.4f}")
+                st.markdown(f"**[{chunk['rank']}] {chunk['boi_reference']}** - {chunk['score']:.4f}")
                 st.caption(chunk.get("section_path", ""))
                 st.write(_truncate(chunk.get("text", ""), 700))
 
@@ -738,17 +756,17 @@ def display_results(results):
 
 
 def render_hero(provider_name: str, model_name: str, use_reranker: bool):
-    reranker_label = "reranker active" if use_reranker else "reranker off"
+    reranker_chip = '<span class="chip">reranking qualite active</span>' if use_reranker else ""
     st.markdown(
         f"""
         <div class="bofip-hero">
           <h1>BOFiP Agentic RAG</h1>
-          <p>Recherche full-corpus dans la doctrine BOFiP avec citations, statut de couverture et trace de retrieval.</p>
+          <p>Assistant de recherche dans la doctrine fiscale BOFiP: retrieval hybride, citations controlees et statut de couverture.</p>
           <div class="hero-chips">
-            <span class="chip">5 666 documents</span>
-            <span class="chip">66 289 chunks</span>
-            <span class="chip">{_escape(provider_name)} · {_escape(model_name)}</span>
-            <span class="chip">{_escape(reranker_label)}</span>
+            <span class="chip">5 666 documents BOFiP commentaire</span>
+            <span class="chip">Corpus observe jusqu'au 28/01/2026</span>
+            <span class="chip">{_escape(provider_name)} - {_escape(model_name)}</span>
+            {reranker_chip}
           </div>
         </div>
         """,
@@ -760,15 +778,14 @@ def render_metrics():
     st.markdown(
         """
         <div class="metric-grid">
-          <div class="metric-card"><strong>Full corpus</strong><span>Pas de demo reduite: la couverture BOFiP reste complete.</span></div>
-          <div class="metric-card"><strong>Hybrid</strong><span>BM25, embeddings E5 et fusion RRF avant selection des passages.</span></div>
-          <div class="metric-card"><strong>Cite</strong><span>Chaque reponse expose les extraits et documents utilises.</span></div>
-          <div class="metric-card"><strong>BYOK</strong><span>La cle API reste fournie par l'utilisateur de la demo.</span></div>
+          <div class="metric-card"><strong>Corpus BOFiP</strong><span>5 666 documents commentaire, 66 289 passages indexes, fraicheur observee: 28/01/2026.</span></div>
+          <div class="metric-card"><strong>Retrieval hybride</strong><span>BM25, embeddings E5 et fusion RRF pour remonter documents puis passages.</span></div>
+          <div class="metric-card"><strong>Reponse citee</strong><span>Conclusion, limites et extraits sources visibles avant interpretation.</span></div>
+          <div class="metric-card"><strong>Cle utilisateur</strong><span>La demo utilise la cle API saisie dans la session, sans stockage applicatif.</span></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-
 
 def render_missing_key(provider: dict):
     st.markdown(
@@ -809,22 +826,25 @@ with st.sidebar:
         key=f"model_{provider_id}_select",
         help="Liste limitee aux modeles configures pour cette demo.",
     )
+    st.caption(provider.get("note", ""))
 
     st.divider()
-    st.markdown("### Retrieval")
+    st.markdown("### Recherche")
     use_rewrite = st.checkbox(
-        "Reecriture de la question",
+        "Reformuler la question",
         value=True,
         help="Reformule la question en vocabulaire fiscal avant retrieval.",
     )
     reranker_available = RERANKER_MODEL_PATH.exists()
-    use_reranker = st.checkbox(
-        "Cross-encoder reranker",
-        value=reranker_available and not RUNNING_ON_SPACE,
-        help="Option qualite. Desactive par defaut sur l'hebergement gratuit pour limiter la latence.",
-    )
-    if use_reranker and not reranker_available:
-        st.warning("Modele reranker absent localement: le chargement peut tenter un telechargement Hugging Face.")
+    with st.expander("Mode qualite avance", expanded=False):
+        st.caption("Le reranker reclasse les passages candidats apres retrieval. Utile pour la precision, plus lent sur CPU.")
+        use_reranker = st.checkbox(
+            "Activer le reranking des passages",
+            value=reranker_available and not RUNNING_ON_SPACE,
+            help="A garder desactive sur hebergement gratuit si la latence compte plus que le gain de precision.",
+        )
+        if use_reranker and not reranker_available:
+            st.warning("Modele reranker absent localement: le chargement peut tenter un telechargement Hugging Face.")
 
     st.divider()
     st.caption("Les questions peuvent contenir des donnees sensibles. N'envoyez pas de cas reel non anonymise.")
@@ -903,7 +923,7 @@ else:
         status_text = st.empty()
         all_results = []
         for index, question in enumerate(queries, start=1):
-            status_text.text(f"{index}/{len(queries)} · {question[:90]}")
+            status_text.text(f"{index}/{len(queries)} - {question[:90]}")
             all_results.append(process_query(question, rt, client, model, use_rewrite, use_reranker))
             progress.progress(index / len(queries))
         progress.empty()

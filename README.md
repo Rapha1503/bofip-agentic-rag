@@ -146,12 +146,12 @@ python -m unittest discover -s tests -v
 
 The Streamlit app currently exposes OpenAI-compatible endpoints for these providers:
 
-| Provider | Env key |
-| --- | --- |
-| DeepSeek | `DEEPSEEK_API_KEY` |
-| OpenAI | `OPENAI_API_KEY` |
-| Mistral | `MISTRAL_API_KEY` |
-| Google Gemini | `GEMINI_API_KEY` |
+| Provider | Env key | Default model |
+| --- | --- | --- |
+| DeepSeek | `DEEPSEEK_API_KEY` | `deepseek-v4-flash` |
+| OpenAI | `OPENAI_API_KEY` | `gpt-5.4-mini` |
+| Mistral | `MISTRAL_API_KEY` | `mistral-small-latest` |
+| Google Gemini | `GEMINI_API_KEY` | `gemini-3.5-flash` |
 
 API keys can be loaded from `.env.local` or entered in the Streamlit sidebar. Model IDs are selected from the configured provider dropdown. Keys must not be committed or logged.
 

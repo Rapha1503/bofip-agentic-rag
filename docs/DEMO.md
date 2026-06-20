@@ -47,7 +47,7 @@ Optional quality layer:
 data/models/BAAI--bge-reranker-v2-m3/
 ```
 
-If the optional reranker directory is absent, leave `Cross-encoder reranker` disabled in the Streamlit sidebar. Retrieval still covers the full 5,666-document corpus.
+If the optional reranker directory is absent, leave `Activer le reranking des passages` disabled in the Streamlit advanced quality section. Retrieval still covers the full 5,666-document corpus.
 
 ## 3. Check Setup
 
