@@ -12,7 +12,6 @@ from bofip_cleanroom.artifact_download import (
     validate_runtime_artifacts,
 )
 from bofip_cleanroom.env_utils import load_default_env_files
-from bofip_cleanroom.rag_runtime import RagRuntime
 from bofip_cleanroom.prompt_utils import build_prompt
 
 # Optional file logging. Disabled by default for public/demo runs because
@@ -85,6 +84,8 @@ st.set_page_config(page_title="BOFiP Agentic RAG", layout="wide")
 @st.cache_resource(show_spinner="Chargement du runtime full corpus...")
 def get_runtime(load_reranker: bool, reranker_model: str | None):
     import torch
+    from bofip_cleanroom.rag_runtime import RagRuntime
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     doc_model = str(E5_MODEL_PATH) if E5_MODEL_PATH.exists() else "intfloat/multilingual-e5-large"
     kwargs = {
