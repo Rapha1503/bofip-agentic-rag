@@ -25,7 +25,7 @@ Optimize the full-corpus runtime instead:
 
 ## BYOK Policy
 
-The app supports user-provided API keys. Public copy should be explicit:
+The app supports user-provided API keys for OpenAI-compatible endpoints. Public copy should be explicit:
 
 - the key is entered per session;
 - the key is sent to the server running the Streamlit app for that request;
@@ -44,8 +44,15 @@ data/interim/chunks_section_window_sample_5666.jsonl
 data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
 data/interim/chunk_dense_cache_5666_full_e5large.npy
 data/models/intfloat--multilingual-e5-large/
+```
+
+Optional reranker artifact:
+
+```text
 data/models/BAAI--bge-reranker-v2-m3/
 ```
+
+The full-corpus file contract is versioned in [full_corpus_manifest.json](full_corpus_manifest.json).
 
 The repository intentionally excludes those large artifacts. A deployment should either:
 
@@ -55,11 +62,17 @@ The repository intentionally excludes those large artifacts. A deployment should
 
 ## Phase 1 Deployment Status
 
-Phase 1 prepares the repository. It does not publish, change GitHub visibility, or start a hosted app.
+Phase 1 prepares the repository for portfolio review. It does not start a hosted app.
+
+Use [DEMO.md](DEMO.md) for local full-corpus testing. The setup checker is:
+
+```powershell
+python scripts/check_setup.py --deep
+```
 
 Before deploying:
 
-- add artifact manifest and preflight validation;
+- publish or mount the large artifacts referenced by the manifest;
 - split `app.py` into UI, retrieval, LLM, config, and observability boundaries;
 - disable raw query/prompt logging by default;
 - add a visible tax-advice disclaimer;

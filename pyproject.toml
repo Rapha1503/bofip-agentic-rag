@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-  { name = "Rapha1503", email = "raphael@bofip-rag.local" }
+  { name = "Rapha1503" }
 ]
 dependencies = [
   "beautifulsoup4==4.12.3",

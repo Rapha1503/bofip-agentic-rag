@@ -2,6 +2,8 @@
 
 ## Phase 1 - Public Portfolio Cleanup
 
+Status: complete.
+
 Goal: make the repository readable, installable, and safe to show.
 
 - Clean Git hygiene and ignored artifacts.
@@ -10,13 +12,14 @@ Goal: make the repository readable, installable, and safe to show.
 - Align README and architecture docs with the actual runtime.
 - Add data and deployment documentation.
 - Keep ownership and project presentation under Rapha1503.
+- Add setup checker, CI workflow, local demo guide, artifact manifest, authorship metadata, and references.
 
 ## Phase 2 - Reproducibility and Runtime Contract
 
 Goal: make a fresh clone fail clearly unless the correct artifacts are present.
 
-- Add a corpus manifest with counts, hashes, model names, and embedding shapes.
-- Add a preflight validator for all required files.
+- Add checksum validation to the corpus manifest workflow.
+- Add small fixture tests that exercise the preflight validator.
 - Move query rewrite, facet expansion, computation-aware facets, and merging into a shared orchestrator.
 - Make CLI, Streamlit, and evaluation use the same retrieval contract.
 - Add small fixture tests that do not require the full BOFiP corpus.

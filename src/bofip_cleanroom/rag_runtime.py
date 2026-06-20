@@ -83,7 +83,7 @@ class RagRuntime:
         chunk_encoder: DenseEncoder,
         document_embeddings: np.ndarray,
         chunk_embeddings: np.ndarray,
-        reranker: CrossEncoderReranker,
+        reranker: CrossEncoderReranker | None,
     ):
         self.documents = documents
         self.documents_by_ref = {d.boi_reference: d for d in documents}
@@ -145,6 +145,7 @@ class RagRuntime:
         doc_model: str = DEFAULT_DOC_MODEL,
         chunk_model: str = DEFAULT_CHUNK_MODEL,
         reranker_model: str = DEFAULT_RERANKER_MODEL,
+        load_reranker: bool = True,
         device: str = "cuda",
     ) -> "RagRuntime":
         root = (project_root or Path(__file__).resolve().parents[2]).resolve()
@@ -166,7 +167,7 @@ class RagRuntime:
             chunk_encoder=DenseEncoder(chunk_model, device=device),
             document_embeddings=document_embeddings,
             chunk_embeddings=chunk_embeddings,
-            reranker=CrossEncoderReranker(reranker_model, device=device),
+            reranker=CrossEncoderReranker(reranker_model, device=device) if load_reranker else None,
         )
 
     def _build_rankings(self, query: str, lexical_query: str) -> tuple[dict[str, list[RankedDoc]], dict[str, float]]:
@@ -262,7 +263,10 @@ class RagRuntime:
         candidates = direct_result.chunk_hits
         log = {}
 
-        if use_reranker:
+        reranker_enabled = use_reranker and self.reranker is not None
+        reranked_pool = []
+
+        if reranker_enabled:
             # Get all scores for diversity pool (top_48 from reranker)
             ranked_all = self.reranker.rerank(
                 query,
@@ -280,6 +284,8 @@ class RagRuntime:
         else:
             chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
             selected = [c for c, _ in chunk_items]
+            if use_reranker:
+                log["reranker_skipped"] = "not_loaded"
 
         preview_chunks = []
         for idx, hit in enumerate(selected, start=1):
@@ -294,7 +300,7 @@ class RagRuntime:
                     chunk_kind=hit.chunk.chunk_kind,
                     text=hit.chunk.text,
                     publication_date=doc.publication_date,
-                    score=float(hit.local_score) if not use_reranker else next((s for c, s in reranked_pool if c is hit), 0.0),
+                    score=float(hit.local_score) if not reranker_enabled else next((s for c, s in reranked_pool if c is hit), 0.0),
                 )
             )
 

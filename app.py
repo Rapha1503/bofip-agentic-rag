@@ -34,43 +34,54 @@ def _log(step: str, data: dict):
 PROVIDERS = {
     "DeepSeek": {
         "base_url": "https://api.deepseek.com/v1",
-        "models": ["deepseek-v4-flash", "deepseek-v4-pro"],
-        "default_model": "deepseek-v4-flash",
+        "models": ["deepseek-chat", "deepseek-reasoner"],
+        "default_model": "deepseek-chat",
         "env_key": "DEEPSEEK_API_KEY",
     },
     "OpenAI": {
         "base_url": "https://api.openai.com/v1",
-        "models": ["gpt-5.5", "gpt-5.4-mini", "gpt-5-mini", "gpt-4.1"],
-        "default_model": "gpt-5.4-mini",
+        "models": ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"],
+        "default_model": "gpt-4.1-mini",
         "env_key": "OPENAI_API_KEY",
-    },
-    "Anthropic": {
-        "base_url": "https://api.anthropic.com/v1",
-        "models": ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"],
-        "default_model": "claude-haiku-4-5",
-        "env_key": "ANTHROPIC_API_KEY",
     },
     "Mistral": {
         "base_url": "https://api.mistral.ai/v1",
-        "models": ["mistral-small-4", "mistral-large-3", "mistral-medium-3.5"],
-        "default_model": "mistral-small-4",
+        "models": ["mistral-small-latest", "mistral-large-latest"],
+        "default_model": "mistral-small-latest",
         "env_key": "MISTRAL_API_KEY",
     },
     "Google": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
-        "models": ["gemini-3.1-flash-lite", "gemini-3.1-flash", "gemini-3.1-pro"],
-        "default_model": "gemini-3.1-flash",
+        "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+        "default_model": "gemini-2.5-flash",
         "env_key": "GEMINI_API_KEY",
     },
 }
 
+REQUIRED_RUNTIME_PATHS = [
+    PROJECT_ROOT / "data" / "interim" / "raw_docs_sample_5666.jsonl",
+    PROJECT_ROOT / "data" / "interim" / "chunks_section_window_sample_5666.jsonl",
+    PROJECT_ROOT / "data" / "interim" / "doc_dense_cache_5666_sections_firstpara_e5large.npy",
+    PROJECT_ROOT / "data" / "interim" / "chunk_dense_cache_5666_full_e5large.npy",
+    PROJECT_ROOT / "data" / "models" / "intfloat--multilingual-e5-large",
+]
+RERANKER_MODEL_PATH = PROJECT_ROOT / "data" / "models" / "BAAI--bge-reranker-v2-m3"
+
+
+def _missing_runtime_paths() -> list[Path]:
+    return [path for path in REQUIRED_RUNTIME_PATHS if not path.exists()]
+
+
 st.set_page_config(page_title="BOFiP Agentic RAG", layout="wide")
 
-@st.cache_resource(show_spinner="Chargement du runtime (~50s, une seule fois)...")
-def get_runtime():
+@st.cache_resource(show_spinner="Chargement du runtime full corpus...")
+def get_runtime(load_reranker: bool, reranker_model: str | None):
     import torch
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    return RagRuntime.from_local_corpus(corpus="commentary", device=device)
+    kwargs = {"corpus": "commentary", "device": device, "load_reranker": load_reranker}
+    if reranker_model:
+        kwargs["reranker_model"] = reranker_model
+    return RagRuntime.from_local_corpus(**kwargs)
 
 def rewrite_query(query, client, model):
     """Rewrite query + optionally detect legal facets. Returns (rewritten_str, facet_queries_list)."""
@@ -162,7 +173,7 @@ def render_answer(parsed):
         st.markdown(f"- {b}")
     st.caption(f"*{limits}*")
 
-def process_query(query, rt, client, llm_model, use_rewrite):
+def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
     results = {"query":query,"error":None}
 
     # Cache check
@@ -214,7 +225,7 @@ def process_query(query, rt, client, llm_model, use_rewrite):
     all_chunks_raw = []; all_stage1 = []; seen_docs = set(); main_log = {}
     for fq in facet_queries:
         try:
-            res = rt.retrieve(fq, top_docs=5)
+            res = rt.retrieve(fq, top_docs=5, use_reranker=use_reranker)
             for h in res.stage1_hits:
                 if h.boi_reference not in seen_docs:
                     all_stage1.append(h); seen_docs.add(h.boi_reference)
@@ -348,7 +359,7 @@ st.title("BOFiP Agentic RAG")
 st.caption("Prototype de recherche par Rapha1503. Ne constitue pas un conseil fiscal.")
 
 with st.sidebar:
-    st.header("⚙️ Configuration")
+    st.header("Configuration")
     st.caption("Projet portfolio de Rapha1503. Les cles API saisies ne sont pas sauvegardees par l'app.")
     provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider_select")
     provider = PROVIDERS[provider_id]
@@ -356,35 +367,56 @@ with st.sidebar:
     api_key = st.text_input(f"Clé API ({provider['env_key']})", value=os.environ.get(provider["env_key"],""),
                             type="password", key="api_key_input",
                             help="Chargée depuis .env.local si disponible. Non sauvegardée.")
-    model = st.selectbox("Modèle", provider["models"], key=f"model_{provider_id}")
+    model = st.text_input(
+        "Modele",
+        value=provider["default_model"],
+        key=f"model_{provider_id}",
+        help="ID modifiable. Utilisez un modele disponible sur votre compte fournisseur.",
+    )
     use_rewrite = st.checkbox("Réécriture de la question", value=True,
                               help="Reformule la question en vocabulaire fiscal avant la recherche.")
+    reranker_available = RERANKER_MODEL_PATH.exists()
+    use_reranker = st.checkbox(
+        "Cross-encoder reranker",
+        value=reranker_available,
+        help="Ameliore le classement final. Si le modele local est absent, laissez desactive pour un demarrage CPU plus leger.",
+    )
+    if use_reranker and not reranker_available:
+        st.warning("Modele reranker local absent: le chargement peut tenter un telechargement Hugging Face.")
     st.divider()
     st.caption("Corpus: 5666 documents BOFIP")
     st.caption("Modèles: E5-large (docs) / E5-large (chunks)")
-    st.caption("Reranker: bge-reranker-v2-m3")
-    if st.button("🗑️ Vider le cache"):
+    st.caption("Reranker: bge-reranker-v2-m3 optionnel")
+    if st.button("Vider le cache"):
         st.session_state.result_cache = {}
         st.rerun()
+
+missing_paths = _missing_runtime_paths()
+if missing_paths:
+    st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la demo.")
+    st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing_paths))
+    st.info("Commande de verification: python scripts/check_setup.py --deep")
+    st.stop()
 
 if not api_key:
     st.warning(f"Entrez une clé API **{provider['env_key']}** dans la barre latérale.")
     st.stop()
 
-rt = get_runtime()
+reranker_model = str(RERANKER_MODEL_PATH) if RERANKER_MODEL_PATH.exists() else None
+rt = get_runtime(use_reranker, reranker_model)
 import torch
 st.caption(f"Appareil: {'GPU' if torch.cuda.is_available() else 'CPU'}")
 
 base_url = provider["base_url"]
-client = OpenAI(api_key=api_key, base_url=base_url, **({"default_headers":{"x-api-key":api_key}} if provider_id=="Anthropic" else {}))
+client = OpenAI(api_key=api_key, base_url=base_url)
 
-tab1, tab2 = st.tabs(["🔍 Question unique", "📋 Test par lot"])
+tab1, tab2 = st.tabs(["Question unique", "Test par lot"])
 
 with tab1:
     query = st.text_input("Votre question", placeholder="Quel taux de TVA pour une pompe à chaleur ?")
     if st.button("Rechercher", type="primary", disabled=not query.strip()):
         with st.spinner("Recherche en cours..."):
-            results = process_query(query, rt, client, model, use_rewrite)
+            results = process_query(query, rt, client, model, use_rewrite, use_reranker)
         st.markdown("---")
         display_results(results)
 
@@ -398,7 +430,7 @@ with tab2:
             for i,q in enumerate(queries):
                 status_text.text(f"[{i+1}/{len(queries)}] {q[:80]}...")
                 progress.progress((i+1)/len(queries))
-                all_results.append(process_query(q, rt, client, model, use_rewrite))
+                all_results.append(process_query(q, rt, client, model, use_rewrite, use_reranker))
             progress.empty(); status_text.empty()
             st.markdown("### Résumé")
             rows = []

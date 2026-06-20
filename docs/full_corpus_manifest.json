@@ -1,0 +1,78 @@
+{
+  "name": "BOFiP Agentic RAG full-corpus local artifact manifest",
+  "corpus": "commentary",
+  "owner": "Rapha1503",
+  "generated_on": "2026-06-20",
+  "full_corpus_principle": "Deployment must preserve the full 5,666-document commentary corpus; latency must be optimized with prebuilt artifacts and caching, not corpus reduction.",
+  "artifacts": [
+    {
+      "path": "data/interim/raw_docs_sample_5666.jsonl",
+      "kind": "raw_documents_jsonl",
+      "required_for_runtime": true,
+      "tracked_in_git": false,
+      "rows": 5666,
+      "size_bytes": 207539502,
+      "sha256": "4f95224fcad36651a6e137e7c64f038b25edcd50a10a2e78e58a433be83267e8"
+    },
+    {
+      "path": "data/interim/chunks_section_window_sample_5666.jsonl",
+      "kind": "section_window_chunks_jsonl",
+      "required_for_runtime": true,
+      "tracked_in_git": false,
+      "rows": 66289,
+      "size_bytes": 131387712,
+      "sha256": "c43b3e1aa948e70867ef794ae0eb00ffc76ad5764fb4e8091acbbc12e2cac444"
+    },
+    {
+      "path": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
+      "kind": "document_embeddings",
+      "required_for_runtime": true,
+      "tracked_in_git": false,
+      "shape": [5666, 1024],
+      "size_bytes": 23208064,
+      "sha256": "93b579e14d6ac7d97ff43c18462651d9aefd14b02ecbdf8a65ba8865ded69c53"
+    },
+    {
+      "path": "data/interim/chunk_dense_cache_5666_full_e5large.npy",
+      "kind": "chunk_embeddings",
+      "required_for_runtime": true,
+      "tracked_in_git": false,
+      "shape": [66289, 1024],
+      "size_bytes": 271519872,
+      "sha256": "bc2b1d5bcfcf5c605b805e9b43f919b8613d885c798daf9bf519354f932233eb"
+    },
+    {
+      "path": "data/interim/eval_queries_v1.jsonl",
+      "kind": "evaluation_queries",
+      "required_for_runtime": false,
+      "tracked_in_git": true,
+      "rows": 50,
+      "size_bytes": 12816,
+      "sha256": "c693870b307f32046b491dcf97c34947d43b05b5bbc1fc90461fdcc243198690"
+    },
+    {
+      "path": "data/interim/passage_gold_v3.jsonl",
+      "kind": "passage_gold",
+      "required_for_runtime": false,
+      "tracked_in_git": true,
+      "rows": 50,
+      "size_bytes": 51891,
+      "sha256": "b7fccd0266732f8d2444b96f04708242046d59cf98aabe7e68699c5fc954ad02"
+    }
+  ],
+  "models": [
+    {
+      "path": "data/models/intfloat--multilingual-e5-large",
+      "source": "intfloat/multilingual-e5-large",
+      "required_for_runtime": true,
+      "tracked_in_git": false
+    },
+    {
+      "path": "data/models/BAAI--bge-reranker-v2-m3",
+      "source": "BAAI/bge-reranker-v2-m3",
+      "required_for_runtime": false,
+      "tracked_in_git": false,
+      "note": "Optional quality layer. The app can run full-corpus retrieval with the reranker disabled."
+    }
+  ]
+}

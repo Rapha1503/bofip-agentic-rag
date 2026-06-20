@@ -10,7 +10,7 @@ User question
   -> per-facet retrieval
   -> document-stage hybrid retrieval
   -> local chunk retrieval inside selected documents
-  -> cross-encoder reranking
+  -> optional cross-encoder reranking
   -> diversity-capped context selection
   -> coverage-aware answer prompt
   -> cited JSON answer
@@ -57,7 +57,7 @@ The active embedding caches use E5-large 1024-dimensional vectors for both docum
 | `dense_retrieval.py` | E5 encoding and in-memory dense search over precomputed arrays. |
 | `hybrid_retrieval.py` | Reciprocal rank fusion and confidence-weighted source scoring. |
 | `direct_chunk_retrieval.py` | Local chunk retrieval inside selected Stage 1 documents. |
-| `reranker.py` | Cross-encoder reranking. |
+| `reranker.py` | Optional cross-encoder reranking. |
 | `rag_runtime.py` | Main retrieval runtime and result contract. |
 | `prompt_utils.py` | Coverage-aware answer prompt with citation constraints. |
 | `eval_harness.py` | doc@k, passage@k, MRR, NDCG, and per-query diagnostics. |
@@ -68,6 +68,7 @@ The active embedding caches use E5-large 1024-dimensional vectors for both docum
 - `scripts/preview_answer.py`: CLI answer preview with retrieval plus LLM generation.
 - `scripts/evaluate.py`: standardized retrieval evaluation.
 - `scripts/ablation.py`: retrieval component ablation.
+- `scripts/check_setup.py`: local artifact and model preflight check.
 
 Historical phase scripts and notebooks are intentionally excluded from the public cleanroom surface.
 

@@ -78,8 +78,19 @@ Chunks preserve:
 
 ## Phase 2 Data Work
 
-- Add a machine-readable corpus manifest.
-- Add checksum validation for all required artifacts.
+- Add checksum validation into the preflight path.
 - Key runtime identity by `document_id`, not only by `boi_reference`.
 - Add table chunks with table IDs, row indices, and headers.
 - Publish a tracked evaluation report that ties metrics to a corpus manifest.
+
+## Local Artifact Check
+
+The repository includes a preflight script for the current artifact contract:
+
+```powershell
+python scripts/check_setup.py --deep
+```
+
+This is not a replacement for a signed manifest, but it catches missing files, wrong JSONL counts, and wrong embedding shapes before the app starts.
+
+The current machine-readable artifact reference is tracked in [full_corpus_manifest.json](full_corpus_manifest.json).
