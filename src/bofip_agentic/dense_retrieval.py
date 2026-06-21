@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 from .models import ChunkNode, RawDocument
 from .text_utils import normalize_whitespace
@@ -115,6 +114,8 @@ class DenseEncoder:
         self.model_path = _resolve_local_model_path(model_name)
         self.prompt_style = _dense_prompt_style(model_name)
         self.device = device
+        from sentence_transformers import SentenceTransformer
+
         self.model = SentenceTransformer(
             self.model_path,
             local_files_only=True,

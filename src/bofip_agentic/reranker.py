@@ -3,10 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from sentence_transformers import CrossEncoder
-
 
 DEFAULT_RERANKER_MODEL = "BAAI/bge-reranker-v2-m3"
+
+
+def CrossEncoder(*args, **kwargs):
+    from sentence_transformers import CrossEncoder as _CrossEncoder
+    return _CrossEncoder(*args, **kwargs)
 
 
 @dataclass
@@ -28,14 +31,12 @@ class CrossEncoderReranker:
             device=device,
             trust_remote_code=True,
         )
-        # Apply fp16 after loading (CrossEncoder doesn't accept automodel_args)
         try:
             self.model.model.half()
         except Exception:
             pass
         self.batch_size = batch_size
         self.model_name = model_name
-        # Warmup: first predict() loads model to GPU — do it now
         self.model.predict([["warmup", "warmup"]], batch_size=1, show_progress_bar=False)
 
     def rerank(

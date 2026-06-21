@@ -16,9 +16,9 @@ The project combines hybrid retrieval with a controlled agentic loop: domain cla
 Question utilisateur
   -> classification domaine BOFiP
   -> retrieval hybride BM25 + E5 + fusion RRF
-  -> r?ponse JSON sourc?e + auto-?valuation des axes couverts
+  -> réponse JSON sourcée + auto-évaluation des axes couverts
   -> si preuve insuffisante: reformulation cibl?e + second retrieval
-  -> r?ponse finale avec sources et limites
+  -> réponse finale avec sources et limites
 ```
 
 The live app uses the full commentary corpus. No reduced demo corpus is used.

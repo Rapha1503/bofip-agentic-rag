@@ -46,14 +46,14 @@ Open the local URL printed by Streamlit. The app uses BYOK: the API key is read 
 Ask a BOFiP-style fiscal question, for example:
 
 ```text
-Quel taux de TVA pour la pose d'une pompe ? chaleur chez un particulier ?
+Quel taux de TVA pour la pose d'une pompe à chaleur chez un particulier ?
 ```
 
 A healthy run should show:
 
-- a status: `R?ponse sourc?e`, `R?ponse partielle`, or `Preuve insuffisante`;
+- a status: `Réponse sourcée`, `Réponse partielle`, or `Preuve insuffisante`;
 - coverage metrics and axes;
-- a visible `Parcours agentique r?el` with iterations, domain prefix, retrieval count, and reformulation if triggered;
+- a visible `Parcours agentique réel` with iterations, domain prefix, retrieval count, and reformulation if triggered;
 - BOFiP source cards.
 
 ## Tests

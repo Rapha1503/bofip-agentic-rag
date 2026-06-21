@@ -50,7 +50,7 @@ class _FakeRuntime:
 class AgenticRAGTests(unittest.TestCase):
     def test_domain_classifier_extracts_boi_prefix_from_sentence(self):
         def call_llm(prompt, system, json_mode=True):
-            return {"_raw": "Le pr?fixe le plus pr?cis est BOI-TVA-LIQ-30-20-20."}
+            return {"_raw": "Le préfixe le plus précis est BOI-TVA-LIQ-30-20-20."}
 
         self.assertEqual(_classify_domain("question", call_llm), "TVA-LIQ-30-20-20")
 

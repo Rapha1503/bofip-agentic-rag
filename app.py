@@ -24,7 +24,6 @@ from bofip_agentic.artifact_download import (
     should_auto_download_artifacts,
     validate_runtime_artifacts,
 )
-from bofip_agentic.env_utils import load_default_env_files
 from bofip_agentic.providers import PROVIDERS
 
 RUNNING_ON_SPACE = bool(os.environ.get("SPACE_ID"))
@@ -44,16 +43,16 @@ def _escape(value: object) -> str:
 
 def _truncate(value: str, limit: int) -> str:
     text = " ".join((value or "").split())
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "?"
+    return text if len(text) <= limit else text[: limit - 3].rstrip() + "..."
 
 
 def _status_meta(status: str | None) -> tuple[str, str, str]:
     mapping = {
-        "supported": ("supported", "R?ponse sourc?e", "Les passages retenus couvrent les axes essentiels."),
-        "partial": ("partial", "R?ponse partielle", "La r?ponse couvre une partie du cas et signale les limites."),
-        "insufficient_evidence": ("insufficient", "Preuve insuffisante", "Le corpus retenu ne suffit pas ? conclure proprement."),
+        "supported": ("supported", "Réponse sourcée", "Les passages retenus couvrent les axes essentiels."),
+        "partial": ("partial", "Réponse partielle", "La réponse couvre une partie du cas et signale les limites."),
+        "insufficient_evidence": ("insufficient", "Preuve insuffisante", "Le corpus retenu ne suffit pas à conclure proprement."),
     }
-    return mapping.get(status or "", ("partial", status or "Statut inconnu", "Statut retourn? par l'agent."))
+    return mapping.get(status or "", ("partial", status or "Statut inconnu", "Statut retourné par l'agent."))
 
 
 st.markdown(
@@ -175,6 +174,20 @@ st.markdown(
         border-top-color: #fff; animation: spin .8s linear infinite;
       }
       @keyframes spin { to { transform: rotate(360deg); } }
+      .progress-panel {
+        background: #fff8fa; border: 1px solid var(--line); border-radius: 8px;
+        padding: 14px 16px; margin: 12px 0 2px;
+      }
+      .progress-title { color: var(--burgundy-dark); font-weight: 850; margin-bottom: 10px; }
+      .progress-row { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--line-soft); }
+      .progress-row:first-of-type { border-top: 0; }
+      .progress-index {
+        flex: 0 0 24px; height: 24px; border-radius: 999px; background: var(--burgundy);
+        color: #fff; display: inline-flex; align-items: center; justify-content: center;
+        font-size: .76rem; font-weight: 850;
+      }
+      .progress-copy strong { color: var(--ink); display: block; line-height: 1.25; }
+      .progress-copy span { color: var(--muted); display: block; font-size: .86rem; margin-top: 2px; line-height: 1.35; }
 
       .notice-panel, .answer-panel, .trace-panel, .coverage-panel, .source-card {
         background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
@@ -243,14 +256,14 @@ def render_app_shell() -> None:
         <div class="app-shell">
           <div class="app-header">
             <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
-            <h1>Doctrine BOFiP.<br><span class="accent-word">R?ponse sourc?e.</span></h1>
-            <p>Un poste de recherche fiscal: l'agent classe la question, interroge le corpus BOFiP, auto-?value la couverture, puis relance une recherche cibl?e si des axes restent manquants.</p>
+            <h1>Doctrine BOFiP.<br><span class="accent-word">Réponse sourcée.</span></h1>
+            <p>Un poste de recherche fiscal: l'agent classe la question, interroge le corpus BOFiP, auto-évalue la couverture, puis relance une recherche ciblée si des axes restent manquants.</p>
           </div>
           <div class="system-strip">
-            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>Commentaires BOFiP observ?s jusqu'au 28/01/2026</small></div>
-            <div class="system-item"><span>Index</span><strong>66 289 passages</strong><small>Documents puis passages sectionn?s</small></div>
+            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>Commentaires BOFiP observés jusqu'au 28/01/2026</small></div>
+            <div class="system-item"><span>Index</span><strong>66 289 passages</strong><small>Documents puis passages sectionnés</small></div>
             <div class="system-item"><span>Agent</span><strong>Self-eval + relance</strong><small>Axes manquants, reformulation, second passage</small></div>
-            <div class="system-item"><span>Sortie</span><strong>Citations + limites</strong><small>Sources visibles avant interpr?tation</small></div>
+            <div class="system-item"><span>Sortie</span><strong>Citations + limites</strong><small>Sources visibles avant interprétation</small></div>
           </div>
         </div>
         """,
@@ -262,9 +275,8 @@ def render_missing_key(provider: dict) -> None:
     st.markdown(
         f"""
         <div class="notice-panel">
-          <div class="section-kicker">Cl? API requise</div>
-          <strong>Saisissez une cl? {provider['env_key']} dans le panneau Connexion LLM pour lancer l'agent.</strong>
-          <p>La cl? reste dans la session Streamlit et sert uniquement ? appeler le fournisseur choisi.</p>
+          <div class="section-kicker">Clé API requise</div>
+          <strong>Saisissez une clé {provider['env_key']} dans le panneau Paramètres pour lancer l'agent.</strong>
         </div>
         """,
         unsafe_allow_html=True,
@@ -277,12 +289,34 @@ def render_loading_button(slot, label: str = "Analyse en cours") -> None:
         unsafe_allow_html=True,
     )
 
+def render_runtime_progress(slot, events: list[dict]) -> None:
+    if slot is None:
+        return
+    rows = []
+    for idx, event in enumerate(events[-6:], start=1):
+        label = _escape(event.get("label", "Étape"))
+        detail = _escape(event.get("detail", ""))
+        detail_html = f"<span>{detail}</span>" if detail else ""
+        rows.append(
+            f'<div class="progress-row"><span class="progress-index">{idx}</span>'
+            f'<div class="progress-copy"><strong>{label}</strong>{detail_html}</div></div>'
+        )
+    slot.markdown(
+        '<div class="progress-panel"><div class="progress-title">Analyse en cours</div>' + ''.join(rows) + '</div>',
+        unsafe_allow_html=True,
+    )
 
 @st.cache_resource(show_spinner=False)
-def get_runtime(load_reranker: bool, device: str):
+def get_runtime(load_reranker: bool, load_dense: bool, device: str):
     from bofip_agentic.rag_runtime import RagRuntime
 
-    return RagRuntime.from_local_corpus(corpus="commentary", device=device, load_reranker=load_reranker)
+    return RagRuntime.from_local_corpus(
+        corpus="commentary",
+        device=device,
+        load_reranker=load_reranker,
+        load_dense=load_dense,
+        allow_lexical_fallback=True,
+    )
 
 
 def ensure_runtime_ready() -> bool:
@@ -290,22 +324,22 @@ def ensure_runtime_ready() -> bool:
     if missing and should_auto_download_artifacts():
         loader = st.empty()
         loader.markdown(
-            '<div class="notice-panel"><div class="section-kicker">Pr?paration du corpus</div><strong>T?l?chargement des artefacts full-corpus.</strong><p>Cette ?tape conserve la couverture BOFiP compl?te.</p></div>',
+            '<div class="notice-panel"><div class="section-kicker">Préparation du corpus</div><strong>Téléchargement des artefacts full-corpus.</strong><p>Cette étape conserve la couverture BOFiP complète.</p></div>',
             unsafe_allow_html=True,
         )
         try:
             download_missing_runtime_artifacts(PROJECT_ROOT)
         except Exception as exc:
-            st.error(f"T?l?chargement des artefacts impossible: {exc}")
+            st.error(f"Téléchargement des artefacts impossible: {exc}")
             return False
         finally:
             loader.empty()
 
     missing = missing_runtime_artifacts(PROJECT_ROOT)
     if missing:
-        st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la d?mo.")
+        st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la démo.")
         st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing))
-        st.info("Commande de v?rification: python scripts/check_setup.py --deep")
+        st.info("Commande de vérification: python scripts/check_setup.py --deep")
         return False
 
     check_hashes = os.environ.get("BOFIP_VALIDATE_HASHES", "").strip().lower() in {"1", "true", "yes"}
@@ -318,38 +352,53 @@ def ensure_runtime_ready() -> bool:
 
 
 def selected_device() -> str:
-    if RUNNING_ON_SPACE:
-        return "cpu"
-    try:
-        import torch
-
-        return "cuda" if torch.cuda.is_available() else "cpu"
-    except Exception:
-        return "cpu"
+    forced = os.environ.get("BOFIP_DEVICE", "").strip().lower()
+    if forced in {"cpu", "cuda"}:
+        return forced
+    return "cpu"
 
 
-def run_agent_query(query: str, provider: dict, api_key: str, model: str, *, use_reranker: bool) -> dict:
+def run_agent_query(query: str, provider: dict, api_key: str, model: str, *, use_reranker: bool, progress_slot=None) -> dict:
     cache_key = hashlib.md5((query + provider["base_url"] + model + str(use_reranker)).encode("utf-8")).hexdigest()[:16]
     st.session_state.setdefault("result_cache", {})
     if cache_key in st.session_state.result_cache:
         return st.session_state.result_cache[cache_key]
 
     start = time.time()
+    progress_events: list[dict] = []
+
+    def emit_progress(label: str, detail: str = "") -> None:
+        progress_events.append({"label": label, "detail": detail})
+        render_runtime_progress(progress_slot, progress_events)
+
     device = selected_device()
     from bofip_agentic.agent_rag import AgenticRAG
 
-    runtime = get_runtime(load_reranker=use_reranker, device=device)
+    load_dense = os.environ.get("BOFIP_ENABLE_DENSE", "").strip().lower() in {"1", "true", "yes"}
+    emit_progress("Chargement du runtime", "Corpus BOFiP, index BM25 et artefacts locaux.")
+    runtime = get_runtime(load_reranker=use_reranker, load_dense=load_dense, device=device)
+    retrieval_mode = "BM25 + embeddings E5" if getattr(runtime, "doc_encoder", None) is not None else "BM25 full-corpus"
+    emit_progress("Runtime prêt", retrieval_mode)
+
     client = OpenAI(api_key=api_key, base_url=provider["base_url"])
+
+    def on_agent_progress(label: str, payload: dict) -> None:
+        detail = payload.get("detail", "") if isinstance(payload, dict) else ""
+        emit_progress(label, detail)
+
     agent = AgenticRAG(
         runtime,
-        api_key=api_key,
+        api_key="",
         base_url=provider["base_url"],
         model=model,
         max_iterations=2,
         client=client,
         use_reranker=use_reranker,
+        progress_callback=on_agent_progress,
     )
+    emit_progress("Agent lancé", "Classification fiscale, retrieval et auto-évaluation.")
     agent_result = agent.run(query)
+    emit_progress("Réponse prête", "Sources et trace agentique disponibles.")
     parsed = {
         "answer_status": agent_result.get("answer_status", "partial"),
         "conclusion": agent_result.get("conclusion", ""),
@@ -372,14 +421,14 @@ def run_agent_query(query: str, provider: dict, api_key: str, model: str, *, use
         "raw_agent": agent_result,
         "device": device,
         "reranker": use_reranker,
+        "retrieval_mode": retrieval_mode,
     }
     st.session_state.result_cache[cache_key] = result
     return result
 
-
 def render_answer(parsed: dict, result: dict) -> None:
     status_class, status_label, status_detail = _status_meta(parsed.get("answer_status"))
-    conclusion = parsed.get("conclusion") or "Aucune conclusion structur?e n'a ?t? retourn?e."
+    conclusion = parsed.get("conclusion") or "Aucune conclusion structurée n'a été retournée."
     bullets = parsed.get("justification_bullets", []) or []
     limits = parsed.get("limits") or ""
     st.markdown(
@@ -390,8 +439,8 @@ def render_answer(parsed: dict, result: dict) -> None:
           <blockquote>{_escape(conclusion)}</blockquote>
           <div class="metric-strip">
             <div class="metric-card"><span>Couverture</span><strong>{float(result.get('coverage', 0)):.0%}</strong></div>
-            <div class="metric-card"><span>It?rations agent</span><strong>{int(result.get('iterations') or 0)}</strong></div>
-            <div class="metric-card"><span>Passages cumul?s</span><strong>{int(result.get('chunks_used') or 0)}</strong></div>
+            <div class="metric-card"><span>Itérations agent</span><strong>{int(result.get('iterations') or 0)}</strong></div>
+            <div class="metric-card"><span>Passages cumulés</span><strong>{int(result.get('chunks_used') or 0)}</strong></div>
             <div class="metric-card"><span>Temps</span><strong>{_escape(result.get('total_s', '?'))}s</strong></div>
           </div>
           <p>{_escape(status_detail)}</p>
@@ -418,7 +467,7 @@ def render_coverage(parsed: dict) -> None:
         if values:
             value_html = "".join(f'<div class="coverage-value">{_escape(value)}</div>' for value in values)
         else:
-            value_html = '<span class="empty-value">Non renseign?</span>'
+            value_html = '<span class="empty-value">Non renseigné</span>'
         cells.append(f'<div class="coverage-item"><span class="coverage-title">{_escape(title)}</span>{value_html}</div>')
     st.markdown('<div class="coverage-panel"><div class="coverage-grid">' + ''.join(cells) + '</div></div>', unsafe_allow_html=True)
 
@@ -426,47 +475,47 @@ def render_coverage(parsed: dict) -> None:
 def render_agent_trace(result: dict) -> None:
     trace = result.get("trace", []) or []
     if not trace:
-        st.markdown('<div class="agent-trace"><div class="agent-trace-head">Parcours agentique</div><div class="agent-step"><strong>Aucune trace retourn?e.</strong></div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="agent-trace"><div class="agent-trace-head">Parcours agentique</div><div class="agent-step"><strong>Aucune trace retournée.</strong></div></div>', unsafe_allow_html=True)
         return
     steps = []
     for step in trace:
         iteration = step.get("iteration", "?")
         status = step.get("answer_status", "?")
-        prefix = step.get("domain_prefix") or "non d?termin?"
+        prefix = step.get("domain_prefix") or "non déterminé"
         query_used = step.get("query_used") or ""
         details = (
-            f"Pr?fixe BOFiP: {prefix} ? documents: {step.get('docs_found', 0)} ? "
-            f"passages: {step.get('chunks_total', step.get('chunks_found', 0))} ? "
-            f"retrieval: {step.get('retrieve_s', '?')}s ? r?ponse: {step.get('answer_s', '?')}s"
+            f"Préfixe BOFiP: {prefix} - documents: {step.get('docs_found', 0)} - "
+            f"passages: {step.get('chunks_total', step.get('chunks_found', 0))} - "
+            f"retrieval: {step.get('retrieve_s', '?')}s - réponse: {step.get('answer_s', '?')}s"
         )
         missing = step.get("axes_manquants", []) or []
         covered = step.get("axes_couverts", []) or []
-        axis_line = f"Axes couverts: {len(covered)} ? axes manquants: {len(missing)}"
+        axis_line = f"Axes couverts: {len(covered)} - axes manquants: {len(missing)}"
         reformulated = step.get("reformulated_query")
-        reform_html = f'<div class="agent-query"><strong>Relance cibl?e:</strong> {_escape(reformulated)}</div>' if reformulated else ""
+        reform_html = f'<div class="agent-query"><strong>Relance ciblée:</strong> {_escape(reformulated)}</div>' if reformulated else ""
         mismatch = step.get("mismatch_fix")
         mismatch_html = f'<div class="agent-query"><strong>Correction taxonomique:</strong> {_escape(mismatch)}</div>' if mismatch else ""
-        query_html = f'<div class="agent-query"><strong>Requ?te utilis?e:</strong> {_escape(_truncate(query_used, 260))}</div>' if query_used else ""
+        query_html = f'<div class="agent-query"><strong>Requête utilisée:</strong> {_escape(_truncate(query_used, 260))}</div>' if query_used else ""
         steps.append(
-            f'<div class="agent-step"><span>It?ration {iteration}</span><strong>Auto-?valuation: {_escape(status)}</strong>'
+            f'<div class="agent-step"><span>Itération {iteration}</span><strong>Auto-évaluation: {_escape(status)}</strong>'
             f'<small>{_escape(details)}</small><small>{_escape(axis_line)}</small>{query_html}{mismatch_html}{reform_html}</div>'
         )
-    st.markdown('<div class="agent-trace"><div class="agent-trace-head">Parcours agentique r?el</div>' + ''.join(steps) + '</div>', unsafe_allow_html=True)
+    st.markdown('<div class="agent-trace"><div class="agent-trace-head">Parcours agentique réel</div>' + ''.join(steps) + '</div>', unsafe_allow_html=True)
 
 
 def _source_card_html(chunk: dict, index: int) -> str:
     ref = _escape(chunk.get("boi_reference", "BOFiP"))
     title = _escape(chunk.get("title", "Sans titre"))
     section = _escape(_truncate(chunk.get("section_path", ""), 120))
-    publication_date = _escape(chunk.get("publication_date") or "date non renseign?e")
+    publication_date = _escape(chunk.get("publication_date") or "date non renseignée")
     excerpt = _escape(_truncate(chunk.get("text", ""), 430))
-    return f'<div class="source-card"><div class="ref">#{index} ? {ref}</div><h4>{title}</h4><div class="path">{publication_date} ? {section}</div><p>{excerpt}</p></div>'
+    return f'<div class="source-card"><div class="ref">#{index} - {ref}</div><h4>{title}</h4><div class="path">{publication_date} - {section}</div><p>{excerpt}</p></div>'
 
 
 def render_sources(chunks: list[dict]) -> None:
     st.markdown('<div class="section-kicker">Sources retenues</div>', unsafe_allow_html=True)
     if not chunks:
-        st.info("Aucun passage source n'a ?t? retenu.")
+        st.info("Aucun passage source n'a été retenu.")
         return
     cards = ''.join(_source_card_html(chunk, index) for index, chunk in enumerate(chunks[:8], start=1))
     st.markdown(f'<div class="source-grid">{cards}</div>', unsafe_allow_html=True)
@@ -474,7 +523,7 @@ def render_sources(chunks: list[dict]) -> None:
 
 def display_results(result: dict) -> None:
     st.markdown(
-        f'<div class="notice-panel"><div class="section-kicker">Question analys?e</div><strong>{_escape(result.get("query", ""))}</strong></div>',
+        f'<div class="notice-panel"><div class="section-kicker">Question analysée</div><strong>{_escape(result.get("query", ""))}</strong></div>',
         unsafe_allow_html=True,
     )
     parsed = result.get("parsed", {}) or {}
@@ -487,8 +536,6 @@ def display_results(result: dict) -> None:
             st.code(json.dumps(result.get("raw_agent", {}), ensure_ascii=False, indent=2)[:12000], language="json")
 
 
-load_default_env_files()
-
 with st.sidebar:
     st.markdown("### BOFiP Agentic RAG")
     st.caption("Prototype par Raphael Ifergan.")
@@ -498,7 +545,7 @@ with st.sidebar:
         st.cache_resource.clear()
         st.rerun()
     st.divider()
-    st.caption("Anonymisez les cas r?els avant usage.")
+    st.caption("Anonymisez les cas réels avant usage.")
     st.caption("Prototype de recherche, pas conseil fiscal.")
 
 render_app_shell()
@@ -507,63 +554,59 @@ query_col, config_col = st.columns([1.65, 0.75], gap="large")
 
 with config_col:
     with st.container(border=True):
-        st.markdown("### Connexion LLM")
-        st.caption("Votre cl? reste dans la session Streamlit.")
+        st.markdown("### Paramètres")
         provider_id = st.selectbox("Fournisseur", list(PROVIDERS.keys()), key="provider_select")
         provider = PROVIDERS[provider_id]
         api_key = st.text_input(
-            f"Cl? API ({provider['env_key']})",
-            value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
+            f"Clé API ({provider['env_key']})",
+            value="",
             type="password",
             key="api_key_input",
         )
         model_options = provider["models"]
         default_model = provider["default_model"]
         default_index = model_options.index(default_model) if default_model in model_options else 0
-        model = st.selectbox("Mod?le", model_options, index=default_index, key=f"model_{provider_id}_select")
-        st.markdown(f'<p class="field-note">{_escape(provider.get("note", ""))}</p>', unsafe_allow_html=True)
+        model = st.selectbox("Modèle", model_options, index=default_index, key=f"model_{provider_id}_select")
         use_reranker = False
-        st.markdown('<p class="field-note">Reranker d?sactiv? sur la d?mo CPU. Le moteur garde la boucle agentique compl?te.</p>', unsafe_allow_html=True)
 
 with query_col:
     with st.container(border=True):
         st.markdown("### Question fiscale")
         st.markdown(
-            '<p class="panel-lede">D?crivez le cas en fran?ais. L?agent affichera ses it?rations, les axes de couverture et les passages BOFiP utilis?s.</p>',
+            "<p class=\"panel-lede\">Décrivez le cas en français. L'agent affichera ses étapes, les axes de couverture et les passages BOFiP utilisés.</p>",
             unsafe_allow_html=True,
         )
         query = st.text_area(
             "Votre question",
-            placeholder="Exemple : quel taux de TVA pour la pose d'une pompe ? chaleur chez un particulier ?",
+            placeholder="Exemple : quel taux de TVA pour la pose d'une pompe à chaleur chez un particulier ?",
             height=150,
             label_visibility="collapsed",
             key="single_question",
         )
         button_slot = st.empty()
+        status_slot = st.empty()
         submit = button_slot.button("Analyser la question", type="primary", use_container_width=True)
         if submit:
             if not query.strip():
                 st.warning("Saisissez une question avant de lancer l'analyse.")
             elif not api_key:
-                st.warning("Saisissez une cl? API dans le panneau Connexion LLM.")
+                st.warning("Ajoutez une clé API pour lancer l'analyse.")
             elif ensure_runtime_ready():
                 render_loading_button(button_slot)
                 try:
                     st.session_state.latest_results = run_agent_query(
-                        query.strip(), provider, api_key, model, use_reranker=use_reranker
+                        query.strip(), provider, api_key, model, use_reranker=use_reranker, progress_slot=status_slot
                     )
                     st.rerun()
                 finally:
                     button_slot.empty()
-
-if not api_key:
-    render_missing_key(provider)
+                    status_slot.empty()
 
 latest_results = st.session_state.get("latest_results")
 if latest_results:
     display_results(latest_results)
 
 st.markdown(
-    '<div class="app-footer">BOFiP Agentic RAG ? prototype par Raphael Ifergan ? sources BOFiP ? v?rifier avant usage professionnel.</div>',
+    '<div class="app-footer">BOFiP Agentic RAG - prototype par Raphael Ifergan - sources BOFiP à vérifier avant usage professionnel.</div>',
     unsafe_allow_html=True,
 )

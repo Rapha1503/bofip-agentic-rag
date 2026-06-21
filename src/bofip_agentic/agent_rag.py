@@ -35,6 +35,7 @@ class AgenticRAG:
         max_iterations: int = 2,
         client=None,
         use_reranker: bool = True,
+        progress_callback=None,
     ):
         self.rt = runtime
         self.api_key = api_key
@@ -43,7 +44,15 @@ class AgenticRAG:
         self.max_iterations = max_iterations
         self._client = client
         self.use_reranker = use_reranker
+        self.progress_callback = progress_callback
 
+    def _progress(self, label: str, **payload) -> None:
+        if self.progress_callback is None:
+            return
+        try:
+            self.progress_callback(label, payload)
+        except Exception:
+            pass
     # ------------------------------------------------------------------
     # Public
     # ------------------------------------------------------------------
@@ -59,15 +68,18 @@ class AgenticRAG:
 
         # Before first retrieval: ask the LLM to classify the BOFIP domain.
         # One cheap call (max_tokens=150) extracts the right family + sub-family prefix.
+        self._progress("Classification BOFiP", detail="Détection de la famille documentaire.")
         domain = _classify_domain(question, self._call_llm)
         boost_prefix = domain
         if domain:
             question = f"{domain} {question}"
+        self._progress("Famille BOFiP", detail=boost_prefix or "Non déterminée")
 
         for iteration in range(1, self.max_iterations + 1):
             step_log = {"iteration": iteration, "domain_prefix": boost_prefix, "query_used": question}
 
             # --- Retrieve ---
+            self._progress("Recherche documentaire", detail=f"Itération {iteration}: corpus complet, BM25 et embeddings si disponibles.")
             t0 = time.time()
             result = self.rt.retrieve(question, top_docs=8, max_chunks=8, use_reranker=self.use_reranker, boost_prefix=boost_prefix)
 
@@ -101,8 +113,10 @@ class AgenticRAG:
             all_chunks.extend(new_chunks)
             step_log["chunks_new"] = len(new_chunks)
             step_log["chunks_total"] = len(all_chunks)
+            self._progress("Passages retenus", detail=f"{len(result.stage1_hits)} documents candidats, {len(chunks)} passages analysés.")
 
             # --- Answer + Self-Evaluate ---
+            self._progress("Auto-évaluation", detail=f"Itération {iteration}: réponse structurée et contrôle des axes.")
             t0 = time.time()
             answer = self._answer(question, all_chunks)
             step_log["answer_s"] = round(time.time() - t0, 2)
@@ -134,6 +148,7 @@ class AgenticRAG:
                 step_log["axes_couverts"] = answer.get("axes_couverts", [])
                 step_log["axes_manquants"] = answer.get("axes_manquants", [])
                 trace.append(step_log)
+                self._progress("Couverture suffisante", detail="Les axes essentiels sont couverts par les passages retenus.")
                 break
 
             step_log["answer_status"] = answer.get("answer_status", "?")
@@ -146,6 +161,7 @@ class AgenticRAG:
                 break
 
             # --- Reformulate ---
+            self._progress("Relance ciblée", detail="Axes manquants détectés, génération de requête BOFiP plus précise.")
             t0 = time.time()
             question = self._reformulate(question, answer)
             step_log["reformulated_query"] = question

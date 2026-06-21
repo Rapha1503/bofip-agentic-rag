@@ -119,11 +119,12 @@ class RagRuntime:
         *,
         documents: list[RawDocument],
         chunks: list[ChunkNode],
-        doc_encoder: DenseEncoder,
+        doc_encoder: DenseEncoder | None,
         chunk_encoder: DenseEncoder | None = None,
         document_embeddings: np.ndarray,
         chunk_embeddings: np.ndarray,
         reranker: CrossEncoderReranker | None,
+        dense_error: str | None = None,
     ):
         self.documents = documents
         self.documents_by_ref = {d.boi_reference: d for d in documents}
@@ -133,6 +134,7 @@ class RagRuntime:
         self.document_embeddings = document_embeddings
         self.chunk_embeddings = chunk_embeddings
         self.reranker = reranker
+        self.dense_error = dense_error
 
         self.lexical_indexes = self._init_lexical(documents)
         self.doc_dense_index = DenseDocumentIndex(documents, document_embeddings)
@@ -160,7 +162,7 @@ class RagRuntime:
                         tokenize_fn=tok_fn,
                     )
                     continue
-            except (pickle.PickleError, OSError, EOFError, ImportError):
+            except (pickle.PickleError, OSError, EOFError, ImportError, MemoryError):
                 pass  # Corrupted or incompatible cache — rebuild
             indexes[mode_key] = LexicalIndex(
                 documents,
@@ -170,7 +172,7 @@ class RagRuntime:
             )
             try:
                 indexes[mode_key].save(cache_path)
-            except (pickle.PickleError, OSError):
+            except (pickle.PickleError, OSError, MemoryError):
                 pass  # Can't persist — non-fatal
         return indexes
 
@@ -188,6 +190,8 @@ class RagRuntime:
         chunk_model: str = DEFAULT_CHUNK_MODEL,
         reranker_model: str = DEFAULT_RERANKER_MODEL,
         load_reranker: bool = True,
+        load_dense: bool = True,
+        allow_lexical_fallback: bool = True,
         device: str = "cuda",
     ) -> "RagRuntime":
         root = (project_root or _get_data_root()).resolve()
@@ -202,16 +206,47 @@ class RagRuntime:
         document_embeddings = np.load(str(doc_dense), mmap_mode="r")
         chunk_embeddings = np.load(str(chunk_dense), mmap_mode="r")
 
+        dense_error = None
+        if load_dense:
+            try:
+                doc_encoder = DenseEncoder(doc_model, device=device)
+            except (OSError, RuntimeError, MemoryError) as exc:
+                if not allow_lexical_fallback:
+                    raise
+                doc_encoder = None
+                dense_error = f"{exc.__class__.__name__}: {exc}"
+        else:
+            doc_encoder = None
+            dense_error = "dense disabled by configuration"
+
+        reranker = None
+        if load_reranker:
+            try:
+                reranker = CrossEncoderReranker(reranker_model, device=device)
+            except (OSError, RuntimeError, MemoryError) as exc:
+                if not allow_lexical_fallback:
+                    raise
+                reranker_error = f"reranker {exc.__class__.__name__}: {exc}"
+                dense_error = f"{dense_error} | {reranker_error}" if dense_error else reranker_error
+
         return cls(
             documents=documents,
             chunks=chunks,
-            doc_encoder=DenseEncoder(doc_model, device=device),
+            doc_encoder=doc_encoder,
             document_embeddings=document_embeddings,
             chunk_embeddings=chunk_embeddings,
-            reranker=CrossEncoderReranker(reranker_model, device=device) if load_reranker else None,
+            reranker=reranker,
+            dense_error=dense_error,
         )
 
-    def _build_rankings(self, query: str, lexical_query: str) -> tuple[dict[str, list[RankedDoc]], dict[str, float]]:
+    def _build_rankings(
+        self,
+        query: str,
+        lexical_query: str,
+        *,
+        use_dense: bool = True,
+        use_chunk_dense: bool = True,
+    ) -> tuple[dict[str, list[RankedDoc]], dict[str, float]]:
         rankings = {
             mode: [
                 RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source=mode)
@@ -219,16 +254,18 @@ class RagRuntime:
             ]
             for mode, index in self.lexical_indexes.items()
         }
-        doc_emb = self.doc_encoder.encode_queries([query])[0]
-        rankings["dense"] = [
-            RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source="dense")
-            for hit in self.doc_dense_index.search_from_vector(doc_emb, top_k=20)
-        ]
-        chunk_emb = self.chunk_encoder.encode_queries([query])[0]
-        rankings["chunk_dense"] = [
-            RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source="chunk_dense")
-            for hit in self.chunk_dense_index.search_documents_from_vector(chunk_emb, top_k=20)
-        ]
+        if use_dense and self.doc_encoder is not None:
+            doc_emb = self.doc_encoder.encode_queries([query])[0]
+            rankings["dense"] = [
+                RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source="dense")
+                for hit in self.doc_dense_index.search_from_vector(doc_emb, top_k=20)
+            ]
+        if use_chunk_dense and self.chunk_encoder is not None:
+            chunk_emb = self.chunk_encoder.encode_queries([query])[0]
+            rankings["chunk_dense"] = [
+                RankedDoc(boi_reference=hit.boi_reference, score=float(hit.score), rank=hit.rank, source="chunk_dense")
+                for hit in self.chunk_dense_index.search_documents_from_vector(chunk_emb, top_k=20)
+            ]
         profiles = compute_source_rank_profiles(rankings, top_n=5)
         confidences = {name: round(profile.confidence, 6) for name, profile in profiles.items()}
         return rankings, confidences
@@ -249,7 +286,14 @@ class RagRuntime:
         use_reranker: bool = True,
         boost_prefix: str = "",
     ) -> RagResult:
-        rankings, confidences = self._build_rankings(query, query)
+        dense_enabled = use_dense and self.doc_encoder is not None
+        chunk_dense_enabled = use_chunk_dense and self.chunk_encoder is not None
+        rankings, confidences = self._build_rankings(
+            query,
+            query,
+            use_dense=dense_enabled,
+            use_chunk_dense=chunk_dense_enabled,
+        )
         if source_weights is None:
             source_weights = dict(DEFAULT_SOURCE_WEIGHTS)
 
@@ -257,10 +301,10 @@ class RagRuntime:
             for source in ("base", "sections_leads", "sections_leads_stem"):
                 rankings.pop(source, None)
                 source_weights.pop(source, None)
-        if not use_dense:
+        if not dense_enabled:
             rankings.pop("dense", None)
             source_weights.pop("dense", None)
-        if not use_chunk_dense:
+        if not chunk_dense_enabled:
             rankings.pop("chunk_dense", None)
             source_weights.pop("chunk_dense", None)
 
@@ -333,6 +377,11 @@ class RagRuntime:
 
         candidates = direct_result.chunk_hits
         log = {}
+        if self.doc_encoder is None:
+            log["dense_status"] = "unavailable"
+            log["dense_error"] = self.dense_error or "dense encoder not loaded"
+        else:
+            log["dense_status"] = "active"
         reranker_enabled = use_reranker and self.reranker is not None
         reranked_pool = []
 
