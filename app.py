@@ -97,25 +97,30 @@ st.markdown(
     """
     <style>
       :root {
-        --ink: #14171f;
-        --text: #2d3a46;
-        --muted: #607081;
-        --faint: #98a4af;
-        --line: #bdc9d1;
-        --line-soft: #dfe7eb;
+        --ink: #171319;
+        --text: #342a31;
+        --muted: #6f5d66;
+        --faint: #a58f99;
+        --line: #d7c4cc;
+        --line-soft: #eadde2;
         --paper: #ffffff;
-        --canvas: #edf3f2;
-        --blue: #126a63;
-        --blue-dark: #0a4b47;
-        --blue-soft: #e3f2ef;
-        --green: #126a63;
-        --amber: #b46f12;
-        --red: #8f2d52;
-        --plum: #8f2d52;
+        --canvas: #f4eef1;
+        --burgundy: #7d1738;
+        --burgundy-dark: #4c0d21;
+        --burgundy-soft: #f6e5eb;
+        --rose: #ead0da;
+        --ink-soft: #faf7f8;
+        --amber: #b9791c;
+        --blue: #7d1738;
+        --blue-dark: #4c0d21;
+        --blue-soft: #f6e5eb;
+        --green: #0f6f61;
+        --red: #7d1738;
+        --plum: #7d1738;
       }
 
       html, body, [class*="css"] {
-        font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: "Aptos", "Segoe UI", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       }
 
       [data-testid="stAppViewContainer"] {
@@ -124,18 +129,21 @@ st.markdown(
       }
 
       [data-testid="stHeader"] {
-        background: rgba(237, 243, 242, .96);
-        border-bottom: 1px solid var(--line-soft);
+        display: none !important;
+        height: 0 !important;
       }
 
       [data-testid="stDecoration"],
-      [data-testid="stToolbar"] {
-        display: none;
+      [data-testid="stToolbar"],
+      [data-testid="stStatusWidget"],
+      #MainMenu,
+      footer {
+        display: none !important;
       }
 
       .block-container {
         max-width: 1440px;
-        padding-top: 1.1rem;
+        padding-top: .65rem;
         padding-bottom: 3rem;
         color: var(--ink);
       }
@@ -197,69 +205,82 @@ st.markdown(
       .app-shell {
         border: 1px solid var(--line);
         border-top: 0;
-        background: linear-gradient(120deg, #ffffff 0%, #f4fbf9 58%, #fff4f7 100%);
+        background: #fff;
         border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 20px 48px rgba(15, 61, 102, .10);
-        margin-bottom: 16px;
+        box-shadow: 0 22px 56px rgba(76, 13, 33, .12);
+        margin-bottom: 18px;
         position: relative;
       }
 
       .app-shell::before {
         content: "";
         display: block;
-        height: 5px;
-        background: linear-gradient(90deg, var(--plum), var(--blue), var(--amber));
+        height: 7px;
+        background: linear-gradient(90deg, var(--burgundy-dark), var(--burgundy), var(--amber));
       }
 
       .app-header {
-        display: flex;
-        justify-content: space-between;
-        gap: 24px;
-        padding: 26px 30px 22px;
+        display: block;
+        text-align: center;
+        padding: 34px 30px 28px;
         border-bottom: 1px solid var(--line-soft);
       }
 
       .brand-line {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 10px;
-        color: var(--blue-dark);
-        font-size: .82rem;
-        font-weight: 760;
-        margin-bottom: 9px;
+        color: var(--burgundy-dark);
+        font-size: .78rem;
+        font-weight: 820;
+        margin-bottom: 14px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
       }
 
       .brand-mark {
-        width: 34px;
-        height: 34px;
-        border-radius: 7px;
-        border: 1px solid var(--blue-dark);
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid var(--burgundy-dark);
         color: #ffffff;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-family: Georgia, "Times New Roman", serif;
-        font-size: 1rem;
+        font-size: 1.05rem;
         font-weight: 800;
-        background: linear-gradient(135deg, var(--plum) 0 42%, var(--blue) 42% 100%);
+        background: linear-gradient(135deg, var(--burgundy) 0 58%, var(--burgundy-dark) 58% 100%);
       }
 
       .app-header h1 {
         color: var(--ink);
-        font-size: 2rem;
-        line-height: 1.1;
-        margin: 0 0 8px;
-        font-weight: 760;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.4rem, 4.4vw, 4.7rem);
+        line-height: .98;
+        margin: 0 auto 16px;
+        font-weight: 800;
         letter-spacing: 0;
+        max-width: 940px;
+      }
+
+      .accent-word {
+        color: var(--burgundy);
       }
 
       .app-header p {
-        margin: 0;
-        max-width: 760px;
-        color: #435466;
-        font-size: .98rem;
-        line-height: 1.55;
+        margin: 0 auto;
+        max-width: 820px;
+        color: var(--text);
+        font-size: 1.08rem;
+        line-height: 1.6;
+      }
+
+      .app-header p strong {
+        color: var(--burgundy);
+        font-weight: 820;
       }
 
       .model-panel {
@@ -309,7 +330,7 @@ st.markdown(
 
       .inline-status span {
         border: 1px solid var(--line-soft);
-        background: #f5faf9;
+        background: var(--ink-soft);
         border-radius: 6px;
         color: var(--text);
         font-size: .82rem;
@@ -321,7 +342,7 @@ st.markdown(
         background: var(--paper);
         border-color: var(--line) !important;
         border-radius: 10px !important;
-        box-shadow: 0 18px 45px rgba(18, 106, 99, .08);
+        box-shadow: 0 18px 45px rgba(76, 13, 33, .10);
         padding: 18px !important;
       }
 
@@ -335,7 +356,7 @@ st.markdown(
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         border-bottom: 1px solid var(--line-soft);
-        background: rgba(255, 255, 255, .62);
+        background: #fff9fb;
       }
 
       .system-item {
@@ -348,24 +369,24 @@ st.markdown(
         border-right: 0;
       }
 
-      .system-item:nth-child(1) { border-top-color: var(--plum); }
-      .system-item:nth-child(2) { border-top-color: var(--blue); }
+      .system-item:nth-child(1) { border-top-color: var(--burgundy); }
+      .system-item:nth-child(2) { border-top-color: var(--burgundy-dark); }
       .system-item:nth-child(3) { border-top-color: var(--amber); }
       .system-item:nth-child(4) { border-top-color: #40566e; }
 
       .system-item span {
         display: block;
-        color: var(--blue-dark);
+        color: var(--burgundy);
         font-size: .74rem;
-        font-weight: 730;
+        font-weight: 820;
         margin-bottom: 4px;
       }
 
       .system-item strong {
         display: block;
         color: var(--ink);
-        font-size: .98rem;
-        font-weight: 750;
+        font-size: 1.08rem;
+        font-weight: 820;
         line-height: 1.25;
       }
 
@@ -392,9 +413,9 @@ st.markdown(
       }
 
       .section-kicker {
-        color: var(--plum);
+        color: var(--burgundy);
         font-size: .75rem;
-        font-weight: 760;
+        font-weight: 820;
         letter-spacing: 0;
         text-transform: none;
         margin-bottom: 6px;
@@ -418,9 +439,9 @@ st.markdown(
       }
 
       .status-supported {
-        color: #075e45;
-        background: #e7f5ef;
-        border: 1px solid #b7dfcf;
+        color: #0f5f52;
+        background: #e7f6f1;
+        border: 1px solid #b6dfd2;
       }
 
       .status-partial {
@@ -431,9 +452,9 @@ st.markdown(
 
       .status-insufficient,
       .status-error {
-        color: #9a3412;
-        background: #fff1e8;
-        border: 1px solid #fed7aa;
+        color: var(--burgundy-dark);
+        background: var(--burgundy-soft);
+        border: 1px solid var(--rose);
       }
 
       .answer-panel {
@@ -454,11 +475,57 @@ st.markdown(
       }
 
       .answer-panel blockquote {
-        border-left: 3px solid var(--blue);
+        border-left: 4px solid var(--burgundy);
         margin: 10px 0;
         padding: 8px 0 8px 14px;
         color: var(--text);
-        background: #f8fafc;
+        background: #fff8fa;
+      }
+
+      .coverage-panel {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin: 14px 0 18px;
+        overflow: hidden;
+      }
+
+      .coverage-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .coverage-item {
+        padding: 14px 16px;
+        border-right: 1px solid var(--line-soft);
+      }
+
+      .coverage-item:last-child {
+        border-right: 0;
+      }
+
+      .coverage-title {
+        display: block;
+        color: var(--burgundy);
+        font-size: .78rem;
+        font-weight: 820;
+        margin-bottom: 8px;
+      }
+
+      .coverage-value {
+        color: var(--ink);
+        font-size: .92rem;
+        line-height: 1.45;
+      }
+
+      .empty-value {
+        color: var(--text);
+        background: var(--burgundy-soft);
+        border: 1px solid var(--rose);
+        border-radius: 6px;
+        display: inline-block;
+        padding: 5px 8px;
+        font-weight: 700;
       }
 
       .source-grid {
@@ -473,7 +540,7 @@ st.markdown(
       }
 
       .source-card .ref {
-        color: var(--blue);
+        color: var(--burgundy);
         font-weight: 800;
         font-size: .88rem;
       }
@@ -499,8 +566,54 @@ st.markdown(
 
       .notice-panel {
         padding: 20px 22px;
-        border-left: 4px solid var(--amber);
+        border-left: 4px solid var(--burgundy);
         margin-top: 14px;
+      }
+
+      .loading-panel {
+        background: #fff;
+        border: 1px solid var(--rose);
+        border-left: 5px solid var(--burgundy);
+        border-radius: 8px;
+        margin: 14px 0;
+        padding: 16px 18px;
+        box-shadow: 0 14px 36px rgba(76, 13, 33, .10);
+      }
+
+      .loading-title {
+        color: var(--burgundy-dark);
+        display: block;
+        font-weight: 840;
+        margin-bottom: 4px;
+      }
+
+      .loading-detail {
+        color: var(--text);
+        font-size: .92rem;
+      }
+
+      [data-testid="stSpinner"] {
+        background: #fff !important;
+        border: 1px solid var(--rose) !important;
+        border-left: 5px solid var(--burgundy) !important;
+        border-radius: 8px !important;
+        padding: 14px 16px !important;
+        box-shadow: 0 14px 36px rgba(76, 13, 33, .10) !important;
+      }
+
+      [data-testid="stSpinner"] p,
+      [data-testid="stSpinner"] span {
+        color: var(--burgundy-dark) !important;
+        font-weight: 800 !important;
+      }
+
+      [data-testid="stSpinner"] svg {
+        color: var(--burgundy) !important;
+        fill: var(--burgundy) !important;
+      }
+
+      [data-testid="stProgress"] div div div {
+        background-color: var(--burgundy) !important;
       }
 
       .notice-panel p {
@@ -540,8 +653,8 @@ st.markdown(
       .stTextArea textarea:focus,
       .stTextInput input:focus,
       [data-baseweb="select"] > div:focus-within {
-        border-color: var(--blue) !important;
-        box-shadow: 0 0 0 3px rgba(35, 87, 137, .12) !important;
+        border-color: var(--burgundy) !important;
+        box-shadow: 0 0 0 3px rgba(125, 23, 56, .13) !important;
       }
 
       .stCheckbox [data-testid="stWidgetLabel"] p,
@@ -556,14 +669,14 @@ st.markdown(
       }
 
       div[data-testid="stButton"] > button[kind="primary"] {
-        background: var(--blue);
-        border-color: var(--blue);
+        background: var(--burgundy);
+        border-color: var(--burgundy);
         color: white;
       }
 
       div[data-testid="stButton"] > button[kind="primary"]:hover {
-        background: var(--blue-dark);
-        border-color: var(--blue-dark);
+        background: var(--burgundy-dark);
+        border-color: var(--burgundy-dark);
       }
 
       div[data-testid="stButton"] > button:disabled,
@@ -576,12 +689,15 @@ st.markdown(
 
       @media (max-width: 840px) {
         .app-header { flex-direction: column; padding: 22px; }
-        .app-header h1 { font-size: 1.72rem; }
+        .app-header h1 { font-size: 2.2rem; }
         .model-panel { min-width: 0; width: 100%; }
         .system-strip,
-        .source-grid { grid-template-columns: 1fr; }
+        .source-grid,
+        .coverage-grid { grid-template-columns: 1fr; }
         .system-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
         .system-item:last-child { border-bottom: 0; }
+        .coverage-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+        .coverage-item:last-child { border-bottom: 0; }
       }
     </style>
     """,
@@ -610,7 +726,7 @@ def _status_meta(status: object) -> tuple[str, str, str]:
     label, css_class = STATUS_META.get(normalized, (normalized.replace("_", " ").title(), "status-error"))
     return normalized, label, css_class
 
-@st.cache_resource(show_spinner="Chargement du runtime full corpus...")
+@st.cache_resource(show_spinner=False)
 def get_runtime(load_reranker: bool, reranker_model: str | None):
     import torch
     from bofip_cleanroom.rag_runtime import RagRuntime
@@ -771,7 +887,7 @@ def render_answer(parsed):
           <blockquote>{conclusion}</blockquote>
           <h3>Raisonnement</h3>
           <ul>{bullet_html}</ul>
-          <p><strong>Limites:</strong> {limits or "Non precisees."}</p>
+          <p><strong>Limites :</strong> {limits or "Non précisées."}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -783,15 +899,28 @@ def render_answer(parsed):
         "Axes manquants": parsed.get("axes_manquants", []) or [],
     }
     if any(axes.values()):
-        with st.expander("Couverture juridique", expanded=normalized != "SUPPORTED"):
-            cols = st.columns(3)
-            for col, (title, values) in zip(cols, axes.items()):
-                col.markdown(f"**{title}**")
-                if values:
-                    for value in values:
-                        col.markdown(f"- {_escape(value)}")
-                else:
-                    col.caption("Non renseigne")
+        cells = []
+        for title, values in axes.items():
+            if values:
+                value_html = "".join(f"<div class=\"coverage-value\">{_escape(value)}</div>" for value in values)
+            else:
+                value_html = '<span class="empty-value">Non renseigné</span>'
+            cells.append(
+                f"""
+                <div class="coverage-item">
+                  <span class="coverage-title">{_escape(title)}</span>
+                  {value_html}
+                </div>
+                """
+            )
+        st.markdown(
+            f"""
+            <div class="coverage-panel">
+              <div class="coverage-grid">{''.join(cells)}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
@@ -1048,15 +1177,15 @@ def render_app_shell():
           <div class="app-header">
             <div>
               <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
-              <h1>Recherche citée dans la doctrine fiscale</h1>
-              <p>Un poste de recherche pour interroger le corpus BOFiP commentaires, vérifier les passages retenus et obtenir une réponse prudente avec limites explicites.</p>
+              <h1>Doctrine BOFiP.<br><span class="accent-word">Réponse citée.</span></h1>
+              <p>Interrogez le corpus <strong>BOFiP commentaires</strong>, contrôlez les <strong>sources retenues</strong>, puis obtenez une réponse prudente avec <strong>limites explicites</strong>.</p>
             </div>
           </div>
           <div class="system-strip">
-            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>BOFiP commentaires observés jusqu'au 28/01/2026</small></div>
+            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>Commentaires observés jusqu'au 28/01/2026</small></div>
             <div class="system-item"><span>Index</span><strong>66 289 passages</strong><small>Recherche documents puis passages</small></div>
-            <div class="system-item"><span>Retrieval</span><strong>BM25 + embeddings E5</strong><small>Fusion RRF, diversité documentaire</small></div>
-            <div class="system-item"><span>Sortie</span><strong>Citations et limites</strong><small>Sources visibles avant interprétation</small></div>
+            <div class="system-item"><span>Méthode</span><strong>BM25 + E5</strong><small>Fusion RRF, diversité documentaire</small></div>
+            <div class="system-item"><span>Réponse</span><strong>Citations + limites</strong><small>Sources visibles avant interprétation</small></div>
           </div>
         </div>
         """,
@@ -1076,18 +1205,33 @@ def render_missing_key(provider: dict):
     )
 
 
+def render_loading(slot, title: str, detail: str):
+    slot.markdown(
+        f"""
+        <div class="loading-panel">
+          <span class="loading-title">{_escape(title)}</span>
+          <span class="loading-detail">{_escape(detail)}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 # UI
 load_default_env_files()
 
 
 def ensure_runtime_ready() -> bool:
     if _missing_runtime_paths() and should_auto_download_artifacts():
-        with st.spinner("Téléchargement des artefacts full corpus..."):
-            try:
-                download_missing_runtime_artifacts(PROJECT_ROOT)
-            except Exception as exc:
-                st.error(f"Téléchargement des artefacts impossible: {exc}")
-                return False
+        loader = st.empty()
+        render_loading(loader, "Téléchargement des artefacts", "Préparation du corpus BOFiP complet pour cette session.")
+        try:
+            download_missing_runtime_artifacts(PROJECT_ROOT)
+        except Exception as exc:
+            st.error(f"Téléchargement des artefacts impossible: {exc}")
+            return False
+        finally:
+            loader.empty()
 
     missing_paths = _missing_runtime_paths()
     if missing_paths:
@@ -1170,6 +1314,7 @@ with query_col:
             label_visibility="collapsed",
             key="single_question",
         )
+        status_slot = st.empty()
         submit = st.button("Analyser la question", type="primary", use_container_width=True)
         if submit:
             if not query.strip():
@@ -1177,10 +1322,17 @@ with query_col:
             elif not api_key:
                 st.warning("Saisissez une clé API dans le panneau Connexion LLM.")
             elif ensure_runtime_ready():
-                rt = get_runtime(False, None)
-                client = OpenAI(api_key=api_key, base_url=provider["base_url"])
-                with st.spinner("Recherche, sélection des sources et génération..."):
+                render_loading(
+                    status_slot,
+                    "Analyse en cours",
+                    "Chargement du corpus, sélection des sources BOFiP et génération de la réponse citée.",
+                )
+                try:
+                    rt = get_runtime(False, None)
+                    client = OpenAI(api_key=api_key, base_url=provider["base_url"])
                     st.session_state.latest_results = process_query(query.strip(), rt, client, model, True, False)
+                finally:
+                    status_slot.empty()
 
 latest_results = st.session_state.get("latest_results")
 if latest_results:
