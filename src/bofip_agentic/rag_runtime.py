@@ -44,6 +44,14 @@ def _resolve_path(root: Path, paths: dict, fallbacks: dict, key: str) -> Path:
     return primary  # return original even if missing — let FileNotFoundError surface
 
 
+def _reference_matches_prefix(boi_reference: str, prefix: str) -> bool:
+    normalized = prefix.strip().lower().removeprefix("boi-").strip("-")
+    if not normalized:
+        return False
+    ref = boi_reference.lower()
+    return ref.startswith(normalized) or ref.startswith(f"boi-{normalized}")
+
+
 DEFAULT_DOC_MODEL = str(_get_data_root() / "data" / "models" / "intfloat--multilingual-e5-large")
 DEFAULT_CHUNK_MODEL = DEFAULT_DOC_MODEL
 STAGE2_CANDIDATES_PER_DOC = 8
@@ -115,7 +123,7 @@ class RagRuntime:
         chunk_encoder: DenseEncoder | None = None,
         document_embeddings: np.ndarray,
         chunk_embeddings: np.ndarray,
-        reranker: CrossEncoderReranker,
+        reranker: CrossEncoderReranker | None,
     ):
         self.documents = documents
         self.documents_by_ref = {d.boi_reference: d for d in documents}
@@ -179,6 +187,7 @@ class RagRuntime:
         doc_model: str = DEFAULT_DOC_MODEL,
         chunk_model: str = DEFAULT_CHUNK_MODEL,
         reranker_model: str = DEFAULT_RERANKER_MODEL,
+        load_reranker: bool = True,
         device: str = "cuda",
     ) -> "RagRuntime":
         root = (project_root or _get_data_root()).resolve()
@@ -190,8 +199,8 @@ class RagRuntime:
 
         documents = [raw_document_from_dict(item) for item in read_jsonl(Path(raw))]
         chunks = [chunk_node_from_dict(item) for item in read_jsonl(Path(chk))]
-        document_embeddings = np.load(str(doc_dense))
-        chunk_embeddings = np.load(str(chunk_dense))
+        document_embeddings = np.load(str(doc_dense), mmap_mode="r")
+        chunk_embeddings = np.load(str(chunk_dense), mmap_mode="r")
 
         return cls(
             documents=documents,
@@ -199,7 +208,7 @@ class RagRuntime:
             doc_encoder=DenseEncoder(doc_model, device=device),
             document_embeddings=document_embeddings,
             chunk_embeddings=chunk_embeddings,
-            reranker=CrossEncoderReranker(reranker_model, device=device),
+            reranker=CrossEncoderReranker(reranker_model, device=device) if load_reranker else None,
         )
 
     def _build_rankings(self, query: str, lexical_query: str) -> tuple[dict[str, list[RankedDoc]], dict[str, float]]:
@@ -264,9 +273,8 @@ class RagRuntime:
         if use_anchor_filter and rankings.get("dense"):
             dense_anchor_refs = {doc.boi_reference for doc in rankings.get("dense", [])[:20]}
             if boost_prefix:
-                boost_lower = boost_prefix.lower()
                 for d in self.documents:
-                    if d.boi_reference.lower().startswith(boost_lower):
+                    if _reference_matches_prefix(d.boi_reference, boost_prefix):
                         dense_anchor_refs.add(d.boi_reference)
             for source in list(rankings):
                 if source in ("dense", "chunk_dense"):
@@ -281,14 +289,12 @@ class RagRuntime:
         # This prevents generic sub-family docs from outranking the exact chapter.
         if boost_prefix and boost_prefix.count("-") >= 2:
             t_ranked = []
-            boost_lower = boost_prefix.lower()
             for d in self.documents:
-                ref_lower = d.boi_reference.lower()
-                if not ref_lower.startswith(boost_lower):
+                if not _reference_matches_prefix(d.boi_reference, boost_prefix):
                     continue
                 # Score by match depth: how many segments of the document ref
                 # match the boost prefix (up to the prefix length)
-                depth = boost_lower.count("-") + 1
+                depth = boost_prefix.strip().lower().removeprefix("boi-").count("-") + 1
                 t_ranked.append(RankedDoc(
                     boi_reference=d.boi_reference,
                     score=0.9 + 0.02 * depth,
@@ -327,8 +333,10 @@ class RagRuntime:
 
         candidates = direct_result.chunk_hits
         log = {}
+        reranker_enabled = use_reranker and self.reranker is not None
+        reranked_pool = []
 
-        if use_reranker:
+        if reranker_enabled:
             # Get all scores for diversity pool (top_48 from reranker)
             ranked_all = self.reranker.rerank(
                 query,
@@ -346,6 +354,8 @@ class RagRuntime:
         else:
             chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
             selected = [c for c, _ in chunk_items]
+            if use_reranker:
+                log["reranker_skipped"] = "not_loaded"
 
         preview_chunks = []
         for idx, hit in enumerate(selected, start=1):
@@ -360,7 +370,7 @@ class RagRuntime:
                     chunk_kind=hit.chunk.chunk_kind,
                     text=hit.chunk.text,
                     publication_date=doc.publication_date,
-                    score=float(hit.local_score) if not use_reranker else next((s for c, s in reranked_pool if c is hit), 0.0),
+                    score=float(hit.local_score) if not reranker_enabled else next((s for c, s in reranked_pool if c is hit), 0.0),
                 )
             )
 

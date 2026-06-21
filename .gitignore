@@ -1,36 +1,67 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
+# Secrets
 .env
 .env.local
+.streamlit/secrets.toml
 
-# Data (too large for git - document separately)
-data/interim/*.npy
-data/interim/*.jsonl
-data/interim/*.json
-data/interim/*.pkl
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local caches
+bm25_cache_*
+.cache/
+
+# BOFiP data and large generated artifacts
 data/raw/
+data/processed/
 data/models/
 data/logs/
-data/reports/*.json
-data/backup_*/
+data/interim/*.npy
+data/interim/raw_docs_*.jsonl
+data/interim/chunks_*.jsonl
+data/interim/doc_dense_cache_*.json
+data/interim/chunk_dense_cache_*.json
+data/interim/doc_tree_*.jsonl
 
-# Caches
-.bofip_cache/
-~/.cache/bofip_rag/
+# Historical phase outputs and local reports
+data/reports/phase*.json
+data/reports/manifest*.json
+data/reports/pre_llm_*.json
+data/reports/eval_baseline_*.json
+data/reports/eval_rag_smoke*.json
+data/reports/eval_rag_full.json
+data/reports/eval_rag_5.json
+data/reports/raw_inventory.json
+data/reports/phase15_fidelity_report*.md
+data/reports/phase7_*.json
+data/reports/phase8b_*.json
 
-# Build
-dist/
-build/
-*.egg-info/
+# Historical exploratory scripts and notebooks
+scripts/phase*.py
+scripts/build_*.py
+scripts/verify_*.py
+notebooks/
 
-# IDE
+# Local worktrees
+.worktrees/
+worktrees/
+
+# IDE / OS
 .vscode/
 .idea/
-*.swp
-
-# OS
 .DS_Store
 Thumbs.db
-*.orig
+
+data/backup_*/
+data/interim/*.json
+data/interim/*.pkl
+
+data/reports/**

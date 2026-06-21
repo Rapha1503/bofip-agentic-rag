@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+title: "BOFiP Agentic RAG"
+message: "If you reference this project, please cite it as a portfolio research prototype by Raphael Ifergan."
+type: software
+authors:
+  - name: "Raphael Ifergan"
+repository-code: "https://github.com/Rapha1503/bofip-agentic-rag"
+license: "MIT"
+abstract: "Full-corpus BOFiP retrieval-augmented generation prototype with hybrid retrieval, reranking, and cited tax answers."
+keywords:
+  - retrieval-augmented generation
+  - RAG
+  - BOFiP
+  - French tax doctrine
+  - hybrid retrieval

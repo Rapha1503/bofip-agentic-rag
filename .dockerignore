@@ -1,0 +1,12 @@
+.git
+.github
+.agents
+.venv
+__pycache__
+.pytest_cache
+data/
+notebooks/
+reports/
+*.pyc
+.env
+.env.*

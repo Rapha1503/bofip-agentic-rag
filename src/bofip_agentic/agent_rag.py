@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import re
 import time
+import unicodedata
 from dataclasses import dataclass, field
 
 from .prompt_utils import build_prompt, build_system_prompt
@@ -33,6 +34,7 @@ class AgenticRAG:
         model: str = "deepseek-chat",
         max_iterations: int = 2,
         client=None,
+        use_reranker: bool = True,
     ):
         self.rt = runtime
         self.api_key = api_key
@@ -40,6 +42,7 @@ class AgenticRAG:
         self.model = model
         self.max_iterations = max_iterations
         self._client = client
+        self.use_reranker = use_reranker
 
     # ------------------------------------------------------------------
     # Public
@@ -62,17 +65,21 @@ class AgenticRAG:
             question = f"{domain} {question}"
 
         for iteration in range(1, self.max_iterations + 1):
-            step_log = {"iteration": iteration}
+            step_log = {"iteration": iteration, "domain_prefix": boost_prefix, "query_used": question}
 
             # --- Retrieve ---
             t0 = time.time()
-            result = self.rt.retrieve(question, top_docs=8, max_chunks=8, boost_prefix=boost_prefix)
+            result = self.rt.retrieve(question, top_docs=8, max_chunks=8, use_reranker=self.use_reranker, boost_prefix=boost_prefix)
 
             # Mismatch detection: compare LLM-predicted domain vs actual retrieved families.
             # If retrieval pulled mostly wrong documents, retry with the predicted prefix.
             if iteration == 1 and domain and len(result.stage1_hits) >= 4:
-                expected = domain.split("-")[0] if "-" in domain else domain
-                fams = [h.boi_reference.split("-")[0] if "-" in h.boi_reference else "" for h in result.stage1_hits[:8]]
+                expected_ref = domain.upper().removeprefix("BOI-")
+                expected = expected_ref.split("-")[0] if "-" in expected_ref else expected_ref
+                fams = []
+                for h in result.stage1_hits[:8]:
+                    ref = h.boi_reference.upper().removeprefix("BOI-")
+                    fams.append(ref.split("-")[0] if "-" in ref else "")
                 from collections import Counter
                 fam_dist = Counter(fams)
                 total = sum(fam_dist.values())
@@ -80,7 +87,7 @@ class AgenticRAG:
                 if expected_count / total < 0.5 and total > 0:
                     question = f"{domain} {question}"
                     step_log["mismatch_fix"] = f"retry with {domain} ({expected_count}/{total} {expected})"
-                    result = self.rt.retrieve(question, top_docs=8, max_chunks=8, boost_prefix=boost_prefix)
+                    result = self.rt.retrieve(question, top_docs=8, max_chunks=8, use_reranker=self.use_reranker, boost_prefix=boost_prefix)
 
             chunks = _chunks_from_result(result)
             step_log["retrieve_s"] = round(time.time() - t0, 2)
@@ -265,6 +272,29 @@ class AgenticRAG:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
+def _ascii_lower(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value or "")
+    return "".join(ch for ch in normalized if not unicodedata.combining(ch)).lower()
+
+
+def _fallback_domain_from_question(question: str) -> str:
+    q = _ascii_lower(question)
+    rules = [
+        ("TVA", ("tva", "taxe sur la valeur ajoutee")),
+        ("IR", ("impot sur le revenu", "prelevement a la source", "foyer fiscal", "quotient familial")),
+        ("BIC", ("bic", "micro-bic", "benefices industriels", "chiffre d'affaires", "auto-entrepreneur", "entrepreneur")),
+        ("IS", ("impot sur les societes", "societe soumise a l'is", " is ")),
+        ("CF", ("controle fiscal", "redressement", "interet de retard", "majoration", "penalite")),
+        ("ENR", ("succession", "donation", "droits d'enregistrement")),
+        ("IF", ("taxe fonciere", "cfe", "cvae", "cotisation fonciere")),
+        ("RPPM", ("plus-value", "dividende", "valeurs mobilieres", "per ", "plan epargne retraite")),
+    ]
+    for family, markers in rules:
+        if any(marker in q for marker in markers):
+            return family
+    return ""
+
 def _parse_json(raw: str) -> dict | None:
     import re
     candidates = [raw]
@@ -283,13 +313,7 @@ def _parse_json(raw: str) -> dict | None:
 
 
 def _classify_domain(question: str, call_llm) -> str:
-    """Ask the LLM to classify the question into a BOFIP document prefix.
-
-    Returns the most specific prefix identifiable, e.g. 'RPPM-PVBMI-20-10-40'
-    for a question about moins-values on securities, or 'RPPM-PVBMI-50'
-    for exit tax. Falls back to family level if sub-family unclear.
-    Costs ~1 token and runs in ~200ms on fast models.
-    """
+    """Ask the LLM to classify the question into a BOFiP document prefix."""
     prompt = (
         "Identifie le prefixe documentaire BOFIP le PLUS PRECIS pour cette question. "
         "Donne le prefixe complet jusqu'au niveau section si identifiable "
@@ -300,10 +324,19 @@ def _classify_domain(question: str, call_llm) -> str:
     )
     resp = call_llm(prompt, "Tu es un classifieur de taxonomie BOFIP.", json_mode=False)
     raw = resp.get("_raw", "").strip()
-    raw = raw.split("\n")[0].strip().strip('"').strip("'").strip("`")
-    if not raw or len(raw) < 3 or len(raw) > 40:
-        return ""
-    return raw
+    first_line = raw.split("\n")[0].strip().strip('"').strip("'").strip("`")
+    match = re.search(
+        r"\b(?:BOI-)?(RPPM|BIC|IS|TVA|IR|CF|ENR|IF|PAT)(?:-[A-Z0-9]+){0,8}\b",
+        first_line.upper(),
+    )
+    if match:
+        return match.group(0).removeprefix("BOI-")[:80]
+    fallback = _fallback_domain_from_question(question)
+    if fallback:
+        return fallback
+    if 2 <= len(first_line) <= 80:
+        return first_line.upper().removeprefix("BOI-")
+    return ""
 
 
 def _chunks_from_result(result) -> list[dict]:

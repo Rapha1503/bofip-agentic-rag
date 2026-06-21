@@ -15,7 +15,7 @@ Usage:
     python scripts/setup.py --skip-download
 
     # Copy data from a pre-built sibling project
-    python scripts/setup.py --copy-from <path/to/bofip-rag-cleanroom>
+    python scripts/setup.py --copy-from <path/to/source-project>
 """
 from __future__ import annotations
 

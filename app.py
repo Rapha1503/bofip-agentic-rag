@@ -1,477 +1,569 @@
-"""BOFIP Agentic RAG — Streamlit application.
-Multi-provider LLM support, self-evaluating retrieval loop, batch processing.
-"""
+"""BOFiP Agentic RAG - Streamlit BYOK application."""
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import os
-import re
 import sys
 import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-# Inject project root into path so no PYTHONPATH env var is needed
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
+if str(PROJECT_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 import streamlit as st
 from openai import OpenAI
 
-from bofip_agentic.agent_rag import AgenticRAG
-from bofip_agentic.rag_runtime import RagRuntime
+from bofip_agentic.artifact_download import (
+    download_missing_runtime_artifacts,
+    missing_runtime_artifacts,
+    should_auto_download_artifacts,
+    validate_runtime_artifacts,
+)
+from bofip_agentic.env_utils import load_default_env_files
 from bofip_agentic.providers import PROVIDERS
 
+RUNNING_ON_SPACE = bool(os.environ.get("SPACE_ID"))
+SHOW_DEBUG_DETAILS = os.environ.get("BOFIP_SHOW_DEBUG", "").strip().lower() in {"1", "true", "yes"}
 
-def _load_env_file(path: Path) -> None:
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
-            os.environ[key] = value
+st.set_page_config(
+    page_title="BOFiP Agentic RAG",
+    page_icon="B",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
 
-def _rewrite_query(query: str, client, model: str) -> tuple[str, list[str]]:
-    system = (
-        "Analyse cette question fiscale. Retourne UNIQUEMENT un JSON valide sans markdown:\n"
-        '{"rewritten_query":"question reformulee en francais administratif formel",'
-        '"facets":[{"name":"axe","query":"sous-requete"}]}\n'
-        "Identifie les axes juridiques distincts (1 a 5). "
-        "Noms: regle_de_fond, procedure, doctrine, garanties, sanctions, prescription."
+def _escape(value: object) -> str:
+    return html.escape("" if value is None else str(value), quote=True)
+
+
+def _truncate(value: str, limit: int) -> str:
+    text = " ".join((value or "").split())
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "?"
+
+
+def _status_meta(status: str | None) -> tuple[str, str, str]:
+    mapping = {
+        "supported": ("supported", "R?ponse sourc?e", "Les passages retenus couvrent les axes essentiels."),
+        "partial": ("partial", "R?ponse partielle", "La r?ponse couvre une partie du cas et signale les limites."),
+        "insufficient_evidence": ("insufficient", "Preuve insuffisante", "Le corpus retenu ne suffit pas ? conclure proprement."),
+    }
+    return mapping.get(status or "", ("partial", status or "Statut inconnu", "Statut retourn? par l'agent."))
+
+
+st.markdown(
+    """
+    <style>
+      :root {
+        --ink: #151116;
+        --text: #3c3138;
+        --muted: #755f69;
+        --faint: #9f8792;
+        --paper: #ffffff;
+        --canvas: #f6eff2;
+        --soft: #fbf7f8;
+        --line: #dcc8d0;
+        --line-soft: #eddfe5;
+        --burgundy: #86183d;
+        --burgundy-dark: #4b0d22;
+        --burgundy-soft: #f7e4eb;
+        --gold: #b77a20;
+        --green: #0f6f61;
+        --green-soft: #e6f5f0;
+      }
+
+      html, body, [class*="css"] {
+        font-family: "Aptos", "Segoe UI", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      [data-testid="stAppViewContainer"] { background: var(--canvas); color: var(--ink); }
+      [data-testid="stHeader"], [data-testid="stDecoration"], [data-testid="stToolbar"],
+      [data-testid="stStatusWidget"], #MainMenu, footer { display: none !important; }
+
+      .block-container { max-width: 1450px; padding-top: .75rem; padding-bottom: 3rem; }
+
+      [data-testid="stSidebar"] { background: var(--paper); border-right: 1px solid var(--line); }
+      [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label { color: var(--text); }
+
+      .app-shell {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(75, 13, 34, .13);
+        margin-bottom: 18px;
+      }
+
+      .app-shell::before {
+        content: "";
+        display: block;
+        height: 7px;
+        background: linear-gradient(90deg, var(--burgundy-dark), var(--burgundy), var(--gold));
+      }
+
+      .app-header { text-align: center; padding: 36px 28px 30px; border-bottom: 1px solid var(--line-soft); }
+      .brand-line {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        color: var(--burgundy-dark); font-size: .78rem; font-weight: 850;
+        text-transform: uppercase; margin-bottom: 14px;
+      }
+      .brand-mark {
+        width: 38px; height: 38px; border-radius: 8px; display: inline-flex;
+        align-items: center; justify-content: center; color: #fff;
+        font-family: Georgia, "Times New Roman", serif; font-size: 1.1rem; font-weight: 800;
+        background: linear-gradient(135deg, var(--burgundy) 0 58%, var(--burgundy-dark) 58% 100%);
+        border: 1px solid var(--burgundy-dark);
+      }
+      .app-header h1 {
+        margin: 0 auto 16px; max-width: 980px; color: var(--ink);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.45rem, 4.6vw, 4.9rem); line-height: .98; font-weight: 850;
+        letter-spacing: 0;
+      }
+      .accent-word { color: var(--burgundy); }
+      .app-header p { margin: 0 auto; max-width: 820px; color: var(--text); font-size: 1.08rem; line-height: 1.6; }
+      .app-header strong { color: var(--burgundy); font-weight: 850; }
+
+      .system-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #fff9fb; }
+      .system-item { padding: 15px 18px; border-right: 1px solid var(--line-soft); border-top: 3px solid transparent; }
+      .system-item:last-child { border-right: 0; }
+      .system-item:nth-child(1) { border-top-color: var(--burgundy); }
+      .system-item:nth-child(2) { border-top-color: var(--burgundy-dark); }
+      .system-item:nth-child(3) { border-top-color: var(--gold); }
+      .system-item:nth-child(4) { border-top-color: var(--green); }
+      .system-item span { display: block; color: var(--burgundy); font-size: .74rem; font-weight: 850; margin-bottom: 4px; }
+      .system-item strong { display: block; color: var(--ink); font-size: 1.05rem; font-weight: 850; line-height: 1.25; }
+      .system-item small { display: block; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+      [data-testid="stVerticalBlockBorderWrapper"] {
+        background: var(--paper); border-color: var(--line) !important; border-radius: 10px !important;
+        box-shadow: 0 18px 45px rgba(75, 13, 34, .09); padding: 18px !important;
+      }
+      [data-testid="stVerticalBlockBorderWrapper"] h2,
+      [data-testid="stVerticalBlockBorderWrapper"] h3 { color: var(--ink); }
+
+      .panel-lede { color: var(--text); margin: 0 0 14px; font-size: .96rem; line-height: 1.5; }
+      .field-note { color: var(--muted); font-size: .86rem; line-height: 1.45; margin-top: 8px; }
+
+      .stTextArea textarea, .stTextInput input, [data-baseweb="select"] > div {
+        background: #fff !important; color: var(--ink) !important; border: 1px solid var(--line) !important;
+        border-radius: 7px !important; box-shadow: none !important;
+      }
+      .stTextArea textarea:focus, .stTextInput input:focus, [data-baseweb="select"] > div:focus-within {
+        border-color: var(--burgundy) !important; box-shadow: 0 0 0 3px rgba(134, 24, 61, .12) !important;
+      }
+      [data-baseweb="select"] span, [data-baseweb="select"] input { color: var(--ink) !important; }
+
+      div[data-testid="stButton"] button {
+        background: var(--burgundy-dark) !important; color: #fff !important; border: 1px solid var(--burgundy-dark) !important;
+        border-radius: 7px !important; min-height: 42px; font-weight: 850 !important;
+      }
+      div[data-testid="stButton"] button:hover { background: var(--burgundy) !important; border-color: var(--burgundy) !important; }
+
+      .loading-button {
+        width: 100%; min-height: 42px; border-radius: 7px; background: var(--burgundy-dark);
+        color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px;
+        font-weight: 850; border: 1px solid var(--burgundy-dark);
+      }
+      .loading-dot {
+        width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.38);
+        border-top-color: #fff; animation: spin .8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .notice-panel, .answer-panel, .trace-panel, .coverage-panel, .source-card {
+        background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
+      }
+      .notice-panel { padding: 18px 20px; border-left: 5px solid var(--burgundy); margin: 14px 0; }
+      .section-kicker { color: var(--burgundy); font-size: .76rem; font-weight: 850; margin-bottom: 6px; }
+      .notice-panel strong { color: var(--ink); }
+      .notice-panel p { color: var(--text); margin: 8px 0 0; line-height: 1.55; }
+
+      .answer-panel { padding: 18px 20px; margin: 16px 0; }
+      .status-pill { display: inline-flex; border-radius: 7px; padding: 5px 10px; font-size: .78rem; font-weight: 850; }
+      .status-supported { color: #0f5f52; background: var(--green-soft); border: 1px solid #b8dfd3; }
+      .status-partial { color: #8a4b05; background: #fff5df; border: 1px solid #edcf8f; }
+      .status-insufficient { color: var(--burgundy-dark); background: var(--burgundy-soft); border: 1px solid #e6bfd0; }
+      .answer-panel h3 { color: var(--ink); margin: 12px 0 8px; font-size: 1.08rem; }
+      .answer-panel p, .answer-panel li { color: var(--text); line-height: 1.58; }
+      .answer-panel blockquote { border-left: 4px solid var(--burgundy); margin: 10px 0; padding: 8px 0 8px 14px; background: #fff8fa; }
+
+      .metric-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+      .metric-card { background: var(--soft); border: 1px solid var(--line-soft); border-radius: 8px; padding: 12px 14px; }
+      .metric-card span { display: block; color: var(--muted); font-size: .74rem; font-weight: 800; margin-bottom: 4px; }
+      .metric-card strong { color: var(--ink); font-size: 1.08rem; }
+
+      .coverage-panel { margin: 14px 0 18px; overflow: hidden; }
+      .coverage-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .coverage-item { padding: 14px 16px; border-right: 1px solid var(--line-soft); }
+      .coverage-item:last-child { border-right: 0; }
+      .coverage-title { display: block; color: var(--burgundy); font-size: .78rem; font-weight: 850; margin-bottom: 8px; }
+      .coverage-value { color: var(--ink); font-size: .92rem; line-height: 1.45; }
+      .empty-value { color: var(--text); background: var(--burgundy-soft); border: 1px solid #e6bfd0; border-radius: 6px; display: inline-block; padding: 5px 8px; font-weight: 800; }
+
+      .agent-trace { background: #fff; border: 1px solid var(--line); border-radius: 8px; margin: 14px 0 18px; overflow: hidden; }
+      .agent-trace-head { padding: 13px 16px; border-bottom: 1px solid var(--line-soft); color: var(--burgundy-dark); font-weight: 850; }
+      .agent-step { padding: 14px 16px; border-bottom: 1px solid var(--line-soft); }
+      .agent-step:last-child { border-bottom: 0; }
+      .agent-step span { color: var(--burgundy); display: block; font-size: .75rem; font-weight: 850; margin-bottom: 6px; }
+      .agent-step strong { color: var(--ink); display: block; font-size: .96rem; line-height: 1.35; }
+      .agent-step small { color: var(--text); display: block; margin-top: 4px; line-height: 1.38; }
+      .agent-query { color: var(--muted); background: #fff8fa; border: 1px solid var(--line-soft); border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: .84rem; }
+
+      .source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .source-card { padding: 14px; min-height: 168px; }
+      .source-card .ref { color: var(--burgundy); font-weight: 850; font-size: .87rem; }
+      .source-card h4 { color: var(--ink); margin: 7px 0; font-size: .98rem; line-height: 1.28; }
+      .source-card .path { color: var(--muted); font-size: .78rem; margin-bottom: 8px; }
+      .source-card p { color: var(--text); font-size: .88rem; line-height: 1.45; }
+
+      .app-footer { color: var(--muted); font-size: .82rem; margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); }
+      [data-testid="stSpinner"] p, [data-testid="stSpinner"] span { color: var(--burgundy-dark) !important; font-weight: 800 !important; }
+
+      @media (max-width: 900px) {
+        .system-strip, .metric-strip, .coverage-grid, .source-grid { grid-template-columns: 1fr; }
+        .system-item, .coverage-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+        .system-item:last-child, .coverage-item:last-child { border-bottom: 0; }
+        .app-header { padding: 28px 18px 24px; }
+      }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+def render_app_shell() -> None:
+    st.markdown(
+        """
+        <div class="app-shell">
+          <div class="app-header">
+            <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
+            <h1>Doctrine BOFiP.<br><span class="accent-word">R?ponse sourc?e.</span></h1>
+            <p>Un poste de recherche fiscal: l'agent classe la question, interroge le corpus BOFiP, auto-?value la couverture, puis relance une recherche cibl?e si des axes restent manquants.</p>
+          </div>
+          <div class="system-strip">
+            <div class="system-item"><span>Corpus</span><strong>5 666 documents</strong><small>Commentaires BOFiP observ?s jusqu'au 28/01/2026</small></div>
+            <div class="system-item"><span>Index</span><strong>66 289 passages</strong><small>Documents puis passages sectionn?s</small></div>
+            <div class="system-item"><span>Agent</span><strong>Self-eval + relance</strong><small>Axes manquants, reformulation, second passage</small></div>
+            <div class="system-item"><span>Sortie</span><strong>Citations + limites</strong><small>Sources visibles avant interpr?tation</small></div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    try:
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "system", "content": system}, {"role": "user", "content": query}],
-            temperature=0.0, max_tokens=400,
-            response_format={"type": "json_object"},
+
+
+def render_missing_key(provider: dict) -> None:
+    st.markdown(
+        f"""
+        <div class="notice-panel">
+          <div class="section-kicker">Cl? API requise</div>
+          <strong>Saisissez une cl? {provider['env_key']} dans le panneau Connexion LLM pour lancer l'agent.</strong>
+          <p>La cl? reste dans la session Streamlit et sert uniquement ? appeler le fournisseur choisi.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_loading_button(slot, label: str = "Analyse en cours") -> None:
+    slot.markdown(
+        f'<div class="loading-button"><span class="loading-dot" aria-hidden="true"></span><span>{_escape(label)}</span></div>',
+        unsafe_allow_html=True,
+    )
+
+
+@st.cache_resource(show_spinner=False)
+def get_runtime(load_reranker: bool, device: str):
+    from bofip_agentic.rag_runtime import RagRuntime
+
+    return RagRuntime.from_local_corpus(corpus="commentary", device=device, load_reranker=load_reranker)
+
+
+def ensure_runtime_ready() -> bool:
+    missing = missing_runtime_artifacts(PROJECT_ROOT)
+    if missing and should_auto_download_artifacts():
+        loader = st.empty()
+        loader.markdown(
+            '<div class="notice-panel"><div class="section-kicker">Pr?paration du corpus</div><strong>T?l?chargement des artefacts full-corpus.</strong><p>Cette ?tape conserve la couverture BOFiP compl?te.</p></div>',
+            unsafe_allow_html=True,
         )
-        content = (resp.choices[0].message.content or "").strip()
-    except Exception:
-        return query, [query]
+        try:
+            download_missing_runtime_artifacts(PROJECT_ROOT)
+        except Exception as exc:
+            st.error(f"T?l?chargement des artefacts impossible: {exc}")
+            return False
+        finally:
+            loader.empty()
 
+    missing = missing_runtime_artifacts(PROJECT_ROOT)
+    if missing:
+        st.error("Artefacts full-corpus manquants. Ajoutez-les localement avant de lancer la d?mo.")
+        st.code("\n".join(str(path.relative_to(PROJECT_ROOT)).replace("\\", "/") for path in missing))
+        st.info("Commande de v?rification: python scripts/check_setup.py --deep")
+        return False
+
+    check_hashes = os.environ.get("BOFIP_VALIDATE_HASHES", "").strip().lower() in {"1", "true", "yes"}
+    artifact_errors = validate_runtime_artifacts(PROJECT_ROOT, check_hashes=check_hashes)
+    if artifact_errors:
+        st.error("Artefacts full-corpus invalides.")
+        st.code("\n".join(artifact_errors))
+        return False
+    return True
+
+
+def selected_device() -> str:
+    if RUNNING_ON_SPACE:
+        return "cpu"
     try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        cleaned = re.sub(r"```(?:json)?\s*", "", content).replace("```", "").strip()
-        start = cleaned.find("{")
-        end = cleaned.rfind("}")
-        if start >= 0 and end > start:
-            cleaned = cleaned[start:end + 1]
-        try:
-            data = json.loads(cleaned)
-        except json.JSONDecodeError:
-            return query, [query]
+        import torch
 
-    rewritten = data.get("rewritten_query", query) or query
-    facets = data.get("facets", [])
-    facet_queries = [f.get("query", rewritten) for f in facets if f.get("query")]
-    return rewritten, facet_queries if facet_queries else [rewritten]
+        return "cuda" if torch.cuda.is_available() else "cpu"
+    except Exception:
+        return "cpu"
 
 
-def _parse_json_safe(content: str) -> dict | None:
-    candidates = [content]
-    for m in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", content, re.DOTALL):
-        c = m.group(1).strip()
-        if c:
-            candidates.append(c)
-    for c in candidates:
-        try:
-            p = json.loads(c)
-            if isinstance(p, dict):
-                return p
-        except json.JSONDecodeError:
-            continue
-    return None
-
-
-##### ─── Page config (must be first st call) ───
-st.set_page_config(page_title="BOFIP Agentic RAG", layout="wide", initial_sidebar_state="expanded")
-
-# ─── CSS ───
-st.markdown("""
-<style>
-.stApp { background: #0d1117; }
-section.main > div { padding-top: 1rem; }
-div[data-testid="stTextArea"] textarea {
-    background: #161b22 !important; border: 1px solid rgba(255,255,255,0.08) !important;
-    border-radius: 8px !important; color: #e6edf3 !important; font-size: 0.95rem !important;
-    padding: 1rem !important;
-}
-div[data-testid="stTextArea"] textarea:focus {
-    border-color: rgba(200,169,81,0.4) !important;
-    box-shadow: 0 0 0 2px rgba(200,169,81,0.1) !important;
-}
-div[data-testid="stButton"] button {
-    background: linear-gradient(135deg, #1a3a6b, #1e4d8c) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 8px !important;
-    color: #e6edf3 !important; font-weight: 500 !important; padding: 0.6rem 2rem !important;
-}
-div[data-testid="stButton"] button:hover {
-    background: linear-gradient(135deg, #1e4d8c, #2563a8) !important;
-}
-.result-card {
-    background: #161b22; border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;
-}
-.status-badge {
-    display: inline-block; padding: 0.25rem 0.75rem; border-radius: 6px;
-    font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem;
-}
-.badge-supported { background: rgba(63,185,80,0.12); color: #3fb950; border: 1px solid rgba(63,185,80,0.2); }
-.badge-partial  { background: rgba(210,153,34,0.12); color: #d29922; border: 1px solid rgba(210,153,34,0.2); }
-.badge-insufficient { background: rgba(248,81,73,0.12); color: #f85149; border: 1px solid rgba(248,81,73,0.2); }
-.conclusion-text { font-size: 1.05rem; line-height: 1.6; color: #e6edf3; margin: 1rem 0; }
-.meta-row { display: flex; gap: 1.5rem; margin: 1rem 0; flex-wrap: wrap; }
-.meta-item { font-size: 0.82rem; color: #8b949e; }
-.meta-item strong { color: #c9d1d9; font-weight: 500; }
-.source-item {
-    background: #0d1117; border: 1px solid rgba(255,255,255,0.04);
-    border-radius: 6px; padding: 0.75rem; margin: 0.5rem 0; font-size: 0.82rem;
-}
-.source-ref { color: #58a6ff; font-family: monospace; font-size: 0.78rem; }
-.source-title { color: #e6edf3; font-weight: 500; margin-top: 0.25rem; }
-.source-section { color: #8b949e; font-size: 0.75rem; margin-top: 0.25rem; }
-.source-text { color: #c9d1d9; margin-top: 0.5rem; font-size: 0.8rem; line-height: 1.5; max-height: 120px; overflow-y: auto; }
-.trace-step {
-    border-left: 2px solid rgba(200,169,81,0.3); padding-left: 1rem; margin: 0.75rem 0;
-}
-.trace-step-label { color: #8b949e; font-size: 0.75rem; text-transform: uppercase; }
-.trace-step-value { color: #e6edf3; font-size: 0.85rem; }
-.info-box {
-    background: rgba(88,166,255,0.06); border: 1px solid rgba(88,166,255,0.1);
-    border-radius: 8px; padding: 1rem; margin: 1rem 0; font-size: 0.85rem; color: #c9d1d9;
-}
-.footer-meta { font-size: 0.72rem; color: #484f58; text-align: center; margin-top: 2rem; }
-hr { border-color: rgba(255,255,255,0.06) !important; margin: 1.5rem 0 !important; }
-[data-testid="stExpander"] {
-    background: transparent !important; border: 1px solid rgba(255,255,255,0.06) !important;
-    border-radius: 8px !important; margin: 0.5rem 0 !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
-def _get_runtime(device: str = "cuda"):
-    return RagRuntime.from_local_corpus(corpus="commentary", device=device)
-
-
-def _run_query(question, agent, llm_client, model, use_rewrite):
-    cache_key = hashlib.md5((question + model + str(use_rewrite)).encode()).hexdigest()[:12]
-    if "result_cache" not in st.session_state:
-        st.session_state.result_cache = {}
+def run_agent_query(query: str, provider: dict, api_key: str, model: str, *, use_reranker: bool) -> dict:
+    cache_key = hashlib.md5((query + provider["base_url"] + model + str(use_reranker)).encode("utf-8")).hexdigest()[:16]
+    st.session_state.setdefault("result_cache", {})
     if cache_key in st.session_state.result_cache:
         return st.session_state.result_cache[cache_key]
 
-    t0 = time.time()
-    rewritten = question
+    start = time.time()
+    device = selected_device()
+    from bofip_agentic.agent_rag import AgenticRAG
 
-    if use_rewrite:
-        rewritten, _ = _rewrite_query(question, llm_client, model)
-
-    query_for_agent = rewritten if use_rewrite else question
-    agent_result = agent.run(query_for_agent)
-
-    elapsed = round(time.time() - t0, 1)
-
-    result = {
-        "question": question,
-        "rewritten": rewritten if rewritten != question else None,
-        "parsed": {
-            "answer_status": agent_result.get("answer_status", "partial"),
-            "conclusion": agent_result.get("conclusion", ""),
-            "axes_requis": agent_result.get("axes_requis", []),
-            "axes_couverts": agent_result.get("axes_couverts", []),
-            "axes_manquants": agent_result.get("axes_manquants", []),
-            "justification_bullets": agent_result.get("justification_bullets", []),
-            "limits": agent_result.get("limits", ""),
-        },
-        "chunks": agent_result.get("sources", []),
-        "stage1": agent_result.get("sources", []),
-        "llm_raw": json.dumps(agent_result, ensure_ascii=False, indent=2),
-        "trace": agent_result.get("trace", []),
-        "elapsed": elapsed,
-        "iterations": agent_result.get("iterations", 1),
-        "coverage": agent_result.get("coverage", 0),
-        "total_s": agent_result.get("total_s", 0),
-        "chunks_used": agent_result.get("chunks_used", 0),
+    runtime = get_runtime(load_reranker=use_reranker, device=device)
+    client = OpenAI(api_key=api_key, base_url=provider["base_url"])
+    agent = AgenticRAG(
+        runtime,
+        api_key=api_key,
+        base_url=provider["base_url"],
+        model=model,
+        max_iterations=2,
+        client=client,
+        use_reranker=use_reranker,
+    )
+    agent_result = agent.run(query)
+    parsed = {
+        "answer_status": agent_result.get("answer_status", "partial"),
+        "conclusion": agent_result.get("conclusion", ""),
+        "axes_requis": agent_result.get("axes_requis", []),
+        "axes_couverts": agent_result.get("axes_couverts", []),
+        "axes_manquants": agent_result.get("axes_manquants", []),
+        "justification_bullets": agent_result.get("justification_bullets", []),
+        "limits": agent_result.get("limits", ""),
     }
-
+    result = {
+        "query": query,
+        "parsed": parsed,
+        "chunks": agent_result.get("sources", []),
+        "trace": agent_result.get("trace", []),
+        "coverage": agent_result.get("coverage", 0),
+        "iterations": agent_result.get("iterations", 0),
+        "total_s": agent_result.get("total_s", round(time.time() - start, 1)),
+        "elapsed_s": round(time.time() - start, 1),
+        "chunks_used": agent_result.get("chunks_used", len(agent_result.get("sources", []))),
+        "raw_agent": agent_result,
+        "device": device,
+        "reranker": use_reranker,
+    }
     st.session_state.result_cache[cache_key] = result
     return result
 
 
-def _parse_json_safe(content: str) -> dict | None:
-    candidates = [content]
-    for m in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", content, re.DOTALL):
-        c = m.group(1).strip()
-        if c:
-            candidates.append(c)
-    for c in candidates:
-        try:
-            p = json.loads(c)
-            if isinstance(p, dict):
-                return p
-        except json.JSONDecodeError:
-            continue
-    return None
-
-
-# --- Sidebar -----------------------------------------------------------
-with st.sidebar:
-    st.header("Configuration")
-
-    _load_env_file(PROJECT_ROOT / ".env.local")
-    _load_env_file(PROJECT_ROOT / ".env")
-
-    provider_id = st.selectbox("Fournisseur LLM", list(PROVIDERS.keys()), key="provider")
-    provider = PROVIDERS[provider_id]
-
-    saved_key = os.environ.get(provider["env_key"], "")
-    api_key = st.text_input(
-        f"Cle API ({provider['env_key']})",
-        value=saved_key, type="password", key="api_key",
-        help=f"Chargee depuis .env.local si disponible."
+def render_answer(parsed: dict, result: dict) -> None:
+    status_class, status_label, status_detail = _status_meta(parsed.get("answer_status"))
+    conclusion = parsed.get("conclusion") or "Aucune conclusion structur?e n'a ?t? retourn?e."
+    bullets = parsed.get("justification_bullets", []) or []
+    limits = parsed.get("limits") or ""
+    st.markdown(
+        f"""
+        <div class="answer-panel">
+          <span class="status-pill status-{status_class}">{_escape(status_label)}</span>
+          <h3>Conclusion</h3>
+          <blockquote>{_escape(conclusion)}</blockquote>
+          <div class="metric-strip">
+            <div class="metric-card"><span>Couverture</span><strong>{float(result.get('coverage', 0)):.0%}</strong></div>
+            <div class="metric-card"><span>It?rations agent</span><strong>{int(result.get('iterations') or 0)}</strong></div>
+            <div class="metric-card"><span>Passages cumul?s</span><strong>{int(result.get('chunks_used') or 0)}</strong></div>
+            <div class="metric-card"><span>Temps</span><strong>{_escape(result.get('total_s', '?'))}s</strong></div>
+          </div>
+          <p>{_escape(status_detail)}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-
-    model = st.selectbox("Modele", provider["models"], key=f"model_{provider_id}")
-
-    use_rewrite = st.checkbox("Reecriture de la question", value=True,
-                              help="Reformule la question en vocabulaire fiscal + detection multi-axes.")
-
-    st.divider()
-    st.caption("Corpus: 5 666 documents BOFIP")
-    st.caption("Embedding: E5-large (1024-dim)")
-    st.caption("Reranker: bge-reranker-v2-m3")
-
-    if st.button("Vider le cache"):
-        st.session_state.result_cache = {}
-        st.rerun()
+    if bullets:
+        st.markdown('<div class="answer-panel"><h3>Raisonnement</h3><ul>' + ''.join(f'<li>{_escape(item)}</li>' for item in bullets) + '</ul></div>', unsafe_allow_html=True)
+    if limits:
+        st.markdown(f'<div class="notice-panel"><div class="section-kicker">Limites</div><p>{_escape(limits)}</p></div>', unsafe_allow_html=True)
 
 
-# --- Header ------------------------------------------------------------
-st.markdown("""
-<div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,0.06);">
-    <div>
-        <h1 style="font-size:1.75rem;font-weight:600;color:#f0f0f0;margin:0;">BOFIP Agentic RAG</h1>
-        <span style="font-size:0.85rem;color:#8b949e;">Recherche fiscale augmentee · 5 666 documents · Analyse auto-evaluee</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# --- Runtime init (cached) ---------------------------------------------
-if not api_key:
-    st.warning(f"Entrez une cle API **{provider['env_key']}** dans la barre laterale.")
-    st.stop()
-
-
-@st.cache_resource(show_spinner="Chargement du moteur de recherche (GPU)...")
-def _cached_runtime(device):
-    return _get_runtime(device)
-
-
-try:
-    import torch
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-except Exception:
-    device = "cpu"
-
-rt = _cached_runtime(device)
-st.caption(f"Appareil: {'GPU' if device == 'cuda' else 'CPU'} | Pret")
-
-extra_headers = {"x-api-key": api_key} if provider_id == "Anthropic" else {}
-llm_client = OpenAI(api_key=api_key, base_url=provider["base_url"], **({"default_headers": extra_headers} if extra_headers else {}))
-
-agent = AgenticRAG(rt, api_key=api_key, base_url=provider["base_url"], model=model, max_iterations=2, client=llm_client)
-
-# --- Tabs --------------------------------------------------------------
-tab1, tab2 = st.tabs(["Question unique", "Test par lot"])
-
-with tab1:
-    question = st.text_area(
-        "Votre question",
-        placeholder="Ex: Puis-je recuperer la TVA sur l'achat d'une voiture de tourisme pour mon entreprise ?",
-        height=100,
-        label_visibility="collapsed",
-        key="question_input",
-    )
-
-    run_btn = st.button("Analyser", use_container_width=True, disabled=not question.strip(), key="run_btn")
-
-    if run_btn:
-        t0 = time.time()
-        with st.spinner("Analyse en cours..."):
-            result = _run_query(question, agent, llm_client, model, use_rewrite)
-
-        st.markdown("<hr>", unsafe_allow_html=True)
-
-        if result.get("rewritten"):
-            st.caption(f"Reformulee: {result['rewritten'][:200]}")
-
-        if result.get("error"):
-            st.error(result["error"])
+def render_coverage(parsed: dict) -> None:
+    axes = {
+        "Axes requis": parsed.get("axes_requis", []) or [],
+        "Axes couverts": parsed.get("axes_couverts", []) or [],
+        "Axes manquants": parsed.get("axes_manquants", []) or [],
+    }
+    if not any(axes.values()):
+        return
+    cells = []
+    for title, values in axes.items():
+        if values:
+            value_html = "".join(f'<div class="coverage-value">{_escape(value)}</div>' for value in values)
         else:
-            parsed = result.get("parsed", {})
-            status = parsed.get("answer_status", "partial")
-            status_labels = {"supported": "Reponse complete", "partial": "Reponse partielle",
-                             "insufficient_evidence": "Informations insuffisantes"}
-            badge_class = {"supported": "badge-supported", "partial": "badge-partial",
-                           "insufficient_evidence": "badge-insufficient"}
-
-            coverage_val = result.get("coverage", 0)
-            elapsed = result.get("total_s", result.get("elapsed", 0))
-            iters = result.get("iterations", 1)
-            chunks_n = result.get("chunks_used", len(result.get("chunks", [])))
-
-            st.markdown(f"""
-            <div class="result-card">
-                <span class="status-badge {badge_class.get(status, 'badge-partial')}">{status_labels.get(status, status)}</span>
-                <div class="conclusion-text">{parsed.get("conclusion", "")}</div>
-                <div class="meta-row">
-                    <div class="meta-item">Couverture <strong>{coverage_val:.0%}</strong></div>
-                    <div class="meta-item">Extraits <strong>{chunks_n}</strong></div>
-                    <div class="meta-item">Iterations <strong>{iters}</strong></div>
-                    <div class="meta-item">Temps <strong>{elapsed}s</strong></div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # Detailed analysis
-            with st.expander("Analyse detaillee", expanded=False):
-                for a in parsed.get("axes_requis", []):
-                    icon = "+" if a in parsed.get("axes_couverts", []) else "-"
-                    st.markdown(f"{icon} {a}")
-                for b in parsed.get("justification_bullets", []):
-                    st.markdown(f"- {b}")
-                if parsed.get("axes_manquants"):
-                    st.markdown("**Axes non couverts:**")
-                    for a in parsed["axes_manquants"]:
-                        st.markdown(f"- {a}")
-                if parsed.get("limits"):
-                    st.caption(parsed["limits"])
-
-            # Sources
-            with st.expander("Sources consultees", expanded=False):
-                for i, s in enumerate(result.get("chunks", [])[:8]):
-                    ref = s.get("boi_reference", "")
-                    title = s.get("title", "")
-                    section = s.get("section_path", "")
-                    text = s.get("text", "")
-                    if len(text) > 500:
-                        text = text[:500] + "..."
-                    st.markdown(f"""
-                    <div class="source-item">
-                        <div class="source-ref">[{i+1}] {ref}</div>
-                        <div class="source-title">{title}</div>
-                        <div class="source-section">{section}</div>
-                        <div class="source-text">{text}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            # Trace
-            with st.expander("Trace agent (pipeline complet)", expanded=True):
-                trace = result.get("trace", [])
-                if trace:
-                    for t in trace:
-                        it = t.get("iteration", "?")
-                        sts = t.get("answer_status", "?")
-                        docs = t.get("docs_found", 0)
-                        chks = t.get("chunks_found", 0)
-                        new_c = t.get("chunks_new", 0)
-                        tot_c = t.get("chunks_total", 0)
-                        ret_s = t.get("retrieve_s", 0)
-                        ans_s = t.get("answer_s", 0)
-                        axes_r = t.get("axes_requis", [])
-                        axes_c = t.get("axes_couverts", [])
-                        axes_m = t.get("axes_manquants", [])
-
-                        st.markdown(f"**Iteration {it}** -- Statut: `{sts}` | "
-                                    f"Retrieval: {ret_s}s, Answer: {ans_s}s")
-                        st.caption(f"Documents retrouves: {docs} | Extraits: {chks}"
-                                   f" | Nouveaux: {new_c} | Total cumule: {tot_c}")
-
-                        if axes_r:
-                            cols = st.columns(3)
-                            with cols[0]:
-                                st.caption("Axes requis:")
-                                for a in axes_r:
-                                    st.markdown(f"- {a}")
-                            if axes_c:
-                                with cols[1]:
-                                    st.caption("Axes couverts:")
-                                    for a in axes_c:
-                                        st.markdown(f"- {a}")
-                            if axes_m:
-                                with cols[2]:
-                                    st.caption("Axes manquants:")
-                                    for a in axes_m:
-                                        st.markdown(f"- {a}")
-
-                        if t.get("reformulated_query"):
-                            st.info(f"Reformulation: {t['reformulated_query'][:300]}")
-                else:
-                    st.caption("Aucune trace disponible.")
-
-            # Debug: full agent output
-            with st.expander("Debug: reponse agent brute (JSON)", expanded=False):
-                st.code(result.get("llm_raw", "")[:5000], language="json")
+            value_html = '<span class="empty-value">Non renseign?</span>'
+        cells.append(f'<div class="coverage-item"><span class="coverage-title">{_escape(title)}</span>{value_html}</div>')
+    st.markdown('<div class="coverage-panel"><div class="coverage-grid">' + ''.join(cells) + '</div></div>', unsafe_allow_html=True)
 
 
-with tab2:
-    st.caption("Collez plusieurs questions (une par ligne vide)")
-    batch_text = st.text_area("Questions", height=120, key="batch_input",
-                              placeholder="Quel taux de TVA pour une pompe a chaleur ?\n\nComment sont imposes les gains de cession de valeurs mobilieres ?")
+def render_agent_trace(result: dict) -> None:
+    trace = result.get("trace", []) or []
+    if not trace:
+        st.markdown('<div class="agent-trace"><div class="agent-trace-head">Parcours agentique</div><div class="agent-step"><strong>Aucune trace retourn?e.</strong></div></div>', unsafe_allow_html=True)
+        return
+    steps = []
+    for step in trace:
+        iteration = step.get("iteration", "?")
+        status = step.get("answer_status", "?")
+        prefix = step.get("domain_prefix") or "non d?termin?"
+        query_used = step.get("query_used") or ""
+        details = (
+            f"Pr?fixe BOFiP: {prefix} ? documents: {step.get('docs_found', 0)} ? "
+            f"passages: {step.get('chunks_total', step.get('chunks_found', 0))} ? "
+            f"retrieval: {step.get('retrieve_s', '?')}s ? r?ponse: {step.get('answer_s', '?')}s"
+        )
+        missing = step.get("axes_manquants", []) or []
+        covered = step.get("axes_couverts", []) or []
+        axis_line = f"Axes couverts: {len(covered)} ? axes manquants: {len(missing)}"
+        reformulated = step.get("reformulated_query")
+        reform_html = f'<div class="agent-query"><strong>Relance cibl?e:</strong> {_escape(reformulated)}</div>' if reformulated else ""
+        mismatch = step.get("mismatch_fix")
+        mismatch_html = f'<div class="agent-query"><strong>Correction taxonomique:</strong> {_escape(mismatch)}</div>' if mismatch else ""
+        query_html = f'<div class="agent-query"><strong>Requ?te utilis?e:</strong> {_escape(_truncate(query_used, 260))}</div>' if query_used else ""
+        steps.append(
+            f'<div class="agent-step"><span>It?ration {iteration}</span><strong>Auto-?valuation: {_escape(status)}</strong>'
+            f'<small>{_escape(details)}</small><small>{_escape(axis_line)}</small>{query_html}{mismatch_html}{reform_html}</div>'
+        )
+    st.markdown('<div class="agent-trace"><div class="agent-trace-head">Parcours agentique r?el</div>' + ''.join(steps) + '</div>', unsafe_allow_html=True)
 
-    if st.button("Lancer le lot", type="primary", disabled=not batch_text.strip(), key="batch_btn"):
-        queries = [q.strip() for q in batch_text.strip().split("\n\n") if q.strip()]
-        if queries:
-            progress = st.progress(0)
-            status_text = st.empty()
-            all_results = []
-            for i, q in enumerate(queries):
-                status_text.text(f"[{i+1}/{len(queries)}] {q[:80]}...")
-                progress.progress((i + 1) / len(queries))
-                all_results.append(_run_query(q, agent, llm_client, model, use_rewrite))
-            progress.empty()
-            status_text.empty()
 
-            st.markdown("### Resume")
-            rows = []
-            for res in all_results:
-                parsed = res.get("parsed")
-                sts = parsed.get("answer_status", "error") if parsed else "error"
-                conc = (parsed.get("conclusion", "")[:80] if parsed else str(res.get("error", "")))
-                rows.append({"Question": res["question"][:80], "Statut": sts, "Reponse": conc})
-            st.dataframe(rows, use_container_width=True, hide_index=True)
+def _source_card_html(chunk: dict, index: int) -> str:
+    ref = _escape(chunk.get("boi_reference", "BOFiP"))
+    title = _escape(chunk.get("title", "Sans titre"))
+    section = _escape(_truncate(chunk.get("section_path", ""), 120))
+    publication_date = _escape(chunk.get("publication_date") or "date non renseign?e")
+    excerpt = _escape(_truncate(chunk.get("text", ""), 430))
+    return f'<div class="source-card"><div class="ref">#{index} ? {ref}</div><h4>{title}</h4><div class="path">{publication_date} ? {section}</div><p>{excerpt}</p></div>'
 
-            for i, res in enumerate(all_results):
-                st.markdown("---")
-                with st.expander(f"Q{i+1}: {res['question'][:100]}", expanded=False):
-                    if res.get("error"):
-                        st.error(res["error"])
-                    else:
-                        parsed = res.get("parsed", {})
-                        st.markdown(f"**Statut:** {parsed.get('answer_status', '?')}")
-                        st.markdown(f"> {parsed.get('conclusion', '')}")
-                        for b in parsed.get("justification_bullets", []):
-                            st.markdown(f"- {b}")
-                        st.caption(parsed.get("limits", ""))
 
-# --- Footer ------------------------------------------------------------
-st.markdown(f"""
-<div class="info-box">
-    Ce moteur utilise un agent qui s'auto-evalue. Il detecte les axes fiscaux manquants
-    et reformule automatiquement la recherche en vocabulaire BOFIP technique.
-</div>
-<div class="footer-meta">
-    BOFIP Agentic RAG · 5 666 documents · E5-large + bge-reranker-v2-m3 · {provider_id}
-</div>
-""", unsafe_allow_html=True)
+def render_sources(chunks: list[dict]) -> None:
+    st.markdown('<div class="section-kicker">Sources retenues</div>', unsafe_allow_html=True)
+    if not chunks:
+        st.info("Aucun passage source n'a ?t? retenu.")
+        return
+    cards = ''.join(_source_card_html(chunk, index) for index, chunk in enumerate(chunks[:8], start=1))
+    st.markdown(f'<div class="source-grid">{cards}</div>', unsafe_allow_html=True)
+
+
+def display_results(result: dict) -> None:
+    st.markdown(
+        f'<div class="notice-panel"><div class="section-kicker">Question analys?e</div><strong>{_escape(result.get("query", ""))}</strong></div>',
+        unsafe_allow_html=True,
+    )
+    parsed = result.get("parsed", {}) or {}
+    render_answer(parsed, result)
+    render_coverage(parsed)
+    render_agent_trace(result)
+    render_sources(result.get("chunks", []) or [])
+    if SHOW_DEBUG_DETAILS:
+        with st.expander("JSON agent brut", expanded=False):
+            st.code(json.dumps(result.get("raw_agent", {}), ensure_ascii=False, indent=2)[:12000], language="json")
+
+
+load_default_env_files()
+
+with st.sidebar:
+    st.markdown("### BOFiP Agentic RAG")
+    st.caption("Prototype par Raphael Ifergan.")
+    if st.button("Vider le cache", use_container_width=True):
+        st.session_state.result_cache = {}
+        st.session_state.latest_results = None
+        st.cache_resource.clear()
+        st.rerun()
+    st.divider()
+    st.caption("Anonymisez les cas r?els avant usage.")
+    st.caption("Prototype de recherche, pas conseil fiscal.")
+
+render_app_shell()
+
+query_col, config_col = st.columns([1.65, 0.75], gap="large")
+
+with config_col:
+    with st.container(border=True):
+        st.markdown("### Connexion LLM")
+        st.caption("Votre cl? reste dans la session Streamlit.")
+        provider_id = st.selectbox("Fournisseur", list(PROVIDERS.keys()), key="provider_select")
+        provider = PROVIDERS[provider_id]
+        api_key = st.text_input(
+            f"Cl? API ({provider['env_key']})",
+            value="" if RUNNING_ON_SPACE else os.environ.get(provider["env_key"], ""),
+            type="password",
+            key="api_key_input",
+        )
+        model_options = provider["models"]
+        default_model = provider["default_model"]
+        default_index = model_options.index(default_model) if default_model in model_options else 0
+        model = st.selectbox("Mod?le", model_options, index=default_index, key=f"model_{provider_id}_select")
+        st.markdown(f'<p class="field-note">{_escape(provider.get("note", ""))}</p>', unsafe_allow_html=True)
+        use_reranker = False
+        st.markdown('<p class="field-note">Reranker d?sactiv? sur la d?mo CPU. Le moteur garde la boucle agentique compl?te.</p>', unsafe_allow_html=True)
+
+with query_col:
+    with st.container(border=True):
+        st.markdown("### Question fiscale")
+        st.markdown(
+            '<p class="panel-lede">D?crivez le cas en fran?ais. L?agent affichera ses it?rations, les axes de couverture et les passages BOFiP utilis?s.</p>',
+            unsafe_allow_html=True,
+        )
+        query = st.text_area(
+            "Votre question",
+            placeholder="Exemple : quel taux de TVA pour la pose d'une pompe ? chaleur chez un particulier ?",
+            height=150,
+            label_visibility="collapsed",
+            key="single_question",
+        )
+        button_slot = st.empty()
+        submit = button_slot.button("Analyser la question", type="primary", use_container_width=True)
+        if submit:
+            if not query.strip():
+                st.warning("Saisissez une question avant de lancer l'analyse.")
+            elif not api_key:
+                st.warning("Saisissez une cl? API dans le panneau Connexion LLM.")
+            elif ensure_runtime_ready():
+                render_loading_button(button_slot)
+                try:
+                    st.session_state.latest_results = run_agent_query(
+                        query.strip(), provider, api_key, model, use_reranker=use_reranker
+                    )
+                    st.rerun()
+                finally:
+                    button_slot.empty()
+
+if not api_key:
+    render_missing_key(provider)
+
+latest_results = st.session_state.get("latest_results")
+if latest_results:
+    display_results(latest_results)
+
+st.markdown(
+    '<div class="app-footer">BOFiP Agentic RAG ? prototype par Raphael Ifergan ? sources BOFiP ? v?rifier avant usage professionnel.</div>',
+    unsafe_allow_html=True,
+)
