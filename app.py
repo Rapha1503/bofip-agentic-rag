@@ -337,6 +337,13 @@ st.markdown(
         padding: 6px 9px;
       }
 
+      .panel-lede {
+        color: var(--text);
+        margin: 0 0 14px;
+        font-size: .95rem;
+        line-height: 1.5;
+      }
+
       [data-testid="stVerticalBlockBorderWrapper"],
       div[data-testid="stVerticalBlock"].st-emotion-cache-1ne20ew {
         background: var(--paper);
@@ -592,6 +599,85 @@ st.markdown(
         font-size: .92rem;
       }
 
+      .loading-button {
+        width: 100%;
+        min-height: 42px;
+        border-radius: 6px;
+        background: var(--burgundy-dark);
+        border: 1px solid var(--burgundy-dark);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 820;
+        margin-top: 0;
+      }
+
+      .loading-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, .38);
+        border-top-color: #ffffff;
+        animation: spin .8s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      .agent-trace {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin: 14px 0 18px;
+        overflow: hidden;
+      }
+
+      .agent-trace-head {
+        padding: 13px 16px;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--burgundy-dark);
+        font-weight: 840;
+      }
+
+      .agent-trace-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .agent-step {
+        padding: 14px 16px;
+        border-right: 1px solid var(--line-soft);
+      }
+
+      .agent-step:last-child {
+        border-right: 0;
+      }
+
+      .agent-step span {
+        color: var(--burgundy);
+        display: block;
+        font-size: .75rem;
+        font-weight: 840;
+        margin-bottom: 6px;
+      }
+
+      .agent-step strong {
+        color: var(--ink);
+        display: block;
+        font-size: .95rem;
+        line-height: 1.35;
+      }
+
+      .agent-step small {
+        color: var(--text);
+        display: block;
+        margin-top: 4px;
+        line-height: 1.35;
+      }
+
       [data-testid="stSpinner"] {
         background: #fff !important;
         border: 1px solid var(--rose) !important;
@@ -693,11 +779,14 @@ st.markdown(
         .model-panel { min-width: 0; width: 100%; }
         .system-strip,
         .source-grid,
-        .coverage-grid { grid-template-columns: 1fr; }
+        .coverage-grid,
+        .agent-trace-grid { grid-template-columns: 1fr; }
         .system-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
         .system-item:last-child { border-bottom: 0; }
         .coverage-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
         .coverage-item:last-child { border-bottom: 0; }
+        .agent-step { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+        .agent-step:last-child { border-bottom: 0; }
       }
     </style>
     """,
@@ -906,21 +995,10 @@ def render_answer(parsed):
             else:
                 value_html = '<span class="empty-value">Non renseigné</span>'
             cells.append(
-                f"""
-                <div class="coverage-item">
-                  <span class="coverage-title">{_escape(title)}</span>
-                  {value_html}
-                </div>
-                """
+                f'<div class="coverage-item"><span class="coverage-title">{_escape(title)}</span>{value_html}</div>'
             )
-        st.markdown(
-            f"""
-            <div class="coverage-panel">
-              <div class="coverage-grid">{''.join(cells)}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        coverage_html = '<div class="coverage-panel"><div class="coverage-grid">' + ''.join(cells) + '</div></div>'
+        st.markdown(coverage_html, unsafe_allow_html=True)
 
 
 def process_query(query, rt, client, llm_model, use_rewrite, use_reranker):
@@ -1090,6 +1168,30 @@ def render_source_cards(chunks: list[dict]):
                     st.markdown(_source_card_html(chunks[card_index]), unsafe_allow_html=True)
 
 
+def render_agent_trace(results: dict, parsed: dict | None):
+    facets = results.get("facet_queries", []) or []
+    chunks = results.get("chunks", []) or []
+    stage1 = results.get("stage1", []) or []
+    rewritten = results.get("rewritten")
+    query = results.get("query")
+    rewrite_label = "Question reformulée" if rewritten and rewritten != query else "Question conservée"
+    status_label = _status_meta((parsed or {}).get("answer_status"))[1] if parsed else "Réponse non structurée"
+    steps = [
+        ("1. Compréhension", rewrite_label, f"{len(facets) or 1} axe(s) de recherche"),
+        ("2. Recherche", "BM25 + embeddings E5", f"{len(stage1)} documents candidats"),
+        ("3. Sélection", "Diversité documentaire", f"{len(chunks)} passages retenus"),
+        ("4. Réponse", status_label, "Conclusion citée avec limites"),
+    ]
+    cells = []
+    for label, title, detail in steps:
+        cells.append(
+            f'<div class="agent-step"><span>{_escape(label)}</span>'
+            f'<strong>{_escape(title)}</strong><small>{_escape(detail)}</small></div>'
+        )
+    html = '<div class="agent-trace"><div class="agent-trace-head">Parcours agentique</div>'
+    html += '<div class="agent-trace-grid">' + ''.join(cells) + '</div></div>'
+    st.markdown(html, unsafe_allow_html=True)
+
 def display_results(results):
     if results.get("error"):
         st.error(results["error"])
@@ -1122,6 +1224,8 @@ def display_results(results):
         st.warning("Le modèle n'a pas retourné une réponse structurée exploitable. Les sources retrouvées restent affichées ci-dessous.")
         if SHOW_DEBUG_DETAILS:
             st.code(results.get("llm_raw", "")[:1200], language="json")
+
+    render_agent_trace(results, parsed)
 
     chunks = results.get("chunks", []) or []
     st.markdown('<div class="section-kicker">Sources retenues</div>', unsafe_allow_html=True)
@@ -1207,12 +1311,16 @@ def render_missing_key(provider: dict):
 
 def render_loading(slot, title: str, detail: str):
     slot.markdown(
-        f"""
-        <div class="loading-panel">
-          <span class="loading-title">{_escape(title)}</span>
-          <span class="loading-detail">{_escape(detail)}</span>
-        </div>
-        """,
+        f'<div class="loading-panel"><span class="loading-title">{_escape(title)}</span>'
+        f'<span class="loading-detail">{_escape(detail)}</span></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_loading_button(slot, label: str = "Analyse en cours"):
+    slot.markdown(
+        f'<div class="loading-button"><span class="loading-dot" aria-hidden="true"></span>'
+        f'<span>{_escape(label)}</span></div>',
         unsafe_allow_html=True,
     )
 
@@ -1296,15 +1404,8 @@ with config_col:
 with query_col:
     with st.container(border=True):
         st.markdown("### Question fiscale")
-        st.caption("Formulez le cas, puis contrôlez les passages BOFiP utilisés avant de lire la conclusion.")
         st.markdown(
-            """
-            <div class="inline-status">
-              <span>Corpus : BOFiP commentaires</span>
-              <span>Fraîcheur : 28/01/2026</span>
-              <span>Reformulation : automatique</span>
-            </div>
-            """,
+            '<p class="panel-lede">Décrivez le cas fiscal en une question. Les sources BOFiP retenues resteront visibles sous la réponse.</p>',
             unsafe_allow_html=True,
         )
         query = st.text_area(
@@ -1314,25 +1415,22 @@ with query_col:
             label_visibility="collapsed",
             key="single_question",
         )
-        status_slot = st.empty()
-        submit = st.button("Analyser la question", type="primary", use_container_width=True)
+        button_slot = st.empty()
+        submit = button_slot.button("Analyser la question", type="primary", use_container_width=True)
         if submit:
             if not query.strip():
                 st.warning("Saisissez une question avant de lancer l'analyse.")
             elif not api_key:
                 st.warning("Saisissez une clé API dans le panneau Connexion LLM.")
             elif ensure_runtime_ready():
-                render_loading(
-                    status_slot,
-                    "Analyse en cours",
-                    "Chargement du corpus, sélection des sources BOFiP et génération de la réponse citée.",
-                )
+                render_loading_button(button_slot)
                 try:
                     rt = get_runtime(False, None)
                     client = OpenAI(api_key=api_key, base_url=provider["base_url"])
                     st.session_state.latest_results = process_query(query.strip(), rt, client, model, True, False)
+                    st.rerun()
                 finally:
-                    status_slot.empty()
+                    button_slot.empty()
 
 latest_results = st.session_state.get("latest_results")
 if latest_results:
