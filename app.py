@@ -1180,7 +1180,7 @@ def render_agent_trace(results: dict, parsed: dict | None):
         ("1. Compréhension", rewrite_label, f"{len(facets) or 1} axe(s) de recherche"),
         ("2. Recherche", "BM25 + embeddings E5", f"{len(stage1)} documents candidats"),
         ("3. Sélection", "Diversité documentaire", f"{len(chunks)} passages retenus"),
-        ("4. Réponse", status_label, "Conclusion citée avec limites"),
+        ("4. Réponse", status_label, "Conclusion sourcée avec limites"),
     ]
     cells = []
     for label, title, detail in steps:
@@ -1281,7 +1281,7 @@ def render_app_shell():
           <div class="app-header">
             <div>
               <div class="brand-line"><span class="brand-mark">B</span><span>BOFiP Agentic RAG</span></div>
-              <h1>Doctrine BOFiP.<br><span class="accent-word">Réponse citée.</span></h1>
+              <h1>Doctrine BOFiP.<br><span class="accent-word">Réponse sourcée.</span></h1>
               <p>Interrogez le corpus <strong>BOFiP commentaires</strong>, contrôlez les <strong>sources retenues</strong>, puis obtenez une réponse prudente avec <strong>limites explicites</strong>.</p>
             </div>
           </div>
