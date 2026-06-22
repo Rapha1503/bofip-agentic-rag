@@ -3,6 +3,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from unittest.mock import call, patch
 
@@ -36,20 +38,19 @@ class QAReleaseTests(unittest.TestCase):
 
     def test_release_check_reports_missing_latest_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
-            script = PROJECT_ROOT / "scripts" / "qa.py"
-            result = subprocess.run(
-                [sys.executable, str(script), "release-check"],
-                cwd=tmp,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
+            root = Path(tmp)
+            output = StringIO()
+            with patch.object(qa, "PROJECT_ROOT", root):
+                with patch.object(sys, "argv", ["qa.py", "release-check"]):
+                    with redirect_stdout(output):
+                        returncode = qa.main()
 
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("docs", result.stdout)
-            self.assertIn("evaluation", result.stdout)
-            self.assertIn("latest", result.stdout)
-            self.assertIn("Missing", result.stdout)
+            self.assertEqual(returncode, 1)
+            stdout = output.getvalue()
+            self.assertIn("docs", stdout)
+            self.assertIn("evaluation", stdout)
+            self.assertIn("latest", stdout)
+            self.assertIn("Missing", stdout)
 
     def test_review_requires_run_dir(self):
         script = PROJECT_ROOT / "scripts" / "qa.py"
