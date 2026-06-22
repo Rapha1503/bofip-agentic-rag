@@ -19,6 +19,19 @@ from bofip_agentic.eval_schema import redact_secrets
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "docs" / "evaluation" / "latest"
 PUBLIC_CONFIG_KEYS = ("run_id", "provider", "model", "corpus", "limit", "lexical_only", "git_commit")
 FORBIDDEN_PUBLIC_LABELS = re.compile(r"(?i)(?:[a-z0-9_]*api[_-]?key|authorization|x-api-key)\b")
+HEADER_SECRET_ASSIGNMENT = re.compile(
+    r"(?i)(?<![a-z0-9_])(?:authorization|x-api-key|[a-z0-9_]*api[_-]?key)\b"
+    r"\s*[:=]?\s*(?:bearer\s+)?[^\s,;]+"
+)
+PUBLIC_SUMMARY_KEYS = (
+    "total_queries",
+    "supported",
+    "partial",
+    "insufficient_evidence",
+    "errors",
+    "avg_coverage",
+)
+PUBLIC_LATENCY_KEYS = ("avg", "p50", "p95")
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -43,7 +56,9 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
 
 
 def _sanitize_text(value: Any) -> str:
-    text = redact_secrets(str(value or ""))
+    text = HEADER_SECRET_ASSIGNMENT.sub("[REDACTED_SECRET]", str(value or ""))
+    text = redact_secrets(text)
+    text = HEADER_SECRET_ASSIGNMENT.sub("[REDACTED_SECRET]", text)
     return FORBIDDEN_PUBLIC_LABELS.sub("[REDACTED_SECRET]", text)
 
 
@@ -85,18 +100,24 @@ def _public_summary(summary_payload: dict[str, Any], rows: list[dict[str, Any]])
     if not isinstance(config, dict):
         config = {}
     public_config = {key: config[key] for key in PUBLIC_CONFIG_KEYS if key in config}
+    metrics = summary_payload.get("summary", {})
+    if not isinstance(metrics, dict):
+        metrics = {}
+    public_metrics = {key: metrics[key] for key in PUBLIC_SUMMARY_KEYS if key in metrics}
+    latency = metrics.get("latency_s", {})
+    if isinstance(latency, dict):
+        public_metrics["latency_s"] = {key: latency[key] for key in PUBLIC_LATENCY_KEYS if key in latency}
+    public_metrics["public_query_rows"] = len(rows)
     public: dict[str, Any] = {
         "generated_at": summary_payload.get("generated_at", ""),
         "config": public_config,
-        "summary": summary_payload.get("summary", {}),
+        "summary": public_metrics,
         "public_artifacts": {
             "summary": "summary.md",
             "per_query": "per_query_public.csv",
             "failure_review": "failure_review.md",
         },
     }
-    public["summary"] = public["summary"] if isinstance(public["summary"], dict) else {}
-    public["summary"]["public_query_rows"] = len(rows)
     return public
 
 

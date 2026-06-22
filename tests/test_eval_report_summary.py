@@ -30,6 +30,8 @@ class EvalReportSummaryTests(unittest.TestCase):
                 "errors": 0,
                 "avg_coverage": 0.75,
                 "latency_s": {"avg": 12.3, "p50": 10.0, "p95": 14.6},
+                "raw_trace": "RAW TRACE SHOULD NOT BE PUBLIC",
+                "source_snippets": ["RAW SUMMARY SOURCE SHOULD NOT BE PUBLIC"],
             },
             "per_query_path": str(run_dir / "per_query.jsonl"),
         }
@@ -44,7 +46,7 @@ class EvalReportSummaryTests(unittest.TestCase):
                 "coverage": 1.0,
                 "iterations": 2,
                 "total_s": 10.0,
-                "conclusion": "Conclusion sans secret",
+                "conclusion": "Conclusion sans secret. Authorization: Bearer plainsecrettoken12345",
                 "justification_bullets": ["Bullet public"],
                 "axes_requis": ["Axe requis"],
                 "axes_couverts": ["Axe couvert"],
@@ -72,7 +74,7 @@ class EvalReportSummaryTests(unittest.TestCase):
                 "coverage": 0.5,
                 "iterations": 1,
                 "total_s": 14.6,
-                "conclusion": "OPENAI_API_KEY=sk-abcdef1234567890",
+                "conclusion": "OPENAI_API_KEY=sk-abcdef1234567890; X-API-Key plainheadersecret67890",
                 "justification_bullets": [],
                 "axes_requis": ["Axe requis"],
                 "axes_couverts": [],
@@ -110,13 +112,20 @@ class EvalReportSummaryTests(unittest.TestCase):
             self.assertNotIn("trace", public_text.lower())
             self.assertNotIn("sk-1234567890abcdef", public_text)
             self.assertNotIn("hf_abcdefghijklmnopqrstuvwxyz", public_text)
+            self.assertNotIn("plainsecrettoken12345", public_text)
+            self.assertNotIn("plainheadersecret67890", public_text)
+            self.assertNotIn("RAW TRACE SHOULD NOT BE PUBLIC", public_text)
+            self.assertNotIn("RAW SUMMARY SOURCE SHOULD NOT BE PUBLIC", public_text)
             self.assertNotIn("OPENAI_API_KEY", public_text)
             self.assertNotIn("Authorization", public_text)
+            self.assertNotIn("X-API-Key", public_text)
             self.assertIn("[REDACTED_SECRET]", public_text)
 
             public_summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
             self.assertEqual(public_summary["summary"]["total_queries"], 2)
             self.assertNotIn("authorization", json.dumps(public_summary).lower())
+            self.assertNotIn("raw_trace", public_summary["summary"])
+            self.assertNotIn("source_snippets", public_summary["summary"])
 
             with (output_dir / "per_query_public.csv").open("r", encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle))
