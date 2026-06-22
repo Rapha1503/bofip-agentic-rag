@@ -69,6 +69,16 @@ $env:PYTHONPATH='src'
 python -m unittest discover -s tests -v
 ```
 
+## Evaluation and Review Loop
+
+```powershell
+python scripts/qa.py smoke
+python scripts/qa.py review --run-dir output/eval-runs/<run_id>
+python scripts/qa.py release-check
+```
+
+The review loop produces local evidence cards and can send a sanitized packet to ChatGPT Web through Codex-20x. ChatGPT output is treated as external review input; code changes and deployments remain manual-gated.
+
 ## Runtime Artifacts
 
 Large artifacts are intentionally not committed to Git. They are tracked by `docs/full_corpus_manifest.json` and can be downloaded from the project release.

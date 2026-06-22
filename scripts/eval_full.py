@@ -3,6 +3,8 @@
 Measures: retrieval recall, answer integrity, coverage, latency, reformulation
 effectiveness — across themes, difficulties, and question types.
 
+For stable review artifacts, prefer `python scripts/eval_run.py`.
+
 Usage:
     $env:PYTHONPATH="src"
     $env:DEEPSEEK_API_KEY="sk-..."

@@ -1,6 +1,8 @@
 """
 Agentic RAG evaluation — self-reporting, no manual labeling, incremental save.
 
+For stable review artifacts, prefer `python scripts/eval_run.py`.
+
 Usage:
     $env:PYTHONPATH="src"; $env:DEEPSEEK_API_KEY="sk-..."; python scripts/eval_agent.py
     $env:PYTHONPATH="src"; $env:DEEPSEEK_API_KEY="sk-..."; python scripts/eval_agent.py --resume
