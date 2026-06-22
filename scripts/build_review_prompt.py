@@ -97,7 +97,7 @@ def _load_config(run_dir: Path, summary: dict[str, Any]) -> dict[str, Any]:
 def _load_json_object(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8-sig"))
     if isinstance(payload, dict):
         return payload
     return {}

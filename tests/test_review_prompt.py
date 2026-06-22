@@ -101,6 +101,36 @@ class ReviewPromptTests(unittest.TestCase):
             self.assertNotIn("# Q1", prompts)
             self.assertIn("END_OF_RESPONSE", prompts)
 
+    def test_main_accepts_summary_json_with_utf8_bom(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            cards = run_dir / "evidence_cards"
+            cards.mkdir()
+            (cards / "Q1.md").write_text("# Q1\nStatus: supported", encoding="utf-8")
+            (run_dir / "summary.json").write_text(
+                json.dumps({"run_id": "run-bom", "total_queries": 1}),
+                encoding="utf-8-sig",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROJECT_ROOT / "scripts" / "build_review_prompt.py"),
+                    "--run-dir",
+                    str(run_dir),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            review_dir = run_dir / "chatgpt-review"
+            self.assertTrue((review_dir / "context.md").exists())
+            self.assertTrue((review_dir / "prompts.md").exists())
+            context = (review_dir / "context.md").read_text(encoding="utf-8")
+            self.assertIn("Run id: run-bom", context)
+
     def test_main_rejects_secret_like_evidence_without_writing_packet_content(self):
         with tempfile.TemporaryDirectory() as tmp:
             run_dir = Path(tmp)
