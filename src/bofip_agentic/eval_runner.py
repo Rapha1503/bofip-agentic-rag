@@ -8,12 +8,18 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
-from .eval_schema import EvalQuestion, EvalRunConfig, EvalSource, PerQueryResult, as_jsonable, hash_file
+from .eval_schema import EvalQuestion, EvalRunConfig, EvalSource, PerQueryResult, as_jsonable, hash_file, redact_secrets
 
 
 def build_run_id(label: str = "eval") -> str:
     safe = re.sub(r"[^a-zA-Z0-9]+", "-", label.strip().lower()).strip("-") or "eval"
     return time.strftime("%Y%m%d-%H%M%S") + "-" + safe
+
+
+def _safe_artifact_stem(value: str) -> str:
+    stem = re.sub(r"[^a-zA-Z0-9._-]+", "_", str(value or "").strip())
+    stem = stem.replace("/", "_").replace("\\", "_").strip("._")
+    return stem or "question"
 
 
 def load_question_bank(path: str | Path, *, limit: int = 0) -> list[EvalQuestion]:
@@ -93,6 +99,11 @@ class _CodexCliClient:
         import tempfile
 
         messages = kwargs.get("messages", [])
+        prompt_fragments = [
+            str(message.get("content", ""))
+            for message in messages
+            if isinstance(message, dict) and message.get("content")
+        ]
         prompt = "\n\n".join(
             f"{str(message.get('role', 'user')).upper()}:\n{message.get('content', '')}"
             for message in messages
@@ -126,9 +137,26 @@ class _CodexCliClient:
                 check=False,
             )
             if completed.returncode != 0:
-                raise RuntimeError("codex exec failed")
+                stdout = _process_output_excerpt(completed.stdout, prompt=prompt, prompt_fragments=prompt_fragments)
+                stderr = _process_output_excerpt(completed.stderr, prompt=prompt, prompt_fragments=prompt_fragments)
+                raise RuntimeError(
+                    "codex exec failed "
+                    f"(exit {completed.returncode}; stdout: {stdout or '<empty>'}; stderr: {stderr or '<empty>'})"
+                )
             content = output_path.read_text(encoding="utf-8") if output_path.exists() else completed.stdout
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content.strip()))])
+
+
+def _process_output_excerpt(value: str, *, prompt: str, prompt_fragments: list[str], limit: int = 500) -> str:
+    text = str(value or "")
+    if prompt:
+        text = text.replace(prompt, "[REDACTED_PROMPT]")
+    for fragment in prompt_fragments:
+        if fragment:
+            text = text.replace(fragment, "[REDACTED_PROMPT]")
+    text = redact_secrets(text)
+    text = " ".join(text.split())
+    return text[:limit]
 
 
 def _load_completed_rows(path: Path) -> list[dict[str, Any]]:
@@ -283,6 +311,10 @@ def run_eval(
     questions = load_question_bank(bank_path, limit=limit)
     per_query_path = target_dir / "per_query.jsonl"
     rows: list[dict[str, Any]] = _load_completed_rows(per_query_path) if resume else []
+    active_ids = {question.id for question in questions}
+    if resume:
+        rows = [row for row in rows if str(row.get("id", "")) in active_ids]
+        write_jsonl(per_query_path, rows)
     if not resume:
         write_jsonl(per_query_path, rows)
     done_ids = {str(row.get("id", "")) for row in rows if row.get("id")}
@@ -335,8 +367,9 @@ def run_eval(
         result_payload = as_jsonable(result)
         rows.append(result_payload)
         write_jsonl(per_query_path, rows)
-        write_json(traces_dir / f"{question.id}.json", result.trace)
-        write_evidence_card(evidence_dir / f"{question.id}.md", result)
+        artifact_stem = _safe_artifact_stem(question.id)
+        write_json(traces_dir / f"{artifact_stem}.json", result.trace)
+        write_evidence_card(evidence_dir / f"{artifact_stem}.md", result)
 
         summary = compute_basic_summary(rows)
         write_json(
