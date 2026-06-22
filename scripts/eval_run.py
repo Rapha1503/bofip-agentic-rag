@@ -19,6 +19,7 @@ def main() -> int:
     parser.add_argument("--provider", default="codex")
     parser.add_argument("--model", default="")
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--data-root", default="", help="Optional root containing full-corpus runtime artifacts.")
     parser.add_argument("--lexical-only", action="store_true")
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
@@ -36,6 +37,7 @@ def main() -> int:
         lexical_only=args.lexical_only,
         resume=args.resume,
         project_root=PROJECT_ROOT,
+        data_root=args.data_root or None,
     )
     print(f"Run directory: {result}")
     return 0

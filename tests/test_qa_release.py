@@ -16,6 +16,17 @@ from scripts.qa import scan_for_forbidden_public_content
 
 
 class QAReleaseTests(unittest.TestCase):
+    def test_raw_eval_run_outputs_are_gitignored(self):
+        result = subprocess.run(
+            ["git", "check-ignore", "output/eval-runs/example/traces/Q1.json"],
+            cwd=PROJECT_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_public_scan_rejects_secret_like_values(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -32,9 +43,22 @@ class QAReleaseTests(unittest.TestCase):
             root = Path(tmp)
             docs = root / "docs" / "evaluation" / "latest"
             docs.mkdir(parents=True)
-            (docs / "summary.md").write_text("Clean report", encoding="utf-8")
+            for filename in qa.REQUIRED_PUBLIC_REPORTS:
+                (docs / filename).write_text("Clean report", encoding="utf-8")
 
             self.assertEqual(scan_for_forbidden_public_content(docs), [])
+
+    def test_public_scan_rejects_incomplete_report_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs" / "evaluation" / "latest"
+            docs.mkdir(parents=True)
+            (docs / ".gitkeep").write_text("", encoding="utf-8")
+
+            problems = scan_for_forbidden_public_content(docs)
+
+            self.assertTrue(any("summary.json" in item for item in problems))
+            self.assertTrue(any("summary.md" in item for item in problems))
 
     def test_release_check_reports_missing_latest_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -64,6 +88,23 @@ class QAReleaseTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("--run-dir is required for review", result.stdout)
 
+    def test_chatgpt_review_script_accepts_bridge_script_parameter(self):
+        script = PROJECT_ROOT / "scripts" / "chatgpt_review.ps1"
+        result = subprocess.run(
+            [
+                "powershell",
+                "-NoProfile",
+                "-Command",
+                f"$null = [scriptblock]::Create((Get-Content -Raw -LiteralPath '{script}'))",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("BridgeScript", script.read_text(encoding="utf-8"))
+
     def test_review_builds_prompt_then_runs_powershell_wrapper(self):
         with patch.object(sys, "argv", ["qa.py", "review", "--run-dir", "runs/eval1"]):
             with patch("scripts.qa.subprocess.call", side_effect=[0, 0]) as subprocess_call:
@@ -87,6 +128,8 @@ class QAReleaseTests(unittest.TestCase):
                         "scripts/chatgpt_review.ps1",
                         "-RunDir",
                         "runs/eval1",
+                        "-BridgeScript",
+                        str(qa.default_chatgpt_bridge_script()),
                     ],
                     cwd=qa.PROJECT_ROOT,
                     env=qa.command_environment(),

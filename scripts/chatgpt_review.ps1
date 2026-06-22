@@ -1,5 +1,6 @@
 param(
     [string]$RunDir,
+    [string]$BridgeScript = "",
     [string]$ConversationUrl = "",
     [int]$MaxWaitMs = 600000,
     [int]$MinChars = 1200
@@ -24,16 +25,23 @@ if (-not (Test-Path -LiteralPath $promptsFile -PathType Leaf)) {
     throw "Required ChatGPT review prompts not found: $promptsFile"
 }
 
-$bridgeScript = "C:\Users\rapha\Codex-20x\scripts\chatgpt-debate.ps1"
-if (-not (Test-Path -LiteralPath $bridgeScript -PathType Leaf)) {
-    throw "Codex-20x ChatGPT bridge not found: $bridgeScript"
+$resolvedBridgeScript = $BridgeScript
+if ([string]::IsNullOrWhiteSpace($resolvedBridgeScript)) {
+    $resolvedBridgeScript = $env:CODEX_20X_CHATGPT_BRIDGE
+}
+if ([string]::IsNullOrWhiteSpace($resolvedBridgeScript)) {
+    $resolvedBridgeScript = Join-Path $HOME "Codex-20x\scripts\chatgpt-debate.ps1"
+}
+
+if (-not (Test-Path -LiteralPath $resolvedBridgeScript -PathType Leaf)) {
+    throw "Codex-20x ChatGPT bridge not found: $resolvedBridgeScript"
 }
 
 Write-Host "ChatGPT review run dir: $resolvedRunDir"
 Write-Host "ChatGPT review path: $reviewDir"
-Write-Host "ChatGPT bridge: $bridgeScript"
+Write-Host "ChatGPT bridge: $resolvedBridgeScript"
 
-& powershell -NoProfile -ExecutionPolicy Bypass -File $bridgeScript `
+& powershell -NoProfile -ExecutionPolicy Bypass -File $resolvedBridgeScript `
     -ConversationUrl $ConversationUrl `
     -ContextFile $contextFile `
     -PromptsFile $promptsFile `

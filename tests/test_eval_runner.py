@@ -157,7 +157,7 @@ class EvalRunnerTests(unittest.TestCase):
             )
             run_dir = root / "run"
 
-            agent = self._run_mocked_eval(bank=bank, run_dir=run_dir, root=root)
+            agent, _ = self._run_mocked_eval(bank=bank, run_dir=run_dir, root=root)
 
             agent.run.assert_called_once_with("Quelle TVA appliquer?")
             self.assertTrue((run_dir / "config.json").exists())
@@ -166,6 +166,21 @@ class EvalRunnerTests(unittest.TestCase):
             self.assertTrue((run_dir / "summary.md").exists())
             self.assertTrue((run_dir / "traces" / "Q1.json").exists())
             self.assertTrue((run_dir / "evidence_cards" / "Q1.md").exists())
+
+    def test_run_eval_can_use_separate_data_root_for_runtime(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "project"
+            data_root = Path(tmp) / "runtime-data"
+            root.mkdir()
+            data_root.mkdir()
+            bank = root / "bank.jsonl"
+            bank.write_text(json.dumps({"id": "Q1", "question": "Question?", "theme": "TVA"}) + "\n", encoding="utf-8")
+            run_dir = root / "run"
+
+            _, runtime_builder = self._run_mocked_eval(bank=bank, run_dir=run_dir, root=root, data_root=data_root)
+
+            runtime_builder.assert_called_once()
+            self.assertEqual(runtime_builder.call_args.kwargs["project_root"], data_root.resolve())
 
     def test_codex_cli_error_includes_output_context_without_prompt(self):
         prompt_secret = "prompt must stay private"
@@ -189,7 +204,7 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertIn("stderr detail", message)
         self.assertNotIn(prompt_secret, message)
 
-    def _run_mocked_eval(self, *, bank: Path, run_dir: Path, root: Path):
+    def _run_mocked_eval(self, *, bank: Path, run_dir: Path, root: Path, data_root: Path | None = None):
         agent = SimpleNamespace()
         agent.run = Mock(
             return_value={
@@ -216,8 +231,9 @@ class EvalRunnerTests(unittest.TestCase):
         )
         fake_agent_rag = types.ModuleType("bofip_agentic.agent_rag")
         fake_agent_rag.AgenticRAG = Mock(return_value=agent)
+        runtime_builder = Mock(return_value=object())
         fake_rag_runtime = types.ModuleType("bofip_agentic.rag_runtime")
-        fake_rag_runtime.RagRuntime = SimpleNamespace(from_local_corpus=Mock(return_value=object()))
+        fake_rag_runtime.RagRuntime = SimpleNamespace(from_local_corpus=runtime_builder)
         with patch.dict(
             sys.modules,
             {
@@ -230,9 +246,10 @@ class EvalRunnerTests(unittest.TestCase):
                 run_dir=run_dir,
                 run_id="test-run",
                 project_root=root,
+                data_root=data_root,
                 provider="codex",
             )
-        return agent
+        return agent, runtime_builder
 
 
 if __name__ == "__main__":

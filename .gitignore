@@ -32,6 +32,7 @@ data/interim/chunk_dense_cache_*.json
 data/interim/doc_tree_*.jsonl
 
 # Historical phase outputs and local reports
+output/eval-runs/
 data/reports/phase*.json
 data/reports/manifest*.json
 data/reports/pre_llm_*.json

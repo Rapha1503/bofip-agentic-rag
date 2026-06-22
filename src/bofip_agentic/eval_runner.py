@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from datetime import UTC, datetime
@@ -272,6 +273,7 @@ def run_eval(
     lexical_only: bool = False,
     resume: bool = False,
     project_root: str | Path | None = None,
+    data_root: str | Path | None = None,
     corpus: str = "commentary",
     max_iterations: int = 2,
 ) -> Path:
@@ -281,6 +283,8 @@ def run_eval(
 
     root = Path(project_root) if project_root is not None else Path.cwd()
     root = root.resolve()
+    runtime_root_value = data_root or os.environ.get("BOFIP_DATA_ROOT", "").strip() or root
+    runtime_root = Path(runtime_root_value).expanduser().resolve()
     bank_path = Path(question_bank)
     if not bank_path.is_absolute():
         bank_path = root / bank_path
@@ -341,7 +345,7 @@ def run_eval(
 
     runtime = RagRuntime.from_local_corpus(
         corpus=corpus,
-        project_root=root,
+        project_root=runtime_root,
         load_dense=not lexical_only,
         load_reranker=not lexical_only,
         allow_lexical_fallback=True,

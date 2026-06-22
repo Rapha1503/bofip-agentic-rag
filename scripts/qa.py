@@ -15,6 +15,7 @@ from bofip_agentic.eval_schema import redact_secrets
 
 PUBLIC_TEXT_SUFFIXES = {".md", ".json", ".csv", ".txt"}
 FORBIDDEN_CREDENTIAL_LABELS = ("DEEPSEEK_API_KEY", "OPENAI_API_KEY", "Authorization")
+REQUIRED_PUBLIC_REPORTS = ("summary.json", "summary.md", "per_query_public.csv", "failure_review.md")
 
 
 def command_environment() -> dict[str, str]:
@@ -37,6 +38,11 @@ def scan_for_forbidden_public_content(root: Path) -> list[str]:
     if not root.exists():
         return [f"Missing public evaluation directory: {root}"]
 
+    for filename in REQUIRED_PUBLIC_REPORTS:
+        expected = root / filename
+        if not expected.exists():
+            problems.append(f"Missing public evaluation report: {expected}")
+
     for path in root.rglob("*"):
         if path.is_dir() or path.suffix.lower() not in PUBLIC_TEXT_SUFFIXES:
             continue
@@ -46,6 +52,13 @@ def scan_for_forbidden_public_content(root: Path) -> list[str]:
         if any(label in text for label in FORBIDDEN_CREDENTIAL_LABELS):
             problems.append(f"Forbidden credential label in {path}")
     return problems
+
+
+def default_chatgpt_bridge_script() -> Path:
+    env_value = os.environ.get("CODEX_20X_CHATGPT_BRIDGE", "").strip()
+    if env_value:
+        return Path(env_value)
+    return Path.home() / "Codex-20x" / "scripts" / "chatgpt-debate.ps1"
 
 
 def main() -> int:
@@ -79,6 +92,8 @@ def main() -> int:
                 "scripts/chatgpt_review.ps1",
                 "-RunDir",
                 args.run_dir,
+                "-BridgeScript",
+                str(default_chatgpt_bridge_script()),
             ]
         )
     if args.command == "release-check":

@@ -101,6 +101,58 @@ class ReviewPromptTests(unittest.TestCase):
             self.assertNotIn("# Q1", prompts)
             self.assertIn("END_OF_RESPONSE", prompts)
 
+    def test_main_removes_raw_snippets_from_chatgpt_packet(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            cards = run_dir / "evidence_cards"
+            cards.mkdir()
+            (cards / "Q1.md").write_text(
+                "\n".join(
+                    [
+                        "# Evidence Card: Q1",
+                        "",
+                        "## Conclusion",
+                        "",
+                        "Conclusion publique.",
+                        "",
+                        "## Sources retenues",
+                        "",
+                        "### s1 - BOI-TVA-BASE-10",
+                        "",
+                        "- Title: TVA",
+                        "- Section: Champ",
+                        "- Score: 3.2",
+                        "",
+                        "RAW SOURCE SNIPPET SHOULD NOT BE SENT TO CHATGPT",
+                        "",
+                        "## Trace agentique",
+                        "",
+                        "- Reformulation",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            (run_dir / "summary.json").write_text(json.dumps({"run_id": "run1", "total_queries": 1}), encoding="utf-8")
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(PROJECT_ROOT / "scripts" / "build_review_prompt.py"),
+                    "--run-dir",
+                    str(run_dir),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            prompts = (run_dir / "chatgpt-review" / "prompts.md").read_text(encoding="utf-8")
+            self.assertIn("BOI-TVA-BASE-10", prompts)
+            self.assertIn("Sources retenues", prompts)
+            self.assertIn("Trace agentique", prompts)
+            self.assertNotIn("RAW SOURCE SNIPPET SHOULD NOT BE SENT TO CHATGPT", prompts)
+
     def test_main_accepts_summary_json_with_utf8_bom(self):
         with tempfile.TemporaryDirectory() as tmp:
             run_dir = Path(tmp)

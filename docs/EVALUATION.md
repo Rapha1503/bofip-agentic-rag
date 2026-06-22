@@ -29,4 +29,6 @@ Gold labels are evaluation metadata and are not injected into the runtime prompt
 
 ## Reviewer Loop
 
-ChatGPT Web is used as an external reviewer through Codex-20x browser automation. Its output is treated as review input, not ground truth. Codex verifies fixes with local tests and source inspection before applying changes.
+ChatGPT Web is used as an external reviewer through Codex-20x browser automation. The review packet keeps answer, axes, source references, and agent trace labels, but omits raw BOFiP source snippets. Set `CODEX_20X_CHATGPT_BRIDGE` when the bridge script is not under `$HOME\Codex-20x\scripts\chatgpt-debate.ps1`.
+
+Reviewer output is treated as review input, not ground truth. Fixes are verified with local tests and source inspection before being applied.

@@ -17,7 +17,7 @@ Question utilisateur
   -> classification domaine BOFiP
   -> retrieval hybride BM25 + E5 + fusion RRF
   -> réponse JSON sourcée + auto-évaluation des axes couverts
-  -> si preuve insuffisante: reformulation cibl?e + second retrieval
+  -> si preuve insuffisante: reformulation ciblée + second retrieval
   -> réponse finale avec sources et limites
 ```
 
@@ -73,11 +73,12 @@ python -m unittest discover -s tests -v
 
 ```powershell
 python scripts/qa.py smoke
+python scripts/summarize_eval_report.py --run-dir output/eval-runs/<run_id>
 python scripts/qa.py review --run-dir output/eval-runs/<run_id>
 python scripts/qa.py release-check
 ```
 
-The review loop produces local evidence cards and can send a sanitized packet to ChatGPT Web through Codex-20x. ChatGPT output is treated as external review input; code changes and deployments remain manual-gated.
+The review loop produces local evidence cards, writes sanitized public summaries, and can send a snippet-free review packet to ChatGPT Web through Codex-20x. Set `CODEX_20X_CHATGPT_BRIDGE` if your bridge script is not under `$HOME\Codex-20x\scripts\chatgpt-debate.ps1`. ChatGPT output is treated as external review input; code changes and deployments remain manual-gated.
 
 ## Runtime Artifacts
 

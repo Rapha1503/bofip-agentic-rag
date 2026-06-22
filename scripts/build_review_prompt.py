@@ -80,6 +80,36 @@ END_OF_RESPONSE
 """
 
 
+def sanitize_card_for_chatgpt(card: str) -> str:
+    """Keep source metadata for review while omitting raw BOFiP snippets."""
+    lines: list[str] = []
+    in_sources = False
+    snippet_omitted_for_source = False
+
+    for line in card.splitlines():
+        if line.startswith("## "):
+            in_sources = line.strip().lower() == "## sources retenues"
+            snippet_omitted_for_source = False
+            lines.append(line)
+            continue
+
+        if not in_sources:
+            lines.append(line)
+            continue
+
+        stripped = line.strip()
+        if line.startswith("### "):
+            snippet_omitted_for_source = False
+            lines.append(line)
+        elif not stripped or stripped.startswith("- "):
+            lines.append(line)
+        elif not snippet_omitted_for_source:
+            lines.append("[Snippet omitted from ChatGPT review packet.]")
+            snippet_omitted_for_source = True
+
+    return "\n".join(lines)
+
+
 def _load_summary(run_dir: Path) -> dict[str, Any]:
     return _load_json_object(run_dir / "summary.json")
 
@@ -114,7 +144,7 @@ def _build_packet_parts(
     run_id = str(summary.get("run_id") or run_dir.name)
     context = build_review_context(run_id=run_id, summary=summary, config=config)
     card_paths = select_evidence_cards(run_dir, max_cards=max_cards, preferred_ids=preferred_ids)
-    cards = [path.read_text(encoding="utf-8") for path in card_paths]
+    cards = [sanitize_card_for_chatgpt(path.read_text(encoding="utf-8")) for path in card_paths]
     prompt = build_review_prompt(cards, run_id=run_id)
     assert_no_secrets(context)
     assert_no_secrets(prompt)
