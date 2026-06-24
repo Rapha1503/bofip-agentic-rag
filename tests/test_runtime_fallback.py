@@ -198,6 +198,39 @@ class RuntimeFallbackTests(unittest.TestCase):
         self.assertIn("BOI-CVAE-TEST", refs)
         self.assertFalse(all(ref.startswith("BOI-TVA") for ref in refs))
 
+    def test_chunk_query_does_not_drive_document_prefix_ranking(self):
+        documents = [
+            _doc("BOI-TVA-TARGET", "TVA alpha target", "TVA"),
+            _doc("BOI-TVA-DISTRACTOR", "TVA omega omega omega forfaitaire", "TVA"),
+        ]
+        chunks = [
+            _chunk("BOI-TVA-TARGET", "alpha target preuve utile"),
+            _chunk("BOI-TVA-DISTRACTOR", "omega omega omega forfaitaire preuve non pertinente"),
+        ]
+        runtime = RagRuntime(
+            documents=documents,
+            chunks=chunks,
+            doc_encoder=None,
+            chunk_encoder=None,
+            document_embeddings=np.zeros((2, 4), dtype=np.float32),
+            chunk_embeddings=np.zeros((2, 4), dtype=np.float32),
+            reranker=None,
+            dense_error="dense model unavailable in test",
+        )
+
+        result = runtime.retrieve(
+            "alpha target",
+            chunk_query="omega omega omega forfaitaire",
+            boost_prefix="TVA",
+            use_dense=False,
+            use_chunk_dense=False,
+            use_reranker=False,
+            top_docs=2,
+            max_chunks=2,
+        )
+
+        self.assertEqual(result.stage1_hits[0].boi_reference, "BOI-TVA-TARGET")
+
     def test_reranker_scores_bounded_candidate_pool(self):
         documents = [
             _doc("BOI-TVA-A", "TVA taxe prestations", "TVA"),

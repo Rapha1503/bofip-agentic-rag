@@ -143,6 +143,54 @@ class DirectChunkRetrievalTests(unittest.TestCase):
 
         self.assertEqual(result.chunk_hits[0].chunk.chunk_id, "amount")
 
+    def test_textual_amount_word_does_not_globally_evict_stronger_section(self) -> None:
+        chunks = [
+            ChunkNode(
+                "meal-proof",
+                "BOFIP",
+                "doc1",
+                "BOI-A-10",
+                None,
+                "section_window",
+                None,
+                None,
+                ["Deductibilite des frais supplementaires de repas"],
+                ["p1"],
+                "Les frais supplementaires de repas sont deductibles sous conditions.",
+                12,
+                "paragraph_window",
+            ),
+            ChunkNode(
+                "amount-noise",
+                "BOFIP",
+                "doc2",
+                "BOI-B-10",
+                None,
+                "section_window",
+                None,
+                None,
+                ["Montant forfaitaire sans rapport"],
+                ["p2"],
+                "Le montant forfaitaire est de 12 300 euros.",
+                10,
+                "paragraph_window",
+            ),
+        ]
+
+        retriever = DirectChunkRetriever(chunks, local_chunk_mode="full")
+        result = retriever.search(
+            "frais de repas montant forfaitaire deduction",
+            stage1_hits=[
+                Stage1DocumentHit(rank=1, score=1.0, boi_reference="BOI-A-10"),
+                Stage1DocumentHit(rank=2, score=0.9, boi_reference="BOI-B-10"),
+            ],
+            top_docs=2,
+            chunks_per_doc=1,
+            max_candidates=1,
+        )
+
+        self.assertEqual(result.chunk_hits[0].chunk.chunk_id, "meal-proof")
+
     def test_numeric_intent_keeps_second_chunk_from_strong_document(self) -> None:
         chunks = [
             ChunkNode(

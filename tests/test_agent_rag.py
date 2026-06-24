@@ -238,6 +238,54 @@ class AgenticRAGTests(unittest.TestCase):
         self.assertNotIn("BIC", query)
         self.assertNotIn("bénéfices industriels", query)
 
+    def test_facet_retrieval_query_keeps_specific_bic_meal_query_focused(self):
+        question = (
+            "Je suis commercant independant et je mange souvent au restaurant le midi "
+            "parce que je suis trop loin de mon domicile. Quelle partie de ces repas "
+            "peut etre deduite ?"
+        )
+        facet = SearchFacet(
+            name="Deductibilite des frais de repas BIC",
+            goal="Regle de deduction des frais de repas et montant forfaitaire de la part personnelle non deductible",
+            query="frais de repas commercant independant deduction part personnelle",
+            prefix="BIC",
+            expected_evidence=["disposition BIC sur les frais de repas", "montant forfaitaire de la part personnelle"],
+        )
+
+        query = _build_facet_retrieval_query(question, facet).lower()
+
+        self.assertIn("bic", query)
+        self.assertIn("frais de repas", query)
+        self.assertNotIn("micro entreprise", query)
+        self.assertNotIn("chiffre affaires", query)
+        self.assertNotIn("montant forfaitaire", query)
+
+    def test_normalize_plan_adds_taxonomy_fallback_when_llm_misses_explicit_family(self):
+        question = (
+            "J'ai applique une position fiscale discutable mais je l'ai expliquee "
+            "clairement dans ma declaration. Effet sur les interets de retard ?"
+        )
+        raw = {
+            "reformulated_question": question,
+            "facets": [
+                {
+                    "name": "interets de retard",
+                    "goal": "Verifier l'effet de l'explication dans la declaration",
+                    "search_query": "interets de retard declaration position fiscale",
+                    "bofip_prefix": "IR",
+                    "priority": 1,
+                    "expected_evidence": ["effet sur les interets de retard"],
+                    "role": "core",
+                    "blocking": True,
+                }
+            ],
+        }
+
+        plan = _normalize_plan(question, raw)
+
+        self.assertIn("IR", [facet.prefix for facet in plan.facets])
+        self.assertIn("CF", [facet.prefix for facet in plan.facets])
+
     def test_tva_taxonomy_header_stays_neutral_for_facturation_facets(self):
         facet = SearchFacet(
             name="Autoliquidation facture intracommunautaire",
@@ -2865,7 +2913,7 @@ class AgenticRAGTests(unittest.TestCase):
 
         self.assertNotIn("BOI-CFE-EXO-20-10", retrieval_query)
         self.assertNotIn("BOI-CFE-EXO-20-10", chunk_query)
-        self.assertIn("preuve textuelle", retrieval_query)
+        self.assertNotIn("preuve textuelle", retrieval_query)
         self.assertIn("preuve textuelle", chunk_query)
 
 

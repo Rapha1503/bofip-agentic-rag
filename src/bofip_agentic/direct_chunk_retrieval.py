@@ -10,7 +10,7 @@ from .text_utils import normalize_whitespace, strip_accents
 
 NUMERIC_INTENT_RE = re.compile(
     r"\b("
-    r"seuil|seuils|montant|montants|taux|plafond|plafonds|"
+    r"seuil|seuils|taux|plafond|plafonds|"
     r"bareme|bar[eè]me|chiffre\s+d['’ ]affaires|combien|calcul|calcule|"
     r"pourcentage|euros?|€|ht|hors\s+taxe"
     r")\b",

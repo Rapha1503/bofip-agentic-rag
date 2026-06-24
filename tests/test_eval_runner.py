@@ -120,6 +120,49 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertGreaterEqual(result.scores.trace_score, 0.75)
         self.assertEqual(auto_verdict(result), "candidate_pass")
 
+    def test_auto_verdict_accepts_supported_answer_when_gold_sources_are_partial(self):
+        question = EvalQuestion(
+            id="Q001",
+            question="Question",
+            required_docs=["BOI-TVA-BASE-10", "BOI-TVA-CHAMP-10"],
+            expected_answer_core=[
+                "La TVA est due uniquement si l'operation entre dans le champ de la taxe.",
+                "Il faut verifier l'exoneration applicable avant de conclure.",
+            ],
+        )
+        agent_result = FakeAgent().run("Question")
+        agent_result["conclusion"] = (
+            "La TVA est due uniquement si l'operation entre dans le champ de la taxe. "
+            "Il faut verifier l'exoneration applicable avant de conclure."
+        )
+
+        result = per_query_from_agent_result(question, agent_result)
+
+        self.assertEqual(result.scores.required_doc_recall, 0.5)
+        self.assertEqual(result.scores.answer_point_recall, 1.0)
+        self.assertEqual(auto_verdict(result), "candidate_pass")
+
+    def test_answer_point_recall_ignores_generic_review_words(self):
+        question = EvalQuestion(
+            id="Q001",
+            question="Question",
+            expected_answer_core=[
+                "Examiner la mention expresse et ses effets éventuels sur l'intérêt de retard.",
+                "La position doit être indiquée de manière suffisamment précise pour permettre à l'administration d'apprécier la situation.",
+                "Ne pas confondre avec un rescrit ou une garantie automatique contre tout redressement.",
+            ],
+        )
+        agent_result = FakeAgent().run("Question")
+        agent_result["conclusion"] = (
+            "La mention expresse peut exonérer des intérêts de retard si le contribuable "
+            "a indiqué dans sa déclaration une difficulté d'interprétation et reste de bonne foi."
+        )
+        agent_result["limits"] = "Cette mention n'est pas une garantie automatique contre tout redressement."
+
+        result = per_query_from_agent_result(question, agent_result)
+
+        self.assertGreaterEqual(result.scores.answer_point_recall, 0.667)
+
     def test_run_eval_sends_only_question_to_agent_and_writes_artifacts(self):
         row = {
             "id": "Q001",

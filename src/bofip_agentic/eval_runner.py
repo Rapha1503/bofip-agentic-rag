@@ -6,6 +6,7 @@ import random
 import re
 import subprocess
 import time
+import unicodedata
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -36,6 +37,52 @@ from .rag_runtime import RagRuntime
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+ANSWER_POINT_STOPWORDS = {
+    "afin",
+    "ainsi",
+    "alors",
+    "apres",
+    "apprecier",
+    "avec",
+    "avant",
+    "cette",
+    "confondre",
+    "dans",
+    "dont",
+    "elle",
+    "elles",
+    "entre",
+    "etre",
+    "eventuel",
+    "eventuels",
+    "effet",
+    "effets",
+    "examiner",
+    "faut",
+    "indique",
+    "indiquee",
+    "leur",
+    "leurs",
+    "maniere",
+    "mais",
+    "meme",
+    "permettre",
+    "position",
+    "pour",
+    "quand",
+    "quelle",
+    "quelles",
+    "sans",
+    "selon",
+    "situation",
+    "sont",
+    "sous",
+    "suffisamment",
+    "tous",
+    "toute",
+    "toutes",
+    "verifier",
+}
 
 
 def build_run_id(label: str = "eval") -> str:
@@ -179,6 +226,23 @@ def compute_agentic_scores(question: EvalQuestion, result: dict[str, Any]) -> Ag
         if any(boi_matches(retrieved, expected) for retrieved in retrieved_docs)
     ]
     required_recall = len(required_hits) / len(question.required_docs) if question.required_docs else 1.0
+    answer_points = list(question.expected_answer_core)
+    if question.expected_calculation:
+        answer_points.append(question.expected_calculation)
+    answer_text = _answer_eval_text(result)
+    answer_point_hits: list[str] = []
+    missing_answer_points: list[str] = []
+    for point in answer_points:
+        if _answer_point_is_covered(point, answer_text):
+            answer_point_hits.append(point)
+        else:
+            missing_answer_points.append(point)
+    answer_point_recall = len(answer_point_hits) / len(answer_points) if answer_points else 1.0
+    failure_signal_hits = [
+        signal
+        for signal in question.failure_signals
+        if _normalized_phrase(signal) and _normalized_phrase(signal) in _normalized_phrase(answer_text)
+    ]
     trace = result.get("trace", []) or []
     timings = result.get("step_timings", []) or []
     labels = " ".join(str(item.get("label", "")) for item in timings).lower()
@@ -197,6 +261,10 @@ def compute_agentic_scores(question: EvalQuestion, result: dict[str, Any]) -> Ag
         missing_required_docs=missing_required,
         required_doc_recall=round(required_recall, 3),
         optional_doc_hits=optional_hits,
+        answer_point_hits=answer_point_hits,
+        missing_answer_points=missing_answer_points,
+        answer_point_recall=round(answer_point_recall, 3),
+        failure_signal_hits=failure_signal_hits,
         trace_score=round(trace_score, 3),
         has_plan=has_plan,
         has_source_review=has_source_review,
@@ -215,11 +283,62 @@ def auto_verdict(result: PerQueryResult) -> str:
         return "status_bug_candidate"
     if result.answer_status != "supported":
         return "needs_human_review_unknown_status"
-    if result.scores.required_doc_recall >= 1.0 and result.coverage >= 0.75 and result.scores.trace_score >= 0.75:
+    if result.scores.failure_signal_hits:
+        return "needs_review_failure_signal"
+    good_runtime = result.coverage >= 0.75 and result.scores.trace_score >= 0.75
+    has_answer_gold = bool(result.scores.answer_point_hits or result.scores.missing_answer_points)
+    answer_gold_strong = has_answer_gold and result.scores.answer_point_recall >= 0.75
+    answer_gold_acceptable = has_answer_gold and result.scores.answer_point_recall >= 0.6
+    source_gold_acceptable = result.scores.required_doc_recall >= 0.5 or not result.scores.missing_required_docs
+    if good_runtime and (source_gold_acceptable or answer_gold_strong):
         return "candidate_pass"
+    if good_runtime and answer_gold_acceptable:
+        return "candidate_pass_source_gap"
     if result.coverage >= 0.65 and result.scores.trace_score >= 0.75:
         return "needs_review_sources_or_limits"
     return "needs_human_review"
+
+
+def _answer_eval_text(result: dict[str, Any]) -> str:
+    parts: list[str] = [
+        str(result.get("conclusion") or ""),
+        str(result.get("limits") or ""),
+    ]
+    parts.extend(str(item) for item in result.get("justification_bullets", []) or [])
+    parts.extend(str(item) for item in result.get("axes_couverts", []) or [])
+    return "\n".join(part for part in parts if part)
+
+
+def _normalized_phrase(value: str) -> str:
+    text = unicodedata.normalize("NFKD", str(value or ""))
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.lower().replace("œ", "oe").replace("æ", "ae")
+    text = re.sub(r"[^a-z0-9%]+", " ", text)
+    return " ".join(text.split())
+
+
+def _answer_tokens(value: str) -> set[str]:
+    raw_tokens = set(re.findall(r"[a-z0-9%]+", _normalized_phrase(value)))
+    tokens: set[str] = set()
+    for token in raw_tokens:
+        if token in ANSWER_POINT_STOPWORDS or (len(token) < 3 and not any(ch.isdigit() for ch in token)):
+            continue
+        tokens.add(token)
+        if len(token) > 4 and token.endswith("s"):
+            tokens.add(token[:-1])
+    return tokens
+
+
+def _answer_point_is_covered(point: str, answer_text: str) -> bool:
+    expected = _answer_tokens(point)
+    if not expected:
+        return True
+    actual = _answer_tokens(answer_text)
+    hits = expected & actual
+    ratio = len(hits) / len(expected)
+    if len(expected) <= 5:
+        return ratio >= 0.6
+    return ratio >= 0.45 and len(hits) >= 3
 
 
 def _make_client(provider: str, model: str, api_key: str, base_url: str = ""):
@@ -588,6 +707,10 @@ def _per_query_from_payload(payload: dict[str, Any]) -> PerQueryResult:
             missing_required_docs=[str(item) for item in scores_payload.get("missing_required_docs", []) or []],
             required_doc_recall=_float(scores_payload.get("required_doc_recall"), 0.0),
             optional_doc_hits=[str(item) for item in scores_payload.get("optional_doc_hits", []) or []],
+            answer_point_hits=[str(item) for item in scores_payload.get("answer_point_hits", []) or []],
+            missing_answer_points=[str(item) for item in scores_payload.get("missing_answer_points", []) or []],
+            answer_point_recall=_float(scores_payload.get("answer_point_recall"), 1.0),
+            failure_signal_hits=[str(item) for item in scores_payload.get("failure_signal_hits", []) or []],
             trace_score=_float(scores_payload.get("trace_score"), 0.0),
             has_plan=bool(scores_payload.get("has_plan")),
             has_source_review=bool(scores_payload.get("has_source_review")),

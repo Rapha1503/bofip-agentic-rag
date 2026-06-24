@@ -630,7 +630,7 @@ class RagRuntime:
                 ]
 
         prefix_ranked = _prefix_overlap_rankings(
-            stage2_query,
+            query,
             boost_prefix,
             self.documents,
             self.chunks_by_reference,

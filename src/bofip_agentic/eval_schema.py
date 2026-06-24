@@ -69,6 +69,10 @@ class AgenticScores:
     missing_required_docs: list[str] = field(default_factory=list)
     required_doc_recall: float = 0.0
     optional_doc_hits: list[str] = field(default_factory=list)
+    answer_point_hits: list[str] = field(default_factory=list)
+    missing_answer_points: list[str] = field(default_factory=list)
+    answer_point_recall: float = 1.0
+    failure_signal_hits: list[str] = field(default_factory=list)
     trace_score: float = 0.0
     has_plan: bool = False
     has_source_review: bool = False

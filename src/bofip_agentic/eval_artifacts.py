@@ -88,6 +88,7 @@ def format_evidence_card(result: PerQueryResult) -> str:
             f"- Covered axes: {len(result.axes_couverts)}",
             f"- Missing axes: {len(result.axes_manquants)}",
             f"- Required doc recall: {_percent(result.scores.required_doc_recall)}",
+            f"- Answer point recall: {_percent(result.scores.answer_point_recall)}",
             f"- Trace score: {_percent(result.scores.trace_score)}",
             f"- Plan: {result.scores.has_plan}",
             f"- Retrieval: {result.scores.has_retrieval}",
@@ -99,6 +100,12 @@ def format_evidence_card(result: PerQueryResult) -> str:
     if result.scores.missing_required_docs:
         lines.extend(["", "## Missing Expected BOFiP Refs"])
         lines.extend(f"- `{ref}`" for ref in result.scores.missing_required_docs)
+    if result.scores.missing_answer_points:
+        lines.extend(["", "## Missing Expected Answer Points"])
+        lines.extend(f"- {point}" for point in result.scores.missing_answer_points)
+    if result.scores.failure_signal_hits:
+        lines.extend(["", "## Failure Signals Detected"])
+        lines.extend(f"- {signal}" for signal in result.scores.failure_signal_hits)
     lines.extend(["", "## Sources"])
     if result.sources:
         for source in result.sources:
@@ -144,16 +151,21 @@ def compute_summary(results: list[PerQueryResult]) -> dict[str, Any]:
         effective = judge_verdict or row.auto_verdict or "unknown"
         effective_verdicts[effective] = effective_verdicts.get(effective, 0) + 1
         theme = row.theme or "unknown"
-        bucket = themes.setdefault(theme, {"count": 0, "avg_coverage": 0.0, "avg_trace": 0.0, "avg_doc_recall": 0.0})
+        bucket = themes.setdefault(
+            theme,
+            {"count": 0, "avg_coverage": 0.0, "avg_trace": 0.0, "avg_doc_recall": 0.0, "avg_answer_recall": 0.0},
+        )
         bucket["count"] += 1
         bucket["avg_coverage"] += row.coverage
         bucket["avg_trace"] += row.scores.trace_score
         bucket["avg_doc_recall"] += row.scores.required_doc_recall
+        bucket["avg_answer_recall"] += row.scores.answer_point_recall
     for bucket in themes.values():
         count = bucket["count"] or 1
         bucket["avg_coverage"] = round(bucket["avg_coverage"] / count, 3)
         bucket["avg_trace"] = round(bucket["avg_trace"] / count, 3)
         bucket["avg_doc_recall"] = round(bucket["avg_doc_recall"] / count, 3)
+        bucket["avg_answer_recall"] = round(bucket["avg_answer_recall"] / count, 3)
     return {
         "total_queries": total,
         "completed_queries": len(ok),
@@ -165,6 +177,7 @@ def compute_summary(results: list[PerQueryResult]) -> dict[str, Any]:
         "avg_coverage": round(sum(row.coverage for row in ok) / len(ok), 3) if ok else 0.0,
         "avg_trace_score": round(sum(row.scores.trace_score for row in ok) / len(ok), 3) if ok else 0.0,
         "avg_required_doc_recall": round(sum(row.scores.required_doc_recall for row in ok) / len(ok), 3) if ok else 0.0,
+        "avg_answer_point_recall": round(sum(row.scores.answer_point_recall for row in ok) / len(ok), 3) if ok else 0.0,
         "avg_time_s": round(sum(row.total_s for row in ok) / len(ok), 1) if ok else 0.0,
         "by_theme": dict(sorted(themes.items())),
     }
@@ -183,6 +196,7 @@ def format_summary_markdown(summary: dict[str, Any], *, title: str) -> str:
         f"- Avg coverage: {_percent(float(summary.get('avg_coverage', 0.0)))}",
         f"- Avg agentic trace score: {_percent(float(summary.get('avg_trace_score', 0.0)))}",
         f"- Avg required-doc recall: {_percent(float(summary.get('avg_required_doc_recall', 0.0)))}",
+        f"- Avg answer-point recall: {_percent(float(summary.get('avg_answer_point_recall', 0.0)))}",
         f"- Avg time/query: {summary.get('avg_time_s', 0.0)}s",
         "",
         "## Status Counts",
@@ -199,10 +213,17 @@ def format_summary_markdown(summary: dict[str, Any], *, title: str) -> str:
     lines.extend(["", "## Effective Verdict Counts"])
     for verdict, count in (summary.get("effective_verdict") or {}).items():
         lines.append(f"- `{verdict}`: {count}")
-    lines.extend(["", "## By Theme", "| Theme | Count | Coverage | Trace | Doc Recall |", "| --- | ---: | ---: | ---: | ---: |"])
+    lines.extend(
+        [
+            "",
+            "## By Theme",
+            "| Theme | Count | Coverage | Trace | Doc Recall | Answer Recall |",
+            "| --- | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
     for theme, row in (summary.get("by_theme") or {}).items():
         lines.append(
-            f"| {theme} | {row['count']} | {_percent(row['avg_coverage'])} | {_percent(row['avg_trace'])} | {_percent(row['avg_doc_recall'])} |"
+            f"| {theme} | {row['count']} | {_percent(row['avg_coverage'])} | {_percent(row['avg_trace'])} | {_percent(row['avg_doc_recall'])} | {_percent(row['avg_answer_recall'])} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -227,6 +248,7 @@ def write_public_csv(path: str | Path, results: list[PerQueryResult]) -> Path:
                 "coverage",
                 "trace_score",
                 "required_doc_recall",
+                "answer_point_recall",
                 "iterations",
                 "total_s",
                 "judge_verdict",
@@ -245,6 +267,7 @@ def write_public_csv(path: str | Path, results: list[PerQueryResult]) -> Path:
                     "coverage": row.coverage,
                     "trace_score": row.scores.trace_score,
                     "required_doc_recall": row.scores.required_doc_recall,
+                    "answer_point_recall": row.scores.answer_point_recall,
                     "iterations": row.iterations,
                     "total_s": row.total_s,
                     "judge_verdict": row.judgement.verdict if row.judgement else "",
