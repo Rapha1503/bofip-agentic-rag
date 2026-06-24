@@ -260,7 +260,7 @@ class AgenticRAGTests(unittest.TestCase):
         self.assertNotIn("chiffre affaires", query)
         self.assertNotIn("montant forfaitaire", query)
 
-    def test_normalize_plan_adds_taxonomy_fallback_when_llm_misses_explicit_family(self):
+    def test_normalize_plan_does_not_add_taxonomy_fallback_from_keyword(self):
         question = (
             "J'ai applique une position fiscale discutable mais je l'ai expliquee "
             "clairement dans ma declaration. Effet sur les interets de retard ?"
@@ -284,7 +284,7 @@ class AgenticRAGTests(unittest.TestCase):
         plan = _normalize_plan(question, raw)
 
         self.assertIn("IR", [facet.prefix for facet in plan.facets])
-        self.assertIn("CF", [facet.prefix for facet in plan.facets])
+        self.assertNotIn("CF", [facet.prefix for facet in plan.facets])
 
     def test_tva_taxonomy_header_stays_neutral_for_facturation_facets(self):
         facet = SearchFacet(

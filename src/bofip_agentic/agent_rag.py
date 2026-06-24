@@ -729,11 +729,6 @@ TAXONOMY_HINTS: tuple[dict[str, object], ...] = (
         "terms": "IF taxe foncière CFE CVAE cotisation foncière base exonération",
     },
 )
-TAXONOMY_FALLBACK_MARKERS: dict[str, tuple[str, ...]] = {
-    "CF": ("interet de retard", "interets de retard"),
-}
-
-
 def _short(value: object, limit: int = 140) -> str:
     text = " ".join(str(value or "").split())
     return text if len(text) <= limit else text[: limit - 3].rstrip() + "..."
@@ -754,17 +749,6 @@ def _taxonomy_facets_for_question(question: str) -> list[dict[str, object]]:
             scored.append((score, hint))
     scored.sort(key=lambda item: (-item[0], str(item[1]["prefix"])))
     return [hint for _, hint in scored]
-
-
-def _taxonomy_fallback_facets_for_question(question: str) -> list[dict[str, object]]:
-    q = _ascii_lower(question)
-    fallback_hints: list[dict[str, object]] = []
-    for hint in TAXONOMY_HINTS:
-        prefix = str(hint["prefix"])
-        markers = TAXONOMY_FALLBACK_MARKERS.get(prefix, ())
-        if markers and any(marker in q for marker in markers):
-            fallback_hints.append(hint)
-    return fallback_hints
 
 
 def _prefix_once(prefix: str, query: str) -> str:
@@ -1342,7 +1326,7 @@ def _normalize_plan(question: str, raw: dict) -> SearchPlan:
     if not facets:
         return _fallback_plan(question)
 
-    facets = _add_missing_taxonomy_fallback_facet(question, sorted(facets, key=lambda facet: facet.priority)[:5])
+    facets = sorted(facets, key=lambda facet: facet.priority)[:5]
     facts = [_short(value, 180) for value in (raw.get("facts", []) or []) if str(value or "").strip()][:8]
     ambiguities = [_short(value, 180) for value in (raw.get("ambiguities", []) or []) if str(value or "").strip()][:8]
     excluded_axes = []
@@ -1359,38 +1343,6 @@ def _normalize_plan(question: str, raw: dict) -> SearchPlan:
         facets=facets,
         excluded_axes=excluded_axes[:8],
     )
-
-
-def _add_missing_taxonomy_fallback_facet(question: str, facets: list[SearchFacet]) -> list[SearchFacet]:
-    existing_families = {_prefix_family(facet.prefix) for facet in facets if facet.prefix}
-    for hint in _taxonomy_fallback_facets_for_question(question):
-        prefix = str(hint["prefix"])
-        family = _prefix_family(prefix)
-        if not family or family in existing_families:
-            continue
-        augmented = list(facets)
-        if len(augmented) >= 5:
-            drop_index = next(
-                (idx for idx in range(len(augmented) - 1, -1, -1) if augmented[idx].role in {"reserve", "alternative"}),
-                len(augmented) - 1,
-            )
-            del augmented[drop_index]
-        priority = max((facet.priority for facet in augmented), default=0) + 1
-        augmented.append(
-            SearchFacet(
-                name=f"Signal fiscal explicite: {hint['label']}",
-                goal=f"Verifier la doctrine BOFiP pertinente pour {hint['label']}",
-                query=str(hint["terms"]),
-                prefix=prefix,
-                priority=min(priority, 9),
-                expected_evidence=["regle applicable", "champ d'application", "limites"],
-                role="core",
-                blocking=True,
-            )
-        )
-        return sorted(augmented, key=lambda facet: facet.priority)
-    return facets
-
 
 def _normalize_source_review(review: dict, chunks: list[dict]) -> dict:
     known_ids = {chunk["chunk_id"] for chunk in chunks}
