@@ -260,6 +260,37 @@ class AgenticRAGTests(unittest.TestCase):
         self.assertNotIn("chiffre affaires", query)
         self.assertNotIn("montant forfaitaire", query)
 
+    def test_facet_retrieval_query_is_not_polluted_by_expected_evidence(self):
+        question = (
+            "Je suis commercant independant et je mange au restaurant le midi "
+            "car mon lieu de travail est eloigne de mon domicile."
+        )
+        facet = SearchFacet(
+            name="Frais de repas professionnels",
+            goal=(
+                "Verifier les conditions de deduction et le montant forfaitaire "
+                "de la part personnelle non deductible."
+            ),
+            query="frais de repas exploitant individuel deduction eloignement domicile",
+            prefix="BIC",
+            expected_evidence=[
+                "montant forfaitaire de la part personnelle",
+                "BOI-BIC-CHG-10-10-10 section frais supplementaires de repas",
+                "micro entreprise chiffre affaires seuil regime simplifie",
+            ],
+        )
+
+        retrieval_query = _build_facet_retrieval_query(question, facet).lower()
+        chunk_query = _build_facet_chunk_query(facet, question).lower()
+
+        self.assertIn("frais de repas", retrieval_query)
+        self.assertIn("bic", retrieval_query)
+        self.assertNotIn("montant forfaitaire", retrieval_query)
+        self.assertNotIn("boi-bic-chg-10-10-10", retrieval_query)
+        self.assertNotIn("micro entreprise", retrieval_query)
+        self.assertNotIn("chiffre affaires", retrieval_query)
+        self.assertIn("montant forfaitaire", chunk_query)
+
     def test_normalize_plan_does_not_add_taxonomy_fallback_from_keyword(self):
         question = (
             "J'ai applique une position fiscale discutable mais je l'ai expliquee "

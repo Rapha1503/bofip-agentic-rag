@@ -231,6 +231,52 @@ class RuntimeFallbackTests(unittest.TestCase):
 
         self.assertEqual(result.stage1_hits[0].boi_reference, "BOI-TVA-TARGET")
 
+    def test_document_candidates_are_stable_across_chunk_query_variants(self):
+        documents = [
+            _doc("BOI-BIC-CHG-10-10-10", "BIC charges frais de repas exploitant individuel", "BIC"),
+            _doc("BOI-BIC-MICRO-10", "BIC micro entreprise chiffre affaires regime", "BIC"),
+            _doc("BOI-BIC-FORFAIT-10", "BIC montant forfaitaire deduction generale", "BIC"),
+        ]
+        chunks = [
+            _chunk("BOI-BIC-CHG-10-10-10", "frais supplementaires de repas eloignement domicile"),
+            _chunk("BOI-BIC-MICRO-10", "micro entreprise chiffre affaires seuils"),
+            _chunk("BOI-BIC-FORFAIT-10", "montant forfaitaire deduction forfaitaire"),
+        ]
+        runtime = RagRuntime(
+            documents=documents,
+            chunks=chunks,
+            doc_encoder=None,
+            chunk_encoder=None,
+            document_embeddings=np.zeros((3, 4), dtype=np.float32),
+            chunk_embeddings=np.zeros((3, 4), dtype=np.float32),
+            reranker=None,
+            dense_error="dense model unavailable in test",
+        )
+        doc_query = "BIC frais de repas exploitant individuel eloignement domicile"
+        chunk_query_variants = [
+            "frais supplementaires de repas conditions deduction",
+            "montant forfaitaire part personnelle non deductible",
+            "micro entreprise chiffre affaires seuil regime simplifie",
+        ]
+
+        stage1_orders = []
+        for chunk_query in chunk_query_variants:
+            result = runtime.retrieve(
+                doc_query,
+                chunk_query=chunk_query,
+                boost_prefix="BIC",
+                use_dense=False,
+                use_chunk_dense=False,
+                use_reranker=False,
+                top_docs=3,
+                max_chunks=3,
+            )
+            stage1_orders.append([hit.boi_reference for hit in result.stage1_hits])
+
+        self.assertTrue(stage1_orders)
+        self.assertTrue(all(order == stage1_orders[0] for order in stage1_orders))
+        self.assertEqual(stage1_orders[0][0], "BOI-BIC-CHG-10-10-10")
+
     def test_reranker_scores_bounded_candidate_pool(self):
         documents = [
             _doc("BOI-TVA-A", "TVA taxe prestations", "TVA"),
