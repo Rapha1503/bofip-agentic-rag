@@ -2,6 +2,14 @@
 
 **Agentic RAG on 50 French fiscal questions — 2026-05-17, DeepSeek V4 Flash, GPU.**
 
+These results are historical. They were produced before the 2026-06 full-corpus rebuild (`9,048` source rows / `79,160` chunks) and before the current planner, source critic, intra-document rescue, and status cleanup changes. Keep them as baseline context, not as current portfolio proof.
+
+Current validation should use:
+
+- `data/eval/retrieval_spotcheck_10.jsonl` for quick cross-domain retrieval smoke tests;
+- `data/eval/retrieval_eval_v2.jsonl` for layer-level retrieval checks;
+- `data/eval/tax_eval_50.jsonl` plus reviewer notes for answer-level checks.
+
 ## Overall
 
 | Metric | Value |
@@ -20,7 +28,7 @@
 
 | Metric | Value | Note |
 |---|---|---|
-| doc_recall@1 | 12% | Gold docs reference 2023-2025 versions; corpus is 2012-2020. Exact versions not in index. |
+| doc_recall@1 | 12% | Historical gold/version mismatch; do not use this table for current retrieval quality. |
 | doc_recall@3 | 26% | Earlier versions of same BOI references found |
 | doc_recall@5 | 30% | |
 | doc_mrr | 0.193 | |
@@ -86,7 +94,7 @@
 - **IR (impôt sur le revenu) is noisy** — coverage exceeds 100% due to LLM miscounting axes. 2 of 5 queries partial/insufficient.
 - **must_include rate is low (31%)** — the `must_include` keywords in the eval set are specific substrings (e.g., "récupération") that the LLM may express with synonyms (e.g., "déduction"). Exact substring matching is a rough metric.
 - **must_not_include is near-perfect (98.9%)** — very few hallucinated terms found.
-- **Retrieval R@1 is deflated** — gold doc references in the eval set point to 2023-2025 versions not present in the 2012-2020 corpus. Re-syncing the corpus would align versions and improve R@1.
+- **Retrieval R@1 is deflated** — this historical run used an older corpus/gold alignment. Current retrieval quality should be checked with the 2026-06 eval files listed above.
 
 ## Methodology
 

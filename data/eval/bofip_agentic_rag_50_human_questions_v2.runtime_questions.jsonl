@@ -1,0 +1,50 @@
+{"id": "CASE-001", "runtime_question": "Je loue un local vide à une société qui va y installer ses bureaux. Le bail n’est pas destiné à de l’habitation. Est-ce que je peux mettre de la TVA sur le loyer ?"}
+{"id": "CASE-002", "runtime_question": "Je facture une prestation de maintenance à une entreprise. Le client m’a versé un acompte en décembre 2024, mais l’intervention aura lieu en janvier 2025. À quel moment la TVA devient-elle exigible ?"}
+{"id": "CASE-003", "runtime_question": "Je vends du matériel à un client. Il a payé un acompte en décembre 2024 et je livrerai le matériel en février 2025. Est-ce que la TVA est déjà due sur l’acompte ?"}
+{"id": "CASE-004", "runtime_question": "Je suis sous-traitant dans le bâtiment et je facture des travaux de rénovation à l’entreprise principale. Est-ce que je dois mettre de la TVA sur ma facture ou indiquer une autoliquidation ?"}
+{"id": "CASE-005", "runtime_question": "J’achète des meubles d’occasion à des particuliers pour les revendre dans ma boutique. Est-ce que je dois calculer la TVA sur tout le prix de vente ou seulement sur ma marge ?"}
+{"id": "CASE-006", "runtime_question": "Je suis professionnel de l’immobilier et je revends un terrain sur lequel un permis de construire permet de bâtir. Est-ce que la TVA se calcule forcément sur le prix total ?"}
+{"id": "CASE-007", "runtime_question": "J’ai acheté des petits objets publicitaires que je donne gratuitement à des prospects, un seul objet par personne. Est-ce que la TVA sur ces achats est récupérable ?"}
+{"id": "CASE-008", "runtime_question": "J’ai offert des coffrets à mes meilleurs clients en fin d’année. Est-ce que mon entreprise peut les passer en charges ?"}
+{"id": "CASE-009", "runtime_question": "Je suis commerçant indépendant et je mange souvent au restaurant le midi parce que je suis trop loin de mon domicile. Quelle partie de ces repas peut être déduite ?"}
+{"id": "CASE-010", "runtime_question": "Un client en difficulté me doit 18 000 € depuis plus d’un an. Puis-je passer une provision fiscale parce que je pense qu’il ne paiera pas ?"}
+{"id": "CASE-011", "runtime_question": "Mon entreprise a payé une pénalité administrative pour non-respect d’une obligation légale. Est-ce que c’est déductible fiscalement ?"}
+{"id": "CASE-012", "runtime_question": "Un associé a prêté de l’argent à ma société et la société lui verse des intérêts. Est-ce que ces intérêts sont toujours déductibles ?"}
+{"id": "CASE-013", "runtime_question": "Mon entreprise finance un événement sportif local et son logo apparaît sur les affiches et le site de l’événement. Est-ce une charge déductible ?"}
+{"id": "CASE-014", "runtime_question": "J’ai terminé une mission en décembre 2024 mais le client ne m’a payé qu’en janvier 2025. Je suis en activité libérale. Dans quelle année dois-je déclarer cette recette ?"}
+{"id": "CASE-015", "runtime_question": "Un client m’a remboursé exactement des frais que j’avais avancés pour lui et que j’ai reversés à un tiers. Est-ce que ce remboursement augmente mes recettes imposables ?"}
+{"id": "CASE-016", "runtime_question": "Je suis professionnel libéral et j’utilise ma voiture personnelle pour visiter des clients. Puis-je utiliser un barème ou dois-je garder toutes les factures ?"}
+{"id": "CASE-017", "runtime_question": "Je suis au régime réel BNC et je voudrais déclarer selon les factures émises plutôt que les encaissements. Est-ce possible ?"}
+{"id": "CASE-018", "runtime_question": "Je suis professionnel libéral assujetti à la TVA et mes clients me paient des honoraires TVA comprise. Pour le bénéfice BNC, je retiens les recettes TTC ou HT ?"}
+{"id": "CASE-019", "runtime_question": "Mon locataire est parti sans payer son dernier loyer et j’ai conservé son dépôt de garantie pour me rembourser. Est-ce que cette somme est imposable dans mes revenus fonciers ?"}
+{"id": "CASE-020", "runtime_question": "J’ai un emprunt pour acheter un appartement que je loue vide. Les intérêts payés à la banque sont-ils déductibles au régime réel ?"}
+{"id": "CASE-021", "runtime_question": "Je laisse gratuitement un appartement à un proche sans percevoir de loyer. Dois-je déclarer un revenu foncier théorique ?"}
+{"id": "CASE-022", "runtime_question": "Un locataire est parti en laissant 700 € de charges récupérables impayées. Est-ce que je peux les déduire de mes revenus fonciers ?"}
+{"id": "CASE-023", "runtime_question": "Je paie une assurance propriétaire non occupant pour un appartement loué vide. Est-ce déductible au régime réel ?"}
+{"id": "CASE-024", "runtime_question": "Mon père est décédé et je suis bénéficiaire d’un contrat d’assurance-vie. Est-ce que c’est traité comme une succession classique ?"}
+{"id": "CASE-025", "runtime_question": "Dans une succession, peut-on déduire les frais d’obsèques avant de calculer les droits ?"}
+{"id": "CASE-026", "runtime_question": "Au décès de ma mère, il reste un prêt immobilier et des factures non payées. Quelles dettes peut-on déduire pour les droits de succession ?"}
+{"id": "CASE-027", "runtime_question": "Ma sœur veut me donner 20 000 €. Est-ce qu’il y aura des droits à payer ?"}
+{"id": "CASE-028", "runtime_question": "J’ai l’usufruit d’un appartement et mes enfants en ont la nue-propriété. Pour l’IFI, qui doit déclarer la valeur du bien ?"}
+{"id": "CASE-029", "runtime_question": "Je possède 40 % d’une société non cotée. La société vaut 1 000 000 € et son seul immeuble vaut 600 000 €, le reste étant de la trésorerie et du matériel. Comment raisonner pour l’IFI ?"}
+{"id": "CASE-030", "runtime_question": "Je possède des bois et forêts dans mon patrimoine. Est-ce qu’ils sont imposables en totalité à l’IFI ?"}
+{"id": "CASE-031", "runtime_question": "Je détiens des parts d’une société opérationnelle qui possède ses locaux d’exploitation. Est-ce que la valeur de ces locaux entre dans mon IFI ?"}
+{"id": "CASE-032", "runtime_question": "Mon enfant apprenti a gagné 14 000 € en 2024. Est-ce que tout doit être déclaré dans notre revenu imposable ?"}
+{"id": "CASE-033", "runtime_question": "Mon employeur me fournit gratuitement les repas tous les midis. Est-ce que c’est un avantage imposable ?"}
+{"id": "CASE-034", "runtime_question": "Au lieu de me loger, mon employeur me verse une indemnité pour compenser le logement que je devrais recevoir. Est-ce imposable ?"}
+{"id": "CASE-035", "runtime_question": "Mon employeur me rembourse des déplacements professionnels avec ma voiture personnelle. Est-ce que je dois déclarer ces remboursements ?"}
+{"id": "CASE-036", "runtime_question": "J’ai prêté de l’argent à une société dont je suis associé et elle me verse des intérêts. Dans quelle catégorie ces intérêts sont-ils imposés ?"}
+{"id": "CASE-037", "runtime_question": "J’ai acheté 100 actions à 20 € puis 100 actions à 30 €. J’en revends 150 à 40 €. Comment déterminer le gain de cession si les titres sont fongibles ?"}
+{"id": "CASE-038", "runtime_question": "Ma société m’a avancé de l’argent sur mon compte d’associé sans remboursement prévu. Est-ce que ça peut être considéré comme un revenu distribué ?"}
+{"id": "CASE-039", "runtime_question": "Ma société à l’IS a fait un déficit cette année. Peut-elle l’utiliser sur les bénéfices des années suivantes ?"}
+{"id": "CASE-040", "runtime_question": "Ma société à l’IS a un déficit et elle avait payé de l’IS sur un bénéfice l’an dernier. Peut-elle demander un report en arrière ?"}
+{"id": "CASE-041", "runtime_question": "Ma société a 4 500 000 € de charges financières nettes et un EBITDA fiscal ajusté de 12 000 000 €. Quelle limite de déduction faut-il examiner ?"}
+{"id": "CASE-042", "runtime_question": "J’exploite un petit stand de glaces seulement en juillet et août, mais tous les étés. Est-ce que cette activité peut quand même être soumise à la CFE ?"}
+{"id": "CASE-043", "runtime_question": "J’ai oublié une partie de mes revenus et je veux régulariser. Est-ce que l’administration peut appliquer des intérêts de retard ?"}
+{"id": "CASE-044", "runtime_question": "J’ai appliqué une position fiscale discutable mais je l’ai expliquée clairement dans ma déclaration. Est-ce que ça peut avoir un effet sur les intérêts de retard ?"}
+{"id": "CASE-045", "runtime_question": "J’ai payé 2 400 € de frais de garde pour mon enfant de 4 ans. Comment savoir quelle partie ouvre droit à l’avantage fiscal ?"}
+{"id": "CASE-046", "runtime_question": "J’ai payé une personne pour faire du ménage à mon domicile. Est-ce que ces dépenses peuvent donner droit à un avantage fiscal ?"}
+{"id": "CASE-047", "runtime_question": "Mon fils étudiant a travaillé l’été et a gagné 4 500 €. Est-ce que ces salaires sont imposables si je le rattache à mon foyer ?"}
+{"id": "CASE-048", "runtime_question": "Je suis agriculteur et mes recettes varient beaucoup d’une année à l’autre. Est-ce que le bénéfice imposable peut être calculé avec une moyenne ?"}
+{"id": "CASE-049", "runtime_question": "J’ai un PEA ouvert depuis 3 ans et je veux retirer une partie de l’argent. Quelles conséquences fiscales dois-je vérifier ?"}
+{"id": "CASE-050", "runtime_question": "J’ai vendu des actions avec une perte en 2024, et j’ai aussi une plus-value sur d’autres actions. Est-ce que la perte peut réduire la plus-value ?"}

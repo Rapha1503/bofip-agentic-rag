@@ -11,7 +11,7 @@ GitHub Pages should not host the RAG runtime because it serves static assets and
 
 ## Full-Corpus Requirement
 
-The hosted app is designed for the full 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
+The hosted app is designed for the full no-filter `bofip-vigueur` source snapshot: 9,048 BOFiP source rows observed through `2026-06-17`.
 
 Optimize the full-corpus runtime instead:
 
@@ -41,31 +41,33 @@ Do not build a browser-only OpenAI-key workflow for this project. API keys in cl
 The live app needs these runtime files:
 
 ```text
-data/interim/raw_docs_sample_5666.jsonl
-data/interim/chunks_section_window_sample_5666.jsonl
-data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
-data/interim/chunk_dense_cache_5666_full_e5large.npy
-data/models/intfloat--multilingual-e5-large/
+data/interim/raw_docs.jsonl
+data/interim/chunks.jsonl
+data/interim/doc_dense_cache.npy
+data/interim/chunk_dense_cache.npy
 ```
 
-Optional reranker artifact:
+The default public mode is lexical full-corpus retrieval, so the local E5 model directory is not required unless dense/hybrid mode is explicitly enabled. The embedding arrays are still part of the current runtime contract because the loader validates them.
+
+Optional local models:
 
 ```text
-data/models/BAAI--bge-reranker-v2-m3/
+data/models/intfloat--multilingual-e5-large/   # dense/hybrid mode
+BAAI/bge-reranker-v2-m3                        # downloaded by sentence-transformers if reranker is enabled
 ```
 
 The full-corpus file contract is versioned in [full_corpus_manifest.json](full_corpus_manifest.json).
 
 The repository intentionally excludes those large artifacts. A deployment should either:
 
-- download them during startup from the `full-corpus-v1` GitHub release; or
+- download them during startup from the `full-corpus-v2` GitHub release; or
 - mount them into the host environment; or
 - use an external model/cache volume if the host supports it.
 
 The current default artifact URL is:
 
 ```text
-https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1
+https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v2
 ```
 
 The Docker runtime uses `BOFIP_AUTO_DOWNLOAD_ARTIFACTS=1`.

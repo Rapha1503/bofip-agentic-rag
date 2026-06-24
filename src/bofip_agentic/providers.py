@@ -2,6 +2,16 @@
 from __future__ import annotations
 
 PROVIDERS: dict[str, dict] = {
+    "Codex local": {
+        "base_url": "codex-cli://local",
+        "models": ["gpt-5.5", "gpt-5.4", "gpt-5.4-mini", "gpt-5.3-codex-spark"],
+        "default_model": "gpt-5.5",
+        "env_key": "",
+        "requires_api_key": False,
+        "local_only": True,
+        "type": "codex_cli",
+        "note": "Utilise le CLI Codex local authentifié sur cette machine. Non disponible sur Hugging Face.",
+    },
     "DeepSeek": {
         "base_url": "https://api.deepseek.com/v1",
         "models": ["deepseek-v4-flash", "deepseek-v4-pro", "deepseek-chat", "deepseek-reasoner"],
@@ -39,3 +49,17 @@ def resolve_provider(name: str) -> dict | None:
         if key.lower() == name.lower():
             return provider
     return None
+
+
+def coerce_model_for_provider(provider_name: str, selected_model: str | None) -> str:
+    """Return a model valid for the provider, falling back to its default."""
+    provider = resolve_provider(provider_name)
+    if provider is None:
+        return selected_model or ""
+    models = list(provider.get("models") or [])
+    if selected_model in models:
+        return str(selected_model)
+    default_model = provider.get("default_model")
+    if default_model in models:
+        return str(default_model)
+    return str(models[0]) if models else ""

@@ -25,6 +25,8 @@ data/processed/
 data/models/
 data/logs/
 data/interim/*.npy
+data/interim/raw_docs.jsonl
+data/interim/chunks.jsonl
 data/interim/raw_docs_*.jsonl
 data/interim/chunks_*.jsonl
 data/interim/doc_dense_cache_*.json
@@ -65,3 +67,4 @@ data/interim/*.json
 data/interim/*.pkl
 
 data/reports/**
+output/

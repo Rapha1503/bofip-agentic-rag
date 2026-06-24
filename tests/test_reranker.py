@@ -29,6 +29,16 @@ class TestCrossEncoderReranker(unittest.TestCase):
         self.assertEqual(result[1].item["text"], "c")
         self.assertEqual(result[2].item["text"], "a")
 
+    def test_cpu_model_does_not_switch_to_half_precision(self):
+        CrossEncoderReranker(device="cpu")
+
+        self.mock_model.model.half.assert_not_called()
+
+    def test_cuda_model_switches_to_half_precision(self):
+        CrossEncoderReranker(device="cuda")
+
+        self.mock_model.model.half.assert_called_once()
+
     def test_rerank_truncates_to_top_k(self):
         items = [{"text": str(i)} for i in range(10)]
         self.mock_model.predict.return_value = [float(i) for i in range(10)]

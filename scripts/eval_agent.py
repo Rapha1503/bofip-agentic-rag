@@ -5,6 +5,7 @@ Usage:
     $env:PYTHONPATH="src"; $env:DEEPSEEK_API_KEY="sk-..."; python scripts/eval_agent.py
     $env:PYTHONPATH="src"; $env:DEEPSEEK_API_KEY="sk-..."; python scripts/eval_agent.py --resume
     $env:PYTHONPATH="src"; $env:DEEPSEEK_API_KEY="sk-..."; python scripts/eval_agent.py --limit 10
+    $env:PYTHONPATH="src"; $env:DEEPSEEK_API_KEY="sk-..."; python scripts/eval_agent.py --input data/eval/chatgpt_50_cases_v1.jsonl
 """
 from __future__ import annotations
 
@@ -16,7 +17,19 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
+for _env in (PROJECT_ROOT / ".env.local", PROJECT_ROOT / ".env"):
+    if _env.exists():
+        for _line in _env.read_text(encoding="utf-8-sig").splitlines():
+            _line = _line.strip()
+            if not _line or _line.startswith("#") or "=" not in _line:
+                continue
+            _k, _, _v = _line.partition("=")
+            _k, _v = _k.strip(), _v.strip().strip('"').strip("'")
+            if _k and _k not in os.environ:
+                os.environ[_k] = _v
+
 PROVIDERS = {
+    "codex":     {"base_url": "codex-cli://local",              "default_model": "gpt-5.5",            "env_key": "", "type": "codex_cli", "requires_api_key": False},
     "deepseek":  {"base_url": "https://api.deepseek.com/v1",    "default_model": "deepseek-v4-flash",  "env_key": "DEEPSEEK_API_KEY"},
     "openai":    {"base_url": "https://api.openai.com/v1",       "default_model": "gpt-5.4-mini",      "env_key": "OPENAI_API_KEY"},
     "anthropic": {"base_url": "https://api.anthropic.com/v1",    "default_model": "claude-haiku-4-5",  "env_key": "ANTHROPIC_API_KEY"},
@@ -34,9 +47,23 @@ INPUT_PATH = PROJECT_ROOT / "data" / "eval" / "tax_eval_50.jsonl"
 OUTPUT_PATH = REPORTS_DIR / "eval_agent_50.json"
 
 
+def _normalize_query(row: dict, index: int) -> dict:
+    question = row.get("question") or row.get("user_question")
+    if not question:
+        raise ValueError(f"missing question/user_question at line {index}")
+    normalized = dict(row)
+    normalized["id"] = str(row.get("id") or row.get("query_id") or f"q{index:03d}")
+    normalized["question"] = str(question)
+    normalized["theme"] = row.get("theme") or row.get("domain") or ""
+    normalized["question_type"] = row.get("question_type") or row.get("type") or ""
+    normalized["required_docs"] = row.get("required_docs") or row.get("must_include_sources") or []
+    normalized["optional_docs"] = row.get("optional_docs") or row.get("should_include_sources") or []
+    return normalized
+
+
 def load_queries(path: Path) -> list[dict]:
     with open(path, encoding="utf-8") as f:
-        return [json.loads(line) for line in f if line.strip()]
+        return [_normalize_query(json.loads(line), index) for index, line in enumerate(f, start=1) if line.strip()]
 
 
 def compute_summary(results: list[dict]) -> dict:
@@ -93,10 +120,16 @@ def main():
     p.add_argument("--limit", type=int, default=0)
     p.add_argument("--device", type=str, default="cuda")
     p.add_argument("--output", type=str, default="")
+    p.add_argument("--input", type=str, default="", help="JSONL eval input. Supports question or user_question fields.")
     p.add_argument("--provider", type=str, default="deepseek", help="LLM provider key in PROVIDERS dict")
     p.add_argument("--model", type=str, default="", help="Model name (defaults to provider default)")
     p.add_argument("--api-key", type=str, default="", help="API key (or set env var)")
     p.add_argument("--base-url", type=str, default="", help="Base URL override")
+    p.add_argument(
+        "--lexical-only",
+        action="store_true",
+        help="Use the full corpus with BM25 lexical retrieval only. Useful for local CPU/Codex smoke evals.",
+    )
     args = p.parse_args()
 
     provider_key = args.provider.lower()
@@ -105,8 +138,9 @@ def main():
         print(f"ERROR: unknown provider '{args.provider}'. Options: {', '.join(PROVIDERS)}")
         return 1
 
+    requires_api_key = provider_config.get("requires_api_key", True)
     api_key = args.api_key or os.environ.get(provider_config.get("env_key", ""), "")
-    if not api_key:
+    if requires_api_key and not api_key:
         print(f"ERROR: set {provider_config.get('env_key', 'API key')} or use --api-key")
         return 1
 
@@ -114,7 +148,10 @@ def main():
     base_url = args.base_url or provider_config.get("base_url", "https://api.deepseek.com/v1")
 
     ensure_data_dirs()
-    queries = load_queries(INPUT_PATH)
+    input_path = Path(args.input) if args.input else INPUT_PATH
+    if not input_path.is_absolute():
+        input_path = PROJECT_ROOT / input_path
+    queries = load_queries(input_path)
     if args.limit > 0:
         queries = queries[:args.limit]
 
@@ -130,7 +167,7 @@ def main():
                 results.append(r)
         print("Resumed: {} done, {} remaining".format(len(done_ids), len(queries) - len(done_ids)))
     else:
-        print("Loaded {} queries from {}".format(len(queries), INPUT_PATH))
+        print("Loaded {} queries from {}".format(len(queries), input_path))
 
     pending = [q for q in queries if q["id"] not in done_ids]
     if not pending:
@@ -138,9 +175,25 @@ def main():
         print_summary(summary)
         return 0
 
-    print("Init RagRuntime (GPU)...")
-    rt = RagRuntime.from_local_corpus(corpus="commentary", device=args.device)
-    agent = AgenticRAG(rt, api_key=api_key, base_url=base_url, model=model, max_iterations=2)
+    retrieval_mode = "lexical_only" if args.lexical_only else "hybrid"
+    print("Init RagRuntime ({}, {})...".format(args.device, retrieval_mode))
+    rt = RagRuntime.from_local_corpus(
+        corpus="commentary",
+        device=args.device,
+        load_dense=not args.lexical_only,
+        load_reranker=not args.lexical_only,
+    )
+    if provider_config.get("type") == "codex_cli":
+        from bofip_agentic.codex_cli_client import CodexCliClient
+
+        agent = AgenticRAG(
+            rt,
+            client=CodexCliClient(model=model, project_root=PROJECT_ROOT),
+            model=model,
+            max_iterations=2,
+        )
+    else:
+        agent = AgenticRAG(rt, api_key=api_key, base_url=base_url, model=model, max_iterations=2)
     print("Agent ready.\n")
 
     for idx, q in enumerate(pending, 1):
@@ -157,6 +210,12 @@ def main():
             r["theme"] = q.get("theme", "")
             r["difficulty"] = q.get("difficulty", "")
             r["question_type"] = q.get("question_type", "")
+            r["gold"] = {
+                "expected_status": q.get("expected_status", ""),
+                "required_docs": q.get("required_docs", []),
+                "optional_docs": q.get("optional_docs", []),
+                "failure_signals": q.get("failure_signals", []),
+            }
             results.append(r)
 
             s = r["answer_status"]
@@ -171,7 +230,14 @@ def main():
         summary = compute_summary(results)
         report = {
             "generated_at": datetime.now(UTC).isoformat(),
-            "config": {"device": args.device, "max_iterations": 2, "model": model, "provider": provider_key},
+            "config": {
+                "device": args.device,
+                "max_iterations": 2,
+                "model": model,
+                "provider": provider_key,
+                "retrieval_mode": retrieval_mode,
+                "input": str(input_path),
+            },
             "summary": summary,
             "per_query": results,
         }
@@ -181,7 +247,14 @@ def main():
     summary = compute_summary(results)
     report = {
         "generated_at": datetime.now(UTC).isoformat(),
-        "config": {"device": args.device, "max_iterations": 2, "model": "deepseek-chat"},
+        "config": {
+            "device": args.device,
+            "max_iterations": 2,
+            "model": model,
+            "provider": provider_key,
+            "retrieval_mode": retrieval_mode,
+            "input": str(input_path),
+        },
         "summary": summary,
         "per_query": results,
     }
@@ -197,7 +270,7 @@ def print_summary(s: dict):
     if not s.get("total_queries"):
         return
     print("\n" + "=" * 60)
-    print("AGENTIC RAG EVALUATION — {} queries".format(s["total_queries"]))
+    print("AGENTIC RAG EVALUATION - {} queries".format(s["total_queries"]))
     print("=" * 60)
     print("Avg coverage:        {:.0%}".format(s["avg_coverage"]))
     print("Avg iterations:      {}".format(s["avg_iterations"]))

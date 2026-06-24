@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import pickle
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from .jsonio import read_jsonl
 from .lexical_retrieval import LexicalIndex, get_document_search_text_fn, tokenize
 from .models import ChunkNode, RawDocument, chunk_node_from_dict, raw_document_from_dict
 from .reranker import CrossEncoderReranker, DEFAULT_RERANKER_MODEL
+from .text_utils import normalize_whitespace, strip_accents
 
 
 DEFAULT_CORPUS = "commentary"
@@ -49,19 +51,288 @@ def _reference_matches_prefix(boi_reference: str, prefix: str) -> bool:
     if not normalized:
         return False
     ref = boi_reference.lower()
-    return ref.startswith(normalized) or ref.startswith(f"boi-{normalized}")
+    return (
+        ref.startswith(normalized)
+        or ref.startswith(f"boi-{normalized}")
+        or ref.startswith(f"boi-res-{normalized}")
+    )
+
+
+BOI_REFERENCE_RE = re.compile(r"\bBOI-[A-Z0-9]+(?:-[A-Z0-9]+)*\b", re.IGNORECASE)
+
+
+def _normalize_boi_reference(value: str) -> str:
+    return value.strip().upper().removeprefix("BOI-").strip("-")
+
+
+def _query_boi_references(query: str) -> list[str]:
+    references: list[str] = []
+    for match in BOI_REFERENCE_RE.finditer(query):
+        reference = "BOI-" + _normalize_boi_reference(match.group(0))
+        if reference not in references:
+            references.append(reference)
+    return references[:5]
+
+
+def _is_exact_or_child_reference(boi_reference: str, target_reference: str) -> bool:
+    ref = _normalize_boi_reference(boi_reference)
+    target = _normalize_boi_reference(target_reference)
+    return bool(target and (ref == target or ref.startswith(target + "-")))
+
+
+def _document_text_for_query_score(document: RawDocument) -> str:
+    return " ".join(
+        part
+        for part in (
+            document.boi_reference,
+            document.title,
+            document.html_title or "",
+            " ".join(document.category_path),
+            " ".join(document.subjects),
+        )
+        if part
+    )
+
+
+def _significant_query_tokens(query: str) -> tuple[set[str], set[tuple[str, str]]]:
+    tokens = [token for token in tokenize(query) if len(token) >= 4]
+    return set(tokens), set(zip(tokens, tokens[1:]))
+
+
+def _token_overlap_score(text: str, query_terms: set[str], query_bigrams: set[tuple[str, str]]) -> float:
+    if not query_terms:
+        return 0.0
+    text_tokens = [token for token in tokenize(text) if len(token) >= 4]
+    text_terms = set(text_tokens)
+    text_bigrams = set(zip(text_tokens, text_tokens[1:]))
+    return float(len(query_terms & text_terms)) + 2.0 * float(len(query_bigrams & text_bigrams))
+
+
+def _document_query_overlap_score(
+    query: str,
+    document: RawDocument,
+    chunks_by_reference: dict[str, list[ChunkNode]] | None = None,
+) -> float:
+    query_terms, query_bigrams = _significant_query_tokens(query)
+    doc_score = _token_overlap_score(_document_text_for_query_score(document), query_terms, query_bigrams)
+    chunk_score = 0.0
+    if chunks_by_reference:
+        for chunk in chunks_by_reference.get(document.boi_reference, []):
+            chunk_text = " ".join(chunk.section_path) + "\n" + " ".join(chunk.legal_refs) + "\n" + chunk.text
+            chunk_score = max(chunk_score, _token_overlap_score(chunk_text, query_terms, query_bigrams))
+    return min(30.0, doc_score + chunk_score)
+
+
+def _reference_match_depth(boi_reference: str, prefix: str) -> int:
+    ref_parts = _normalize_boi_reference(boi_reference).split("-")
+    prefix_parts = _normalize_boi_reference(prefix).split("-")
+    depth = 0
+    for ref_part, prefix_part in zip(ref_parts, prefix_parts):
+        if ref_part != prefix_part:
+            break
+        depth += 1
+    return depth
+
+
+def _normalized_text(value: str) -> str:
+    return strip_accents(value or "").lower()
+
+
+def _document_navigation_text(
+    document: RawDocument,
+    chunks_by_reference: dict[str, list[ChunkNode]] | None = None,
+) -> str:
+    section_paths: list[str] = []
+    if chunks_by_reference:
+        for chunk in chunks_by_reference.get(document.boi_reference, [])[:12]:
+            section_paths.extend(chunk.section_path)
+    return _normalized_text(
+        "\n".join(
+            part
+            for part in (
+                document.boi_reference,
+                document.title,
+                document.html_title or "",
+                " ".join(document.category_path),
+                " ".join(section_paths),
+            )
+            if part
+        )
+    )
+
+
+def _has_general_rule_intent(query: str) -> bool:
+    normalized = _normalized_text(query)
+    return (
+        "regle generale" in normalized
+        or "regles generales" in normalized
+        or "droit commun" in normalized
+    )
+
+
+def _has_exception_intent(query: str) -> bool:
+    normalized = _normalized_text(query)
+    return any(
+        marker in normalized
+        for marker in (
+            "derogation",
+            "derogations",
+            "exception",
+            "exceptions",
+            "cas particulier",
+            "regle particuliere",
+            "regle specifique",
+        )
+    )
+
+
+def _has_rescript_intent(query: str) -> bool:
+    normalized = _normalized_text(query)
+    return "rescrit" in normalized or "boi-res" in normalized
+
+
+def _document_navigation_bias(
+    query: str,
+    document: RawDocument,
+    chunks_by_reference: dict[str, list[ChunkNode]] | None = None,
+) -> float:
+    haystack = _document_navigation_text(document, chunks_by_reference)
+    bias = 0.0
+
+    if _has_general_rule_intent(query):
+        has_derogation = "derogation" in haystack or "derogations" in haystack
+        exception_intent = _has_exception_intent(query)
+        if (
+            not has_derogation
+            and ("regle generale" in haystack or "regles generales" in haystack or "droit commun" in haystack)
+        ):
+            bias += 10.0
+        if has_derogation and not exception_intent:
+            bias -= 10.0
+
+    if document.boi_reference.upper().startswith("BOI-RES-") and not _has_rescript_intent(query):
+        title_score = _token_overlap_score(
+            document.title,
+            *_significant_query_tokens(query),
+        )
+        bias -= 3.0 if title_score >= 8.0 else 8.0
+
+    return bias
+
+
+def _prefix_overlap_rankings(
+    query: str,
+    prefix: str,
+    documents: list[RawDocument],
+    chunks_by_reference: dict[str, list[ChunkNode]] | None = None,
+) -> list[RankedDoc]:
+    if not prefix:
+        return []
+
+    detailed_prefix = _normalize_boi_reference(prefix).count("-") >= 2
+    candidates: list[tuple[float, str, RankedDoc]] = []
+    for document in documents:
+        if not _reference_matches_prefix(document.boi_reference, prefix):
+            continue
+        overlap = _document_query_overlap_score(query, document, chunks_by_reference)
+        if overlap <= 0 and not detailed_prefix:
+            continue
+        score = (
+            overlap
+            + 0.25 * _reference_match_depth(document.boi_reference, prefix)
+            + _document_navigation_bias(query, document, chunks_by_reference)
+        )
+        candidates.append(
+            (
+                -score,
+                document.boi_reference,
+                RankedDoc(
+                    boi_reference=document.boi_reference,
+                    score=score,
+                    rank=0,
+                    source="prefix_overlap",
+                ),
+            )
+        )
+
+    candidates.sort()
+    ranked = [item[2] for item in candidates[:20]]
+    for idx, doc in enumerate(ranked, start=1):
+        doc.rank = idx
+    return ranked
+
+
+def _exact_reference_rankings(
+    query: str,
+    documents: list[RawDocument],
+    chunks_by_reference: dict[str, list[ChunkNode]] | None = None,
+) -> list[RankedDoc]:
+    query_refs = _query_boi_references(query)
+    if not query_refs:
+        return []
+
+    candidates: list[tuple[float, str, RankedDoc]] = []
+    seen: set[str] = set()
+    for target in query_refs:
+        target_norm = _normalize_boi_reference(target)
+        for document in documents:
+            if not _is_exact_or_child_reference(document.boi_reference, target):
+                continue
+            if document.boi_reference in seen:
+                continue
+            ref_norm = _normalize_boi_reference(document.boi_reference)
+            extra_depth = max(0, ref_norm.count("-") - target_norm.count("-"))
+            relationship_score = 120.0 if ref_norm == target_norm else 105.0 - min(extra_depth, 6)
+            overlap_score = _document_query_overlap_score(query, document, chunks_by_reference)
+            score = relationship_score + overlap_score
+            candidates.append(
+                (
+                    -score,
+                    document.boi_reference,
+                    RankedDoc(
+                        boi_reference=document.boi_reference,
+                        score=score,
+                        rank=0,
+                        source="exact_reference",
+                    ),
+                )
+            )
+            seen.add(document.boi_reference)
+
+    candidates.sort()
+    ranked = [item[2] for item in candidates[:20]]
+    for idx, doc in enumerate(ranked, start=1):
+        doc.rank = idx
+    return ranked
+
+
+def _prepend_ranked_docs(primary: list[RankedDoc], rest: list[RankedDoc]) -> list[RankedDoc]:
+    if not primary:
+        return rest
+    seen: set[str] = set()
+    merged: list[RankedDoc] = []
+    for doc in primary + rest:
+        if doc.boi_reference in seen:
+            continue
+        seen.add(doc.boi_reference)
+        merged.append(doc)
+    for idx, doc in enumerate(merged, start=1):
+        doc.rank = idx
+    return merged
 
 
 DEFAULT_DOC_MODEL = str(_get_data_root() / "data" / "models" / "intfloat--multilingual-e5-large")
 DEFAULT_CHUNK_MODEL = DEFAULT_DOC_MODEL
 STAGE2_CANDIDATES_PER_DOC = 8
+DEFAULT_RERANKER_CANDIDATE_LIMIT = 16
+DEFAULT_RERANKER_TEXT_LIMIT = 900
 
 CORPUS_PATHS: dict[str, dict[str, str]] = {
     "commentary": {
-        "raw_docs": "data/interim/raw_docs_sample_5666.jsonl",
-        "chunks": "data/interim/chunks_section_window_sample_5666.jsonl",
-        "doc_dense_cache": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
-        "chunk_dense_cache": "data/interim/chunk_dense_cache_5666_full_e5large.npy",
+        "raw_docs": "data/interim/raw_docs.jsonl",
+        "chunks": "data/interim/chunks.jsonl",
+        "doc_dense_cache": "data/interim/doc_dense_cache.npy",
+        "chunk_dense_cache": "data/interim/chunk_dense_cache.npy",
     },
 }
 
@@ -81,6 +352,13 @@ DEFAULT_SOURCE_WEIGHTS: dict[str, float] = {
     "dense": 2.0,
     "chunk_dense": 2.0,
 }
+
+
+def _reranker_text(hit, *, limit: int = DEFAULT_RERANKER_TEXT_LIMIT) -> str:
+    section = normalize_whitespace(" > ".join(hit.chunk.section_path))
+    body = normalize_whitespace(hit.chunk.text)
+    text = f"{section}\n{body}" if section else body
+    return text[:limit]
 
 
 @dataclass(frozen=True)
@@ -127,7 +405,10 @@ class RagRuntime:
         dense_error: str | None = None,
     ):
         self.documents = documents
-        self.documents_by_ref = {d.boi_reference: d for d in documents}
+        self.documents_by_id = {d.document_id: d for d in documents}
+        self.documents_by_ref = {}
+        for document in documents:
+            self.documents_by_ref.setdefault(document.boi_reference, document)
         self.chunks = chunks
         self.doc_encoder = doc_encoder
         self.chunk_encoder = chunk_encoder if chunk_encoder is not None else doc_encoder
@@ -140,13 +421,22 @@ class RagRuntime:
         self.doc_dense_index = DenseDocumentIndex(documents, document_embeddings)
         self.chunk_dense_index = DenseIndex(chunks, chunk_embeddings)
         self.chunk_retriever = DirectChunkRetriever(chunks, local_chunk_mode="full")
+        self.chunks_by_reference = self.chunk_retriever.chunks_by_reference
 
     def _init_lexical(self, documents: list[RawDocument]) -> dict[str, LexicalIndex]:
         """Load BM25 indexes from cache if available, otherwise build + save."""
         indexes = {}
         cache_dir = Path.home() / ".cache" / "bofip_rag"
         cache_dir.mkdir(parents=True, exist_ok=True)
-        doc_hash = hashlib.md5(str(len(documents)).encode()).hexdigest()[:8]
+        digest = hashlib.md5()
+        for doc in documents:
+            digest.update(doc.boi_reference.encode("utf-8", errors="ignore"))
+            digest.update(b"\0")
+            digest.update((doc.publication_date or "").encode("utf-8", errors="ignore"))
+            digest.update(b"\0")
+            digest.update(doc.title.encode("utf-8", errors="ignore"))
+            digest.update(b"\0")
+        doc_hash = digest.hexdigest()[:12]
         modes = {
             "base": ("base", None),
             "sections_leads": ("sections_leads", None),
@@ -205,6 +495,11 @@ class RagRuntime:
         chunks = [chunk_node_from_dict(item) for item in read_jsonl(Path(chk))]
         document_embeddings = np.load(str(doc_dense), mmap_mode="r")
         chunk_embeddings = np.load(str(chunk_dense), mmap_mode="r")
+        if not load_dense:
+            if len(document_embeddings) != len(documents):
+                document_embeddings = np.zeros((len(documents), 1), dtype=np.float32)
+            if len(chunk_embeddings) != len(chunks):
+                chunk_embeddings = np.zeros((len(chunks), 1), dtype=np.float32)
 
         dense_error = None
         if load_dense:
@@ -285,7 +580,9 @@ class RagRuntime:
         use_anchor_filter: bool = True,
         use_reranker: bool = True,
         boost_prefix: str = "",
+        chunk_query: str | None = None,
     ) -> RagResult:
+        stage2_query = chunk_query or query
         dense_enabled = use_dense and self.doc_encoder is not None
         chunk_dense_enabled = use_chunk_dense and self.chunk_encoder is not None
         rankings, confidences = self._build_rankings(
@@ -296,6 +593,10 @@ class RagRuntime:
         )
         if source_weights is None:
             source_weights = dict(DEFAULT_SOURCE_WEIGHTS)
+        exact_ranked = _exact_reference_rankings(query, self.documents, self.chunks_by_reference)
+        if exact_ranked:
+            rankings["exact_reference"] = exact_ranked
+            source_weights["exact_reference"] = 5.0
 
         if not use_lexical:
             for source in ("base", "sections_leads", "sections_leads_stem"):
@@ -328,28 +629,15 @@ class RagRuntime:
                     if doc.boi_reference in dense_anchor_refs
                 ]
 
-        # Taxonomy ranking: when boost_prefix is set, rank documents by how
-        # deeply their BOI reference matches the prefix (more specific = higher).
-        # This prevents generic sub-family docs from outranking the exact chapter.
-        if boost_prefix and boost_prefix.count("-") >= 2:
-            t_ranked = []
-            for d in self.documents:
-                if not _reference_matches_prefix(d.boi_reference, boost_prefix):
-                    continue
-                # Score by match depth: how many segments of the document ref
-                # match the boost prefix (up to the prefix length)
-                depth = boost_prefix.strip().lower().removeprefix("boi-").count("-") + 1
-                t_ranked.append(RankedDoc(
-                    boi_reference=d.boi_reference,
-                    score=0.9 + 0.02 * depth,
-                    rank=0, source="taxonomy",
-                ))
-            if t_ranked:
-                t_ranked.sort(key=lambda x: x.score, reverse=True)
-                for i, doc in enumerate(t_ranked[:20]):
-                    doc.rank = i + 1
-                rankings["taxonomy"] = t_ranked
-                source_weights["taxonomy"] = 1.0
+        prefix_ranked = _prefix_overlap_rankings(
+            stage2_query,
+            boost_prefix,
+            self.documents,
+            self.chunks_by_reference,
+        )
+        if prefix_ranked:
+            rankings["prefix_overlap"] = prefix_ranked
+            source_weights["prefix_overlap"] = 2.0
 
         fused = confidence_weighted_reciprocal_rank_fuse(
             rankings,
@@ -360,12 +648,13 @@ class RagRuntime:
             confidence_alpha=1.0,
             score_alpha=0.5,
         )
+        fused = _prepend_ranked_docs(exact_ranked, fused)
 
         stage1_hits = fused[:top_docs]
 
         direct_result = self.chunk_retriever.search(
             query,
-            lexical_query=query,
+            lexical_query=stage2_query,
             stage1_hits=[
                 Stage1DocumentHit(rank=h.rank, score=h.score, boi_reference=h.boi_reference)
                 for h in stage1_hits
@@ -386,12 +675,12 @@ class RagRuntime:
         reranked_pool = []
 
         if reranker_enabled:
-            # Get all scores for diversity pool (top_48 from reranker)
+            reranker_candidates = candidates[:DEFAULT_RERANKER_CANDIDATE_LIMIT]
             ranked_all = self.reranker.rerank(
-                query,
-                candidates,
-                get_text=lambda hit: " > ".join(hit.chunk.section_path) + "\n" + hit.chunk.text,
-                top_k=min(32, len(candidates)),
+                stage2_query,
+                reranker_candidates,
+                get_text=_reranker_text,
+                top_k=min(max_chunks * 3, len(reranker_candidates)),
             )
             reranked_pool = [(r.item, float(r.score)) for r in ranked_all]
             selected = self._select_diverse(reranked_pool, max_chunks=max_chunks)
@@ -400,6 +689,9 @@ class RagRuntime:
             log["reranker_scores"] = [{"chunk_id": r.item.chunk.chunk_id[:60], "doc": r.item.boi_reference,
                 "raw_score": float(r.score), "selected": r.item in selected} for r in ranked_all]
             log["diversity_selected"] = len(selected)
+            log["reranker_candidate_limit"] = DEFAULT_RERANKER_CANDIDATE_LIMIT
+            log["reranker_candidates_scored"] = len(reranker_candidates)
+            log["reranker_text_limit"] = DEFAULT_RERANKER_TEXT_LIMIT
         else:
             chunk_items = [(c, float(c.local_score)) for c in candidates[:max_chunks]]
             selected = [c for c, _ in chunk_items]
@@ -408,7 +700,7 @@ class RagRuntime:
 
         preview_chunks = []
         for idx, hit in enumerate(selected, start=1):
-            doc = self.documents_by_ref[hit.boi_reference]
+            doc = self.documents_by_id.get(hit.chunk.document_id) or self.documents_by_ref[hit.boi_reference]
             preview_chunks.append(
                 RagChunkHit(
                     rank=idx,
@@ -425,14 +717,23 @@ class RagRuntime:
 
         # Build pipeline log
         stage1_refs = [h.boi_reference for h in stage1_hits]
+        candidate_chunk_ids = [hit.chunk.chunk_id for hit in candidates]
+        candidate_doc_refs = [hit.boi_reference for hit in candidates]
+        final_chunk_ids = [chunk.chunk_id for chunk in preview_chunks]
         final_refs = [c.boi_reference for c in preview_chunks]
         final_docs = set(final_refs)
         from collections import Counter
         doc_dist = dict(Counter(final_refs))
         log.update({
+            "stage1_doc_refs": stage1_refs,
+            "stage2_candidate_chunk_ids": candidate_chunk_ids,
+            "stage2_candidate_doc_refs": candidate_doc_refs,
+            "final_chunk_ids": final_chunk_ids,
+            "final_doc_refs": final_refs,
             "stage1_docs_found": len(stage1_hits),
             "stage1_docs_dropped": [ref for ref in stage1_refs if ref not in final_docs],
             "stage2_candidates": len(candidates),
+            "stage2_query": stage2_query if stage2_query != query else "",
             "final_chunks": len(preview_chunks),
             "unique_docs_final": len(final_docs),
             "max_chunks_per_doc": max(doc_dist.values()) if doc_dist else 0,
@@ -458,6 +759,159 @@ class RagRuntime:
         )
 
     # ── Diversity selection ────────────────────────────────────────
+
+    def retrieve_within_documents(
+        self,
+        query: str,
+        boi_references: list[str],
+        *,
+        chunks_per_doc: int = 6,
+        max_chunks: int = 8,
+    ) -> RagResult:
+        """Search locally inside already identified BOFiP documents."""
+        resolved_refs = self._resolve_intra_document_references(query, boi_references, limit=8)
+
+        stage1_hits = [
+            Stage1DocumentHit(rank=rank, score=1.0 / rank, boi_reference=ref)
+            for rank, ref in enumerate(resolved_refs[:8], start=1)
+        ]
+        if not stage1_hits:
+            return RagResult(
+                query=query,
+                stage1_hits=[],
+                stage2_chunks=[],
+                source_confidences={},
+                pipeline_log={"retrieval_scope": "intra_document", "searched_documents": []},
+            )
+
+        direct_result = self.chunk_retriever.search(
+            query,
+            lexical_query=query,
+            stage1_hits=stage1_hits,
+            top_docs=len(stage1_hits),
+            chunks_per_doc=chunks_per_doc,
+            max_candidates=chunks_per_doc * len(stage1_hits),
+        )
+        selected = sorted(
+            direct_result.chunk_hits,
+            key=lambda hit: (
+                -hit.local_score,
+                hit.document_rank,
+                hit.local_rank,
+                hit.chunk.chunk_id,
+            ),
+        )[:max_chunks]
+
+        preview_chunks = []
+        for idx, hit in enumerate(selected, start=1):
+            doc = self.documents_by_id.get(hit.chunk.document_id) or self.documents_by_ref[hit.boi_reference]
+            preview_chunks.append(
+                RagChunkHit(
+                    rank=idx,
+                    boi_reference=hit.boi_reference,
+                    title=doc.title,
+                    section_path=" > ".join(hit.chunk.section_path),
+                    chunk_id=hit.chunk.chunk_id,
+                    chunk_kind=hit.chunk.chunk_kind,
+                    text=hit.chunk.text,
+                    publication_date=doc.publication_date,
+                    score=float(hit.local_score),
+                )
+            )
+
+        stage1_out = [
+            RagStage1Hit(
+                rank=hit.rank,
+                score=hit.score,
+                boi_reference=hit.boi_reference,
+                title=self.documents_by_ref[hit.boi_reference].title,
+            )
+            for hit in stage1_hits
+        ]
+        return RagResult(
+            query=query,
+            stage1_hits=stage1_out,
+            stage2_chunks=preview_chunks,
+            source_confidences={},
+            pipeline_log={
+                "retrieval_scope": "intra_document",
+                "searched_documents": resolved_refs[:8],
+                "stage1_doc_refs": resolved_refs[:8],
+                "stage2_candidate_chunk_ids": [hit.chunk.chunk_id for hit in direct_result.chunk_hits],
+                "stage2_candidate_doc_refs": [hit.boi_reference for hit in direct_result.chunk_hits],
+                "final_chunk_ids": [chunk.chunk_id for chunk in preview_chunks],
+                "final_doc_refs": [chunk.boi_reference for chunk in preview_chunks],
+                "stage2_candidates": len(direct_result.chunk_hits),
+                "final_chunks": len(preview_chunks),
+            },
+        )
+
+    def _resolve_intra_document_references(
+        self,
+        query: str,
+        boi_references: list[str],
+        *,
+        limit: int,
+    ) -> list[str]:
+        """Resolve broad BOFiP parents into query-ranked child documents."""
+        candidates: dict[str, tuple[float, int]] = {}
+        order = 0
+
+        def add(ref: str, score: float) -> None:
+            nonlocal order
+            if not ref:
+                return
+            previous = candidates.get(ref)
+            if previous is None:
+                candidates[ref] = (score, order)
+                order += 1
+                return
+            old_score, old_order = previous
+            candidates[ref] = (max(old_score, score), old_order)
+
+        for reference_order, reference in enumerate(boi_references):
+            if not reference:
+                continue
+            target_norm = _normalize_boi_reference(reference)
+            if not target_norm:
+                continue
+            target_is_detailed = target_norm.count("-") >= 2
+
+            def is_broad_parent_doc(doc_ref: str) -> bool:
+                if target_is_detailed or _normalize_boi_reference(doc_ref) != target_norm:
+                    return False
+                return any(
+                    other_ref != doc_ref and _is_exact_or_child_reference(other_ref, reference)
+                    for other_ref in self.documents_by_ref
+                )
+
+            for ranked in _prefix_overlap_rankings(
+                query,
+                reference,
+                self.documents,
+                self.chunks_by_reference,
+            ):
+                if is_broad_parent_doc(ranked.boi_reference):
+                    continue
+                score = float(ranked.score) + max(0.0, 2.0 - reference_order * 0.1)
+                if target_is_detailed and _normalize_boi_reference(ranked.boi_reference) == target_norm:
+                    score += 10.0
+                add(ranked.boi_reference, score)
+
+            for doc_ref, document in self.documents_by_ref.items():
+                if not _is_exact_or_child_reference(doc_ref, reference):
+                    continue
+                if is_broad_parent_doc(doc_ref):
+                    continue
+                doc_ref_norm = _normalize_boi_reference(doc_ref)
+                score = _document_query_overlap_score(query, document, self.chunks_by_reference)
+                if target_is_detailed and doc_ref_norm == target_norm:
+                    score += 8.0
+                score += max(0.0, 1.0 - reference_order * 0.05)
+                add(doc_ref, score)
+
+        ranked_refs = sorted(candidates.items(), key=lambda item: (-item[1][0], item[1][1], item[0]))
+        return [ref for ref, _ in ranked_refs[:limit]]
 
     @staticmethod
     def _select_diverse(chunks_and_scores: list, max_chunks: int = 8) -> list:

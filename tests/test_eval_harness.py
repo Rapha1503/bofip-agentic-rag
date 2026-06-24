@@ -3,11 +3,13 @@ from __future__ import annotations
 import unittest
 
 from bofip_agentic.eval_harness import (
+    RetrievalLayer,
     QueryGold,
     _binary_relevance,
     _first_hit_rank,
     _ndcg,
     evaluate,
+    evaluate_layers,
 )
 
 
@@ -149,6 +151,67 @@ class TestEvaluate(unittest.TestCase):
         unsupported = [r for r in metrics.per_query if r.category == "unsupported"]
         self.assertTrue(direct_hits)
         self.assertEqual(len(unsupported), 1)
+
+
+class TestEvaluateLayers(unittest.TestCase):
+    def test_layer_metrics_expose_candidate_to_final_drop(self):
+        queries = [
+            QueryGold(
+                query_id="q1",
+                query="threshold query",
+                category="TVA",
+                gold_doc_refs=["DOC-GOLD"],
+                gold_chunk_ids=["chunk-gold"],
+            )
+        ]
+
+        metrics = evaluate_layers(
+            queries,
+            retrieve_layers=lambda _query: {
+                "stage1_docs": ["DOC-OTHER", "DOC-GOLD"],
+                "stage2_candidate_chunks": ["chunk-gold", "chunk-other"],
+                "final_chunks": ["chunk-other"],
+            },
+            layers=[
+                RetrievalLayer("stage1_docs", "doc"),
+                RetrievalLayer("stage2_candidate_chunks", "chunk"),
+                RetrievalLayer("final_chunks", "chunk"),
+            ],
+            k_values=[1, 3],
+        )
+
+        per_query = metrics.per_query[0]
+        self.assertTrue(per_query.layers["stage1_docs"].hit)
+        self.assertTrue(per_query.layers["stage2_candidate_chunks"].hit)
+        self.assertFalse(per_query.layers["final_chunks"].hit)
+        self.assertEqual(per_query.first_miss_layer, "final_chunks")
+        self.assertEqual(metrics.layer_hit_at["stage1_docs"][3], 1.0)
+        self.assertEqual(metrics.layer_hit_at["stage2_candidate_chunks"][3], 1.0)
+        self.assertEqual(metrics.layer_hit_at["final_chunks"][3], 0.0)
+        self.assertEqual(metrics.transition_misses["stage2_candidate_chunks->final_chunks"], 1)
+
+    def test_layer_metrics_skip_empty_gold_sets(self):
+        queries = [
+            QueryGold(
+                query_id="q1",
+                query="unsupported",
+                category="unsupported",
+            )
+        ]
+
+        metrics = evaluate_layers(
+            queries,
+            retrieve_layers=lambda _query: {"stage1_docs": ["DOC"], "final_chunks": ["chunk"]},
+            layers=[
+                RetrievalLayer("stage1_docs", "doc"),
+                RetrievalLayer("final_chunks", "chunk"),
+            ],
+            k_values=[1],
+        )
+
+        self.assertIsNone(metrics.per_query[0].first_miss_layer)
+        self.assertEqual(metrics.layer_hit_at["stage1_docs"][1], 0.0)
+        self.assertEqual(metrics.layer_mrr["stage1_docs"], 0.0)
 
 
 if __name__ == "__main__":

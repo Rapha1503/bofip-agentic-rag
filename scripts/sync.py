@@ -25,6 +25,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -40,8 +41,9 @@ import numpy as np
 # ── Config ────────────────────────────────────────────────────────────
 BOFIP_API = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/bofip-vigueur/records"
 API_LIMIT = 100  # records per page
-THEME_FILTER = ["IR", "IS", "TVA", "BIC", "BNC", "BA", "CF", "ENR", "IF", "PAT", "RPPM", "RFPI", "CTX", "REC", "INT"]
-THEME_WHERE = " OR ".join(f"serie='{t}'" for t in THEME_FILTER)
+SERIES_FILTER: list[str] = []
+PGP_ID_RE = re.compile(r"/bofip/([^/?#]+)-PGP")
+PERMALINK_IDENTIFIANT_RE = re.compile(r"identifiant=([^&#]+)")
 
 DATA_DIR = PROJECT_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
@@ -50,11 +52,62 @@ INTERIM_TMP = DATA_DIR / "interim_tmp"
 SNAPSHOT_FILE = RAW_DIR / "latest_snapshot.jsonl"
 SYNC_META = INTERIM / "sync_meta.json"
 BACKUP_PREFIX = f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+PRESERVED_INTERIM_FILES = ("eval_queries_v1.jsonl", "passage_gold_v3.jsonl")
+
+
+def text_value(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return str(value)
+
+
+def source_record_key(doc: dict) -> str:
+    """Return a stable row identity for one BOFiP API record."""
+    existing = text_value(doc.get("source_record_id"))
+    if existing:
+        return existing
+
+    permalink = text_value(doc.get("permalien") or doc.get("source_url"))
+    base_ref = text_value(doc.get("identifiant_juridique") or doc.get("boi_reference") or doc.get("document_id"))
+    date = text_value(doc.get("debut_de_validite") or doc.get("publication_date")).replace("-", "")
+
+    identifiant_match = PERMALINK_IDENTIFIANT_RE.search(permalink)
+    versioned_ref = identifiant_match.group(1) if identifiant_match else ""
+    if not versioned_ref:
+        versioned_ref = f"{base_ref}-{date}" if base_ref and date else base_ref
+
+    pgp_match = PGP_ID_RE.search(permalink)
+    if pgp_match and versioned_ref:
+        return f"{versioned_ref}__PGP-{pgp_match.group(1)}"
+    if permalink and versioned_ref:
+        permalink_hash = hashlib.sha1(permalink.encode("utf-8")).hexdigest()[:12]
+        return f"{versioned_ref}__URL-{permalink_hash}"
+    return versioned_ref
+
+
+def with_source_record_id(doc: dict) -> dict:
+    enriched = dict(doc)
+    enriched["source_record_id"] = source_record_key(enriched)
+    return enriched
+
+
+def build_download_params(*, offset: int, series_filter: list[str] | None = None) -> dict[str, object]:
+    params: dict[str, object] = {
+        "limit": API_LIMIT,
+        "offset": offset,
+        "select": "identifiant_juridique,titre,serie,division,contenu,contenu_html,permalien,debut_de_validite",
+    }
+    requested_series = SERIES_FILTER if series_filter is None else series_filter
+    if requested_series:
+        params["where"] = " OR ".join(f"serie='{serie}'" for serie in requested_series)
+    return params
 
 
 # ── Download ──────────────────────────────────────────────────────────
 def download_bofip() -> list[dict]:
-    """Download all BOFIP records matching THEME_FILTER."""
+    """Download all BOFIP records, unless SERIES_FILTER is explicitly set."""
     try:
         import requests
     except ImportError:
@@ -71,11 +124,7 @@ def download_bofip() -> list[dict]:
             print(f"  page {page} ({len(docs)} docs)...", flush=True)
 
         try:
-            resp = requests.get(BOFIP_API, params={
-                "limit": API_LIMIT, "offset": offset,
-                "select": "identifiant_juridique,titre,serie,division,contenu,contenu_html,permalien,debut_de_validite",
-                "where": THEME_WHERE,
-            }, timeout=30)
+            resp = requests.get(BOFIP_API, params=build_download_params(offset=offset), timeout=30)
             resp.raise_for_status()
             data = resp.json()
         except Exception as e:
@@ -92,19 +141,19 @@ def download_bofip() -> list[dict]:
             break
 
         for r in results:
-            doc_id = r.get("identifiant_juridique", "")
+            doc_id = text_value(r.get("identifiant_juridique"))
             if not doc_id:
                 continue
-            docs.append({
+            docs.append(with_source_record_id({
                 "identifiant_juridique": doc_id,
-                "titre": r.get("titre", ""),
-                "serie": r.get("serie", ""),
-                "division": r.get("division", ""),
-                "contenu_html": r.get("contenu_html", ""),
-                "contenu": r.get("contenu", ""),
-                "permalien": r.get("permalien", ""),
-                "debut_de_validite": r.get("debut_de_validite", ""),
-            })
+                "titre": text_value(r.get("titre")),
+                "serie": text_value(r.get("serie")),
+                "division": text_value(r.get("division")),
+                "contenu_html": text_value(r.get("contenu_html")),
+                "contenu": text_value(r.get("contenu")),
+                "permalien": text_value(r.get("permalien")),
+                "debut_de_validite": text_value(r.get("debut_de_validite")),
+            }))
 
         offset += API_LIMIT
         page += 1
@@ -119,8 +168,8 @@ def download_bofip() -> list[dict]:
 # ── Diff ──────────────────────────────────────────────────────────────
 def compute_hash(doc: dict) -> str:
     """Stable hash of document content fields (ignoring volatile metadata)."""
-    content = doc.get("contenu_html", "") + doc.get("contenu", "")
-    return hashlib.md5(content.encode()).hexdigest()
+    content = text_value(doc.get("contenu_html")) + text_value(doc.get("contenu"))
+    return hashlib.md5(content.encode("utf-8")).hexdigest()
 
 
 def diff_documents(new_docs: list[dict], snapshot_path: Path) -> dict:
@@ -131,17 +180,18 @@ def diff_documents(new_docs: list[dict], snapshot_path: Path) -> dict:
         "snapshot_count": int, "new_count": int,
     }
     """
-    new_by_id = {d["identifiant_juridique"]: d for d in new_docs}
-    new_by_id_dedup = {}
-    for k, v in new_by_id.items():
-        new_by_id_dedup[k] = v  # last occurrence wins if dupes
+    new_by_id = {source_record_key(d): with_source_record_id(d) for d in new_docs}
+    source_collision_count = len(new_docs) - len(new_by_id)
 
     if not snapshot_path.exists():
         print("  No previous snapshot -- all documents are new")
         return {
-            "new": list(new_by_id_dedup.values()),
+            "new": list(new_by_id.values()),
             "updated": [], "removed": [], "unchanged": [],
             "snapshot_count": 0, "new_count": len(new_docs),
+            "source_record_count": len(new_docs),
+            "source_unique_count": len(new_by_id),
+            "source_collision_count": source_collision_count,
         }
 
     old_docs = []
@@ -154,84 +204,117 @@ def diff_documents(new_docs: list[dict], snapshot_path: Path) -> dict:
                 except json.JSONDecodeError:
                     pass
 
-    old_by_id = {d["identifiant_juridique"]: d for d in old_docs}
+    old_by_id = {source_record_key(d): with_source_record_id(d) for d in old_docs}
 
-    new_ids = set(new_by_id_dedup.keys())
+    new_ids = set(new_by_id.keys())
     old_ids = set(old_by_id.keys())
 
     added_ids = new_ids - old_ids
     removed_ids = old_ids - new_ids
     common_ids = new_ids & old_ids
 
-    added = [new_by_id_dedup[i] for i in added_ids]
+    added = [new_by_id[i] for i in added_ids]
     removed = [old_by_id[i] for i in removed_ids]
     updated = []
     unchanged = []
 
     for cid in common_ids:
-        if compute_hash(new_by_id_dedup[cid]) != compute_hash(old_by_id[cid]):
-            updated.append(new_by_id_dedup[cid])
+        if compute_hash(new_by_id[cid]) != compute_hash(old_by_id[cid]):
+            updated.append(new_by_id[cid])
         else:
-            unchanged.append(new_by_id_dedup[cid])
+            unchanged.append(new_by_id[cid])
 
     return {
         "new": added, "updated": updated, "removed": removed, "unchanged": unchanged,
         "snapshot_count": len(old_docs), "new_count": len(new_docs),
+        "source_record_count": len(new_docs),
+        "source_unique_count": len(new_by_id),
+        "source_collision_count": source_collision_count,
     }
 
 
 # ── Parse ─────────────────────────────────────────────────────────────
+def count_document_changes(diff: dict) -> int:
+    return len(diff.get("new", [])) + len(diff.get("updated", [])) + len(diff.get("removed", []))
+
+
+def should_build_corpus(diff: dict, *, rebuild: bool = False) -> bool:
+    return rebuild or count_document_changes(diff) > 0
+
+
+def preserve_interim_files(source_dir: Path, target_dir: Path) -> list[Path]:
+    copied = []
+    for name in PRESERVED_INTERIM_FILES:
+        source = source_dir / name
+        target = target_dir / name
+        if source.exists() and not target.exists():
+            shutil.copy2(source, target)
+            copied.append(target)
+    return copied
+
+
+def write_sync_progress(
+    progress_path: Path,
+    *,
+    phase: str,
+    done: int,
+    total: int,
+    started_at: float,
+    now: float | None = None,
+) -> None:
+    current = time.time() if now is None else now
+    elapsed = max(0.0, current - started_at)
+    percent = round((done / total) * 100, 2) if total else 100.0
+    eta = round((elapsed / done) * (total - done), 1) if done > 0 and total > done else 0.0
+    payload = {
+        "phase": phase,
+        "done": done,
+        "total": total,
+        "percent": percent,
+        "elapsed_s": round(elapsed, 1),
+        "eta_s": eta,
+        "updated_at": datetime.now().isoformat(),
+    }
+    progress_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def parse_documents(raw_docs: list[dict]) -> list[dict]:
-    """Parse downloaded BOFIP JSON into RawDocument format (same as setup.py)."""
-    from bofip_agentic.text_utils import normalize_whitespace, extract_legal_refs
+    """Parse downloaded BOFIP JSON into the runtime RawDocument format."""
+    from bofip_agentic.html_parser import parse_html_content
+    from bofip_agentic.text_utils import extract_legal_refs, normalize_whitespace
 
     parsed = []
     for d in raw_docs:
-        raw_html = d.get("contenu_html", "")
-        paragraphs = []
-        sections = []
-        legal_refs = []
-
+        boi_reference = text_value(d.get("identifiant_juridique"))
+        doc_id = source_record_key(d)
+        title = text_value(d.get("titre"))
+        serie = text_value(d.get("serie"))
+        raw_html = text_value(d.get("contenu_html"))
+        raw_text = text_value(d.get("contenu"))
+        permalink = text_value(d.get("permalien"))
+        publication_date = text_value(d.get("debut_de_validite"))
+        html_payload = {
+            "html_title": None,
+            "sections": [],
+            "paragraphs": [],
+            "tables": [],
+            "internal_links": [],
+            "legal_refs": [],
+        }
         if raw_html:
             try:
-                from bs4 import BeautifulSoup
-                soup = BeautifulSoup(raw_html, "lxml")
-                body = soup.body or soup
-
-                headings = body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
-                for idx, h in enumerate(headings):
-                    h_text = normalize_whitespace(h.get_text())
-                    if h_text:
-                        section_id = f"{d['identifiant_juridique']}__section_{idx:03d}"
-                        level = int(h.name[1])
-                        sections.append({
-                            "section_id": section_id, "parent_section_id": None,
-                            "level": level, "order_index": idx,
-                            "title": h_text, "anchor": None, "path": [h_text],
-                        })
-
-                for idx, p in enumerate(body.find_all(["p", "li", "blockquote"])):
-                    text = normalize_whitespace(p.get_text())
-                    if not text:
-                        continue
-                    refs = extract_legal_refs(text)
-                    legal_refs.extend(refs)
-                    paragraphs.append({
-                        "paragraph_id": f"{d['identifiant_juridique']}__para_{idx:05d}",
-                        "section_id": None, "order_index": idx,
-                        "html_tag": p.name,
-                        "anchor": p.get("id") or p.get("name"),
-                        "paragraph_number": None,
-                        "text": text, "legal_refs": refs, "links": [],
-                    })
+                html_payload = parse_html_content(raw_html, document_id=doc_id)
             except Exception:
                 pass
 
-        if not paragraphs and d.get("contenu"):
-            raw_text = normalize_whitespace(d.get("contenu", ""))
+        paragraphs = list(html_payload.get("paragraphs", []))
+        legal_refs = list(html_payload.get("legal_refs", []))
+
+        if not paragraphs and not html_payload.get("tables") and raw_text:
+            raw_text = normalize_whitespace(raw_text)
             refs = extract_legal_refs(raw_text)
             paragraphs = [{
-                "paragraph_id": f"{d['identifiant_juridique']}__para_00000",
+                "paragraph_id": f"{doc_id}__para_00000",
                 "section_id": None, "order_index": 0, "html_tag": "p",
                 "anchor": None, "paragraph_number": None,
                 "text": raw_text, "legal_refs": refs, "links": [],
@@ -247,26 +330,27 @@ def parse_documents(raw_docs: list[dict]) -> list[dict]:
                 deduped_refs.append(ref)
 
         parsed.append({
-            "document_id": d["identifiant_juridique"],
-            "boi_reference": d["identifiant_juridique"],
-            "title": d["titre"],
+            "document_id": doc_id,
+            "boi_reference": boi_reference,
+            "title": title,
             "document_type": "Contenu",
             "content_type": "Commentaire",
-            "publication_date": d.get("debut_de_validite", ""),
-            "source_url": d.get("permalien", ""),
+            "publication_date": publication_date,
+            "source_url": permalink,
             "language": "fr-FR",
-            "subjects": [d.get("serie", "")],
+            "subjects": [serie],
             "identifiers": [],
             "relations": [],
-            "category_path": ["Commentaire", d.get("serie", "")],
+            "category_path": ["Commentaire", serie],
             "raw_xml_path": "", "raw_html_path": "",
             "version_status": None,
-            "sections": sections,
+            "sections": html_payload.get("sections", []),
             "paragraphs": paragraphs,
-            "tables": [], "internal_links": [],
+            "tables": html_payload.get("tables", []),
+            "internal_links": html_payload.get("internal_links", []),
             "legal_refs": deduped_refs,
-            "html_title": None,
-            "raw_text_length": len(d.get("contenu", "")),
+            "html_title": html_payload.get("html_title"),
+            "raw_text_length": len(raw_text),
         })
 
     return parsed
@@ -274,7 +358,7 @@ def parse_documents(raw_docs: list[dict]) -> list[dict]:
 
 # ── Chunk ─────────────────────────────────────────────────────────────
 def chunk_documents(parsed_docs: list[dict]) -> list[dict]:
-    """Build section_window chunks (same as setup.py)."""
+    """Build section_window chunks for the runtime corpus."""
     from bofip_agentic.chunking import build_chunks_for_documents
     from bofip_agentic.models import raw_document_from_dict
 
@@ -296,7 +380,14 @@ def chunk_documents(parsed_docs: list[dict]) -> list[dict]:
 
 
 # ── Embed ─────────────────────────────────────────────────────────────
-def embed_corpus(docs: list[dict], chunks: list[dict], device: str) -> tuple[np.ndarray, np.ndarray]:
+def embed_corpus(
+    docs: list[dict],
+    chunks: list[dict],
+    device: str,
+    *,
+    batch_size: int = 32,
+    progress_path: Path | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
     """Encode documents and chunks with E5-large."""
     from bofip_agentic.dense_retrieval import DenseEncoder
     from bofip_agentic.models import raw_document_from_dict, chunk_node_from_dict
@@ -308,14 +399,53 @@ def embed_corpus(docs: list[dict], chunks: list[dict], device: str) -> tuple[np.
     doc_objs = [raw_document_from_dict(d) for d in docs]
     chunk_objs = [chunk_node_from_dict(c) for c in chunks]
 
+    started_at = time.time()
+
     print(f"  Encoding {len(doc_objs)} documents...")
     t0 = time.time()
-    doc_emb = encoder.encode_documents(doc_objs, mode="sections_firstpara", batch_size=32)
+    progress_batch_size = max(batch_size * 64, 512)
+    if progress_path:
+        write_sync_progress(progress_path, phase="embedding_documents", done=0, total=len(doc_objs), started_at=started_at)
+    doc_emb = encoder.encode_documents(
+        doc_objs,
+        mode="sections_firstpara",
+        batch_size=batch_size,
+        progress_batch_size=progress_batch_size,
+        progress_callback=(
+            (lambda done, total: write_sync_progress(
+                progress_path,
+                phase="embedding_documents",
+                done=done,
+                total=total,
+                started_at=started_at,
+            ))
+            if progress_path
+            else None
+        ),
+    )
     print(f"    done in {time.time() - t0:.1f}s, shape {doc_emb.shape}")
 
     print(f"  Encoding {len(chunk_objs)} chunks...")
     t0 = time.time()
-    chunk_emb = encoder.encode_chunks(chunk_objs, mode="full", batch_size=32)
+    if progress_path:
+        write_sync_progress(progress_path, phase="embedding_chunks", done=0, total=len(chunk_objs), started_at=started_at)
+    chunk_emb = encoder.encode_chunks(
+        chunk_objs,
+        mode="full",
+        batch_size=batch_size,
+        progress_batch_size=progress_batch_size,
+        progress_callback=(
+            (lambda done, total: write_sync_progress(
+                progress_path,
+                phase="embedding_chunks",
+                done=done,
+                total=total,
+                started_at=started_at,
+            ))
+            if progress_path
+            else None
+        ),
+    )
     print(f"    done in {time.time() - t0:.1f}s, shape {chunk_emb.shape}")
 
     return doc_emb, chunk_emb
@@ -324,7 +454,7 @@ def embed_corpus(docs: list[dict], chunks: list[dict], device: str) -> tuple[np.
 # ── Validate ──────────────────────────────────────────────────────────
 def validate_corpus(docs_path: Path, chunks_path: Path,
                     doc_npy: Path, chunk_npy: Path,
-                    min_docs: int = 5000) -> list[str]:
+                    min_docs: int = 9048) -> list[str]:
     """Validate corpus integrity. Returns list of error messages (empty = OK)."""
     errors = []
 
@@ -339,8 +469,10 @@ def validate_corpus(docs_path: Path, chunks_path: Path,
     if errors:
         return errors
 
-    doc_count = sum(1 for _ in open(docs_path, encoding="utf-8"))
-    chunk_count = sum(1 for _ in open(chunks_path, encoding="utf-8"))
+    with open(docs_path, encoding="utf-8") as handle:
+        doc_count = sum(1 for _ in handle)
+    with open(chunks_path, encoding="utf-8") as handle:
+        chunk_count = sum(1 for _ in handle)
     doc_shape = np.load(str(doc_npy)).shape
     chunk_shape = np.load(str(chunk_npy)).shape
 
@@ -363,8 +495,13 @@ def main():
     p = argparse.ArgumentParser(description="Sync BOFIP corpus with latest data")
     p.add_argument("--check", action="store_true", help="Show diff only, don't apply")
     p.add_argument("--force", action="store_true", help="Skip confirmation prompt")
+    p.add_argument("--rebuild", action="store_true", help="Rebuild corpus even when downloaded records are unchanged")
     p.add_argument("--device", type=str, default="cuda")
+    p.add_argument("--batch-size", type=int, default=16, help="Embedding batch size")
     args = p.parse_args()
+    if args.batch_size < 1:
+        print("ERROR: --batch-size must be >= 1")
+        return 1
 
     print("=" * 60)
     print("BOFIP Corpus Sync")
@@ -382,6 +519,8 @@ def main():
     diff = diff_documents(new_docs, SNAPSHOT_FILE)
     print(f"  Snapshot: {diff['snapshot_count']} docs")
     print(f"  Latest:   {diff['new_count']} docs total")
+    print(f"  Source unique rows: {diff['source_unique_count']} / {diff['source_record_count']}")
+    print(f"  Source key collisions: {diff['source_collision_count']}")
     print(f"    New:       {len(diff['new'])}")
     print(f"    Updated:   {len(diff['updated'])}")
     print(f"    Removed:   {len(diff['removed'])}")
@@ -390,13 +529,16 @@ def main():
     if args.check:
         return 0
 
-    total_changes = len(diff['new']) + len(diff['updated']) + len(diff['removed'])
-    if total_changes == 0:
+    total_changes = count_document_changes(diff)
+    if not should_build_corpus(diff, rebuild=args.rebuild):
         print("\nNo changes. Corpus is up to date.")
         return 0
+    if total_changes == 0 and args.rebuild:
+        print("\nNo source changes, but --rebuild requested. Rebuilding corpus artifacts.")
 
     if not args.force:
-        print(f"\n{total_changes} documents changed. Proceed? [y/N] ", end="", flush=True)
+        change_label = f"{total_changes} documents changed" if total_changes else "rebuild requested"
+        print(f"\n{change_label}. Proceed? [y/N] ", end="", flush=True)
         try:
             answer = input().strip().lower()
         except (EOFError, KeyboardInterrupt):
@@ -443,7 +585,14 @@ def main():
 
     # Embed
     print(f"\n  Building embeddings (device: {args.device})...")
-    doc_emb, chunk_emb = embed_corpus(parsed, chunk_dicts, args.device)
+    progress_path = INTERIM_TMP / "sync_progress.json"
+    doc_emb, chunk_emb = embed_corpus(
+        parsed,
+        chunk_dicts,
+        args.device,
+        batch_size=args.batch_size,
+        progress_path=progress_path,
+    )
 
     doc_npy_out = INTERIM_TMP / "doc_dense_cache.npy"
     chunk_npy_out = INTERIM_TMP / "chunk_dense_cache.npy"
@@ -481,16 +630,9 @@ def main():
                         "removed": len(diff['removed']), "unchanged": len(diff['unchanged'])},
         }, f, ensure_ascii=False, indent=2)
 
-    # Atomic swap: remove old interim, rename temp
-    if INTERIM.exists():
-        shutil.rmtree(INTERIM)
-    INTERIM_TMP.rename(INTERIM)
-
-    # Clear BM25 cache (will rebuild on next query)
-    bm25_cache = Path.home() / ".cache" / "bofip_rag"
-    if bm25_cache.exists():
-        shutil.rmtree(bm25_cache)
-        print("  BM25 cache cleared (rebuilt on next run)")
+    preserved = preserve_interim_files(INTERIM, INTERIM_TMP)
+    if preserved:
+        print(f"  Preserved interim files: {', '.join(path.name for path in preserved)}")
 
     # Atomic swap: remove old interim, rename temp
     if INTERIM.exists():

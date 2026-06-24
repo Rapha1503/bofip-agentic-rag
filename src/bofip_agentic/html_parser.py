@@ -28,7 +28,11 @@ def _build_section_id(document_id: str, order_index: int, title: str) -> str:
 
 
 def parse_html_structure(html_path: Path, *, document_id: str) -> dict:
-    soup = BeautifulSoup(html_path.read_text(encoding="utf-8", errors="replace"), "lxml")
+    return parse_html_content(html_path.read_text(encoding="utf-8", errors="replace"), document_id=document_id)
+
+
+def parse_html_content(html: str, *, document_id: str) -> dict:
+    soup = BeautifulSoup(html, "lxml")
     body = soup.body or soup
     html_title = normalize_whitespace(soup.title.get_text(" ", strip=True) if soup.title else "") or None
 

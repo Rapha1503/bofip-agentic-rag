@@ -53,7 +53,7 @@ Goal: move from retrieval-only credibility to answer-level credibility.
 
 Goal: deploy a useful demo without sacrificing coverage.
 
-- Keep the full 5,666-document commentary corpus.
+- Keep the full no-filter BOFiP source snapshot: 9,048 source rows in the current manifest.
 - Optimize cold start with prebuilt artifacts and caches.
 - Add optional reranker mode for latency control.
 - Host the app on a Python-compatible free tier.

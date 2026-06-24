@@ -9,14 +9,14 @@ from pathlib import Path
 
 
 DEFAULT_ARTIFACT_BASE_URL = (
-    "https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1"
+    "https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v2"
 )
 
 RUNTIME_ARTIFACTS = [
-    "data/interim/raw_docs_sample_5666.jsonl",
-    "data/interim/chunks_section_window_sample_5666.jsonl",
-    "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
-    "data/interim/chunk_dense_cache_5666_full_e5large.npy",
+    "data/interim/raw_docs.jsonl",
+    "data/interim/chunks.jsonl",
+    "data/interim/doc_dense_cache.npy",
+    "data/interim/chunk_dense_cache.npy",
 ]
 
 

@@ -1,11 +1,13 @@
 """
-One-click reproducible setup for BOFIP Agentic RAG.
+Legacy local setup helper for BOFiP Agentic RAG.
 
-Downloads BOFIP data from data.economie.gouv.fr, parses, chunks, and builds embeddings.
+For the authoritative full-corpus rebuild, use scripts/sync.py. This helper is
+kept for local parser/chunker development and one-off artifact creation only.
+It never copies artifacts from sibling projects.
 
 Usage:
     $env:PYTHONPATH="src"
-    # Full pipeline (download + parse + chunk + embed)
+    # Local pipeline (download + parse + chunk + embed)
     python scripts/setup.py
 
     # Download only
@@ -13,16 +15,13 @@ Usage:
 
     # Skip download, parse+chunk+embed existing data
     python scripts/setup.py --skip-download
-
-    # Copy data from a pre-built sibling project
-    python scripts/setup.py --copy-from <path/to/source-project>
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
-import os
-import shutil
+import re
 import sys
 import time
 from pathlib import Path
@@ -34,8 +33,7 @@ import numpy as np
 from bofip_agentic.chunking import build_chunks_for_documents
 from bofip_agentic.dense_retrieval import DenseEncoder
 from bofip_agentic.jsonio import read_jsonl
-from bofip_agentic.models import ChunkNode, RawDocument, chunk_node_from_dict, raw_document_from_dict
-from bofip_agentic.settings import BOFIP_DATA_ROOT
+from bofip_agentic.models import chunk_node_from_dict, raw_document_from_dict
 
 DATA_DIR = PROJECT_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
@@ -50,11 +48,65 @@ CHUNK_DENSE_NPY = INTERIM_DIR / "chunk_dense_cache.npy"
 BOFIP_API = "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/bofip-vigueur/records"
 BOFIP_LIMIT = 100
 
-THEME_FILTER = ["IR", "IS", "TVA", "BIC", "BNC", "BA", "CF", "ENR", "IF", "PAT", "RPPM", "RFPI", "CTX", "REC", "INT"]
-THEME_WHERE = " OR ".join(f"serie='{t}'" for t in THEME_FILTER)
+SERIES_FILTER: list[str] = []
+PGP_ID_RE = re.compile(r"/bofip/([^/?#]+)-PGP")
+PERMALINK_IDENTIFIANT_RE = re.compile(r"identifiant=([^&#]+)")
 
 
-def download_bofip(max_docs: int = 6000) -> int:
+def text_value(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return str(value)
+
+
+def source_record_key(doc: dict) -> str:
+    existing = text_value(doc.get("source_record_id"))
+    if existing:
+        return existing
+
+    permalink = text_value(doc.get("permalien") or doc.get("source_url"))
+    base_ref = text_value(doc.get("identifiant_juridique") or doc.get("boi_reference") or doc.get("document_id"))
+    date = text_value(doc.get("debut_de_validite") or doc.get("publication_date")).replace("-", "")
+
+    identifiant_match = PERMALINK_IDENTIFIANT_RE.search(permalink)
+    versioned_ref = identifiant_match.group(1) if identifiant_match else ""
+    if not versioned_ref:
+        versioned_ref = f"{base_ref}-{date}" if base_ref and date else base_ref
+
+    pgp_match = PGP_ID_RE.search(permalink)
+    if pgp_match and versioned_ref:
+        return f"{versioned_ref}__PGP-{pgp_match.group(1)}"
+    if permalink and versioned_ref:
+        permalink_hash = hashlib.sha1(permalink.encode("utf-8")).hexdigest()[:12]
+        return f"{versioned_ref}__URL-{permalink_hash}"
+    return versioned_ref
+
+
+def remove_existing_files(paths: list[Path]) -> list[Path]:
+    removed: list[Path] = []
+    for path in paths:
+        if not path.exists():
+            continue
+        path.unlink()
+        removed.append(path)
+    return removed
+
+
+def build_download_params(*, offset: int, series_filter: list[str] | None = None) -> dict[str, object]:
+    params: dict[str, object] = {
+        "limit": BOFIP_LIMIT,
+        "offset": offset,
+        "select": "identifiant_juridique,titre,serie,division,contenu,contenu_html,permalien,debut_de_validite",
+    }
+    requested_series = SERIES_FILTER if series_filter is None else series_filter
+    if requested_series:
+        params["where"] = " OR ".join(f"serie='{serie}'" for serie in requested_series)
+    return params
+
+
+def download_bofip(max_docs: int = 0) -> int:
     """Download BOFIP commentary documents from data.economie.gouv.fr API."""
     try:
         import requests
@@ -62,23 +114,18 @@ def download_bofip(max_docs: int = 6000) -> int:
         sys.exit("ERROR: requests package required. Run: pip install requests")
 
     print("Downloading BOFIP data from data.economie.gouv.fr...")
-    print(f"  Filtering categories: {', '.join(THEME_FILTER)}")
+    print("  Full corpus: no series filter")
 
     docs = []
     offset = 0
     page = 1
     errors = 0
 
-    while len(docs) < max_docs:
+    while max_docs <= 0 or len(docs) < max_docs:
         if page % 10 == 1:
             print(f"  Page {page} ({len(docs)} docs so far)...")
 
-        params = {
-            "limit": BOFIP_LIMIT,
-            "offset": offset,
-            "select": "identifiant_juridique,titre,serie,division,contenu,contenu_html,permalien,debut_de_validite",
-            "where": THEME_WHERE,
-        }
+        params = build_download_params(offset=offset)
 
         try:
             resp = requests.get(BOFIP_API, params=params, timeout=30)
@@ -98,25 +145,38 @@ def download_bofip(max_docs: int = 6000) -> int:
             break
 
         for r in results:
-            doc_id = r.get("identifiant_juridique", "")
+            doc_id = text_value(r.get("identifiant_juridique"))
             if not doc_id:
                 continue
+            publication_date = text_value(r.get("debut_de_validite"))
+            source_url = text_value(r.get("permalien"))
+            series = text_value(r.get("serie"))
+            source_record_id = source_record_key(
+                {
+                    "identifiant_juridique": doc_id,
+                    "debut_de_validite": publication_date,
+                    "permalien": source_url,
+                }
+            )
             docs.append({
-                "document_id": doc_id,
+                "source_record_id": source_record_id,
+                "document_id": source_record_id,
                 "boi_reference": doc_id,
-                "title": r.get("titre", ""),
-                "series": r.get("serie", ""),
-                "division": r.get("division", ""),
-                "publication_date": r.get("debut_de_validite", ""),
-                "source_url": r.get("permalien", ""),
+                "title": text_value(r.get("titre")),
+                "series": series,
+                "division": text_value(r.get("division")),
+                "publication_date": publication_date,
+                "source_url": source_url,
                 "content_type": "Commentaire",
                 "document_type": "Contenu",
                 "language": "fr-FR",
-                "category_path": ["Commentaire", r.get("serie", "")],
-                "subjects": [r.get("serie", "")],
-                "raw_html": r.get("contenu_html", ""),
-                "raw_text": r.get("contenu", ""),
+                "category_path": ["Commentaire", series],
+                "subjects": [series],
+                "raw_html": text_value(r.get("contenu_html")),
+                "raw_text": text_value(r.get("contenu")),
             })
+            if max_docs > 0 and len(docs) >= max_docs:
+                break
 
         offset += BOFIP_LIMIT
         page += 1
@@ -152,66 +212,33 @@ def parse_raw_docs(raw_input: Path, output: Path) -> int:
         print("  Run with default (no flags) to download BOFIP data first.")
         return 0
 
-    from bofip_agentic.text_utils import normalize_whitespace, extract_legal_refs
+    from bofip_agentic.html_parser import parse_html_content
+    from bofip_agentic.text_utils import extract_legal_refs, normalize_whitespace
 
     docs = read_jsonl(raw_input)
     parsed = []
 
     for d in docs:
         raw_html = d.get("raw_html", "")
-        paragraphs = []
-        sections = []
-        legal_refs = []
-
-        # Basic HTML parsing: extract text blocks
+        html_payload = {
+            "html_title": None,
+            "sections": [],
+            "paragraphs": [],
+            "tables": [],
+            "internal_links": [],
+            "legal_refs": [],
+        }
         if raw_html:
             try:
-                from bs4 import BeautifulSoup
-                soup = BeautifulSoup(raw_html, "lxml")
-                body = soup.body or soup
-
-                # Extract sections from headings
-                headings = body.find_all(["h1", "h2", "h3", "h4", "h5", "h6"])
-                for idx, h in enumerate(headings):
-                    h_text = normalize_whitespace(h.get_text())
-                    if h_text:
-                        section_id = f"{d['document_id']}__section_{idx:03d}"
-                        level = int(h.name[1])
-                        sections.append({
-                            "section_id": section_id,
-                            "parent_section_id": None,
-                            "level": level,
-                            "order_index": idx,
-                            "title": h_text,
-                            "anchor": None,
-                            "path": [h_text],
-                        })
-
-                # Extract paragraphs
-                for idx, p in enumerate(body.find_all(["p", "li", "blockquote"])):
-                    text = normalize_whitespace(p.get_text())
-                    if not text:
-                        continue
-                    refs = extract_legal_refs(text)
-                    legal_refs.extend(refs)
-                    paragraphs.append({
-                        "paragraph_id": f"{d['document_id']}__para_{idx:05d}",
-                        "section_id": None,
-                        "order_index": idx,
-                        "html_tag": p.name,
-                        "anchor": p.get("id") or p.get("name"),
-                        "paragraph_number": None,
-                        "text": text,
-                        "legal_refs": refs,
-                        "links": [],
-                    })
-            except ImportError:
-                pass  # BeautifulSoup not installed, fall back to plain text
+                html_payload = parse_html_content(raw_html, document_id=d["document_id"])
             except Exception:
                 pass  # HTML parsing error, fall back to plain text
 
+        paragraphs = list(html_payload.get("paragraphs", []))
+        legal_refs = list(html_payload.get("legal_refs", []))
+
         # If no paragraphs extracted from HTML, use raw text as single paragraph
-        if not paragraphs and d.get("raw_text"):
+        if not paragraphs and not html_payload.get("tables") and d.get("raw_text"):
             raw_text = normalize_whitespace(d.get("raw_text", ""))
             refs = extract_legal_refs(raw_text)
             paragraphs = [{
@@ -227,7 +254,6 @@ def parse_raw_docs(raw_input: Path, output: Path) -> int:
             }]
             legal_refs = refs
 
-        from collections import OrderedDict
         seen = set()
         deduped_refs = []
         for ref in legal_refs:
@@ -252,12 +278,12 @@ def parse_raw_docs(raw_input: Path, output: Path) -> int:
             "raw_xml_path": "",
             "raw_html_path": "",
             "version_status": None,
-            "sections": sections,
+            "sections": html_payload.get("sections", []),
             "paragraphs": paragraphs,
-            "tables": [],
-            "internal_links": [],
+            "tables": html_payload.get("tables", []),
+            "internal_links": html_payload.get("internal_links", []),
             "legal_refs": deduped_refs,
-            "html_title": None,
+            "html_title": html_payload.get("html_title"),
             "raw_text_length": len(d.get("raw_text", "")),
         })
 
@@ -352,65 +378,19 @@ def build_embeddings(docs_path: Path, chunks_path: Path, device: str = "cuda") -
     print("  Embeddings ready.")
 
 
-def copy_from_project(source_path: Path) -> bool:
-    """Copy pre-built corpus files from another project."""
-    if not source_path.exists():
-        print(f"Source project not found at: {source_path}")
-        return False
-
-    source_interim = source_path / "data" / "interim"
-    if not source_interim.exists():
-        print(f"No data/interim in source: {source_path}")
-        return False
-
-    files_to_copy = [
-        "raw_docs_sample_5666.jsonl",
-        "chunks_section_window_sample_5666.jsonl",
-        "doc_dense_cache_5666_sections_firstpara_e5large.npy",
-        "chunk_dense_cache_5666_full_e5large.npy",
-    ]
-
-    for f in files_to_copy:
-        src = source_interim / f
-        if src.exists():
-            shutil.copy2(src, INTERIM_DIR / f)
-            print(f"  Copied: {f} ({src.stat().st_size / 1e6:.1f} MB)")
-        else:
-            print(f"  Not found: {f}")
-
-    source_models = source_path / "data" / "models"
-    local_models = DATA_DIR / "models"
-    if source_models.exists():
-        local_models.mkdir(parents=True, exist_ok=True)
-        for item in source_models.iterdir():
-            if item.is_dir() and ".cache" not in str(item):
-                dst = local_models / item.name
-                if not dst.exists():
-                    shutil.copytree(item, dst)
-                    print(f"  Copied model: {item.name}")
-
-    return True
-
-
 def main():
-    p = argparse.ArgumentParser(description="One-click BOFIP data setup")
+    p = argparse.ArgumentParser(description="Legacy local BOFiP data setup helper")
     p.add_argument("--download-only", action="store_true", help="Only download raw data from API")
     p.add_argument("--skip-download", action="store_true", help="Skip download, use existing raw data")
-    p.add_argument("--copy-from", type=str, default="", help="Copy pre-built data from another project")
     p.add_argument("--device", type=str, default="cuda", help="Device for embeddings (cuda/cpu)")
-    p.add_argument("--max-docs", type=int, default=6000, help="Max docs to download from API")
+    p.add_argument("--max-docs", type=int, default=0, help="Max docs to download from API; 0 means full corpus")
+    p.add_argument("--force", action="store_true", help="Rebuild parsed docs, chunks, and embeddings")
     args = p.parse_args()
 
     print("=" * 60)
-    print("BOFIP Agentic RAG — Data Setup")
+    print("BOFiP Agentic RAG - legacy local setup helper")
     print("=" * 60)
-
-    if args.copy_from:
-        source = Path(args.copy_from)
-        if copy_from_project(source):
-            print("\nData copied successfully. Ready to run.")
-            return 0
-        print("Falling back to download...")
+    print("Authoritative full-corpus refresh: python scripts/sync.py --rebuild --force")
 
     raw_input = RAW_DIR / "bofip_download.jsonl"
 
@@ -427,6 +407,12 @@ def main():
         if args.download_only:
             print(f"\nDownload complete. Raw data at: {raw_input}")
             return 0
+
+    if args.force:
+        print("\nForce rebuild: removing derived artifacts...")
+        removed = remove_existing_files([RAW_DOCS_OUT, CHUNKS_OUT, DOC_DENSE_NPY, CHUNK_DENSE_NPY])
+        for path in removed:
+            print(f"  Removed: {path}")
 
     print("\n[2/4] Parsing raw documents...")
     if RAW_DOCS_OUT.exists():

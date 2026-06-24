@@ -14,7 +14,7 @@ Copy-Item .env.example .env.local
 Add a provider key to `.env.local`:
 
 ```text
-DEEPSEEK_API_KEY=sk-...
+DEEPSEEK_API_KEY=<votre-cle-api-deepseek>
 ```
 
 ## Runtime Artifacts
@@ -28,10 +28,10 @@ python scripts/check_setup.py --deep --skip-models
 
 A local machine with the model cache can also place these files manually under `data/interim/`:
 
-- `raw_docs_sample_5666.jsonl`
-- `chunks_section_window_sample_5666.jsonl`
-- `doc_dense_cache_5666_sections_firstpara_e5large.npy`
-- `chunk_dense_cache_5666_full_e5large.npy`
+- `raw_docs.jsonl`
+- `chunks.jsonl`
+- `doc_dense_cache.npy`
+- `chunk_dense_cache.npy`
 
 ## Run The App
 
@@ -51,7 +51,7 @@ Quel taux de TVA pour la pose d'une pompe à chaleur chez un particulier ?
 
 A healthy run should show:
 
-- a status: `Réponse sourcée`, `Réponse partielle`, or `Preuve insuffisante`;
+- a status: `Réponse sourcée`, `Preuve bloquante manquante`, or `Preuve insuffisante`;
 - coverage metrics and axes;
 - a visible `Parcours agentique réel` with iterations, domain prefix, retrieval count, and reformulation if triggered;
 - BOFiP source cards.

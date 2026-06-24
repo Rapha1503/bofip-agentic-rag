@@ -1,64 +1,78 @@
 {
   "name": "BOFiP Agentic RAG full-corpus local artifact manifest",
-  "corpus": "commentary",
+  "corpus": "bofip-vigueur-full-api",
   "owner": "Raphael Ifergan",
-  "generated_on": "2026-06-20",
-  "artifact_base_url": "https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1",
-  "full_corpus_principle": "Deployment must preserve the full 5,666-document commentary corpus; latency must be optimized with prebuilt artifacts and caching, not corpus reduction.",
+  "generated_on": "2026-06-23",
+  "artifact_base_url": "https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v2",
+  "full_corpus_principle": "Deployment must preserve every BOFiP source row exposed by the no-filter bofip-vigueur API snapshot; latency must be optimized with prebuilt artifacts and caching, not corpus reduction.",
+  "source_snapshot": {
+    "api": "https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/bofip-vigueur/records",
+    "raw_records": 9048,
+    "source_unique_rows": 9048,
+    "identity": "BOFiP permalink PGP identity, stored as document_id; boi_reference remains the legal BOI reference",
+    "base_boi_references": 9025,
+    "duplicate_base_reference_extra_rows": 23
+  },
   "artifacts": [
     {
-      "path": "data/interim/raw_docs_sample_5666.jsonl",
+      "path": "data/interim/raw_docs.jsonl",
       "kind": "raw_documents_jsonl",
       "required_for_runtime": true,
       "tracked_in_git": false,
-      "rows": 5666,
-      "size_bytes": 207539502,
-      "sha256": "4f95224fcad36651a6e137e7c64f038b25edcd50a10a2e78e58a433be83267e8"
+      "size_bytes": 235855821,
+      "sha256": "75de6cda59f58b6c5a4eb837a02b490a4c33dc178042b6213451975514628fcf",
+      "rows": 9048
     },
     {
-      "path": "data/interim/chunks_section_window_sample_5666.jsonl",
+      "path": "data/interim/chunks.jsonl",
       "kind": "section_window_chunks_jsonl",
       "required_for_runtime": true,
       "tracked_in_git": false,
-      "rows": 66289,
-      "size_bytes": 131387712,
-      "sha256": "c43b3e1aa948e70867ef794ae0eb00ffc76ad5764fb4e8091acbbc12e2cac444"
+      "size_bytes": 169972088,
+      "sha256": "947c607f6734dcae65443fbfa812607b03d2180e1cca68af40157a5d49483ac2",
+      "rows": 79160
     },
     {
-      "path": "data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy",
+      "path": "data/interim/doc_dense_cache.npy",
       "kind": "document_embeddings",
       "required_for_runtime": true,
       "tracked_in_git": false,
-      "shape": [5666, 1024],
-      "size_bytes": 23208064,
-      "sha256": "93b579e14d6ac7d97ff43c18462651d9aefd14b02ecbdf8a65ba8865ded69c53"
+      "size_bytes": 37060736,
+      "sha256": "1d1d49860db9f2f010ee3e2fba92870cc149fbd1fff9f8a1e884f1e8ca6dc45f",
+      "shape": [
+        9048,
+        1024
+      ]
     },
     {
-      "path": "data/interim/chunk_dense_cache_5666_full_e5large.npy",
+      "path": "data/interim/chunk_dense_cache.npy",
       "kind": "chunk_embeddings",
       "required_for_runtime": true,
       "tracked_in_git": false,
-      "shape": [66289, 1024],
-      "size_bytes": 271519872,
-      "sha256": "bc2b1d5bcfcf5c605b805e9b43f919b8613d885c798daf9bf519354f932233eb"
+      "size_bytes": 324239488,
+      "sha256": "68e843b74f650d598e54ec3d56e5e32d1c3487f33c989f195566cb50924ad76c",
+      "shape": [
+        79160,
+        1024
+      ]
     },
     {
       "path": "data/interim/eval_queries_v1.jsonl",
       "kind": "evaluation_queries",
       "required_for_runtime": false,
       "tracked_in_git": true,
-      "rows": 50,
       "size_bytes": 12816,
-      "sha256": "c693870b307f32046b491dcf97c34947d43b05b5bbc1fc90461fdcc243198690"
+      "sha256": "c693870b307f32046b491dcf97c34947d43b05b5bbc1fc90461fdcc243198690",
+      "rows": 50
     },
     {
       "path": "data/interim/passage_gold_v3.jsonl",
       "kind": "passage_gold",
       "required_for_runtime": false,
       "tracked_in_git": true,
-      "rows": 50,
       "size_bytes": 51891,
-      "sha256": "b7fccd0266732f8d2444b96f04708242046d59cf98aabe7e68699c5fc954ad02"
+      "sha256": "b7fccd0266732f8d2444b96f04708242046d59cf98aabe7e68699c5fc954ad02",
+      "rows": 50
     }
   ],
   "models": [
@@ -69,11 +83,11 @@
       "tracked_in_git": false
     },
     {
-      "path": "data/models/BAAI--bge-reranker-v2-m3",
+      "path": "external:BAAI/bge-reranker-v2-m3",
       "source": "BAAI/bge-reranker-v2-m3",
       "required_for_runtime": false,
       "tracked_in_git": false,
-      "note": "Optional quality layer. The app can run full-corpus retrieval with the reranker disabled."
+      "note": "Optional quality layer downloaded by sentence-transformers when explicitly enabled. It is not part of the default local artifact contract."
     }
   ]
 }

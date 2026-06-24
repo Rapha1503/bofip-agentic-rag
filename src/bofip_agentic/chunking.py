@@ -4,8 +4,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 import re
 
-from .models import ChunkNode, RawDocument, RawParagraph
-from .text_utils import estimate_token_count, normalize_whitespace, slugify
+from .models import ChunkNode, RawDocument, RawParagraph, RawTable
+from .text_utils import estimate_token_count, extract_legal_refs, normalize_whitespace, slugify
 
 
 SUPPORTED_STRATEGIES = {"paragraph_preserving", "section_window", "parent_child"}
@@ -176,6 +176,13 @@ def _make_chunk_base_id(document: RawDocument, strategy: str, section_id: str | 
     )
 
 
+def _make_table_chunk_base_id(document: RawDocument, strategy: str, table: RawTable) -> str:
+    return (
+        f"{document.document_id}__{strategy}__"
+        f"{slugify(table.table_id)}__{slugify('|'.join(_section_path(document, table.section_id)))}"
+    )
+
+
 def _emit_chunks(
     document: RawDocument,
     *,
@@ -214,6 +221,29 @@ def _emit_chunks(
     return emitted
 
 
+def _emit_table_chunks(document: RawDocument, *, strategy: str, max_tokens: int) -> list[ChunkNode]:
+    chunks: list[ChunkNode] = []
+    for table in sorted(document.tables, key=lambda item: item.order_index):
+        text = normalize_whitespace(table.linearized_text)
+        if not text:
+            continue
+        chunks.extend(
+            _emit_chunks(
+                document,
+                strategy=strategy,
+                section_id=table.section_id,
+                paragraph_ids=[table.table_id],
+                text=text,
+                legal_refs=extract_legal_refs(text),
+                chunk_kind="table",
+                parent_chunk_id=None,
+                max_tokens=max_tokens,
+                chunk_id_base=_make_table_chunk_base_id(document, strategy, table),
+            )
+        )
+    return chunks
+
+
 def _merge_chunk_pair(left: ChunkNode, right: ChunkNode) -> ChunkNode:
     combined_text = "\n\n".join([left.text, right.text])
     return ChunkNode(
@@ -234,6 +264,16 @@ def _merge_chunk_pair(left: ChunkNode, right: ChunkNode) -> ChunkNode:
     )
 
 
+def _can_merge_chunk_pair(left: ChunkNode, right: ChunkNode) -> bool:
+    return (
+        left.document_id == right.document_id
+        and left.boi_reference == right.boi_reference
+        and left.section_id == right.section_id
+        and left.chunk_kind != "table"
+        and right.chunk_kind != "table"
+    )
+
+
 def _should_merge_small_chunk(chunk: ChunkNode, min_tokens: int) -> bool:
     return chunk.token_count < min_tokens or _is_trivial_fragment(chunk.text)
 
@@ -250,6 +290,7 @@ def _merge_small_chunks(chunks: list[ChunkNode], *, max_tokens: int, min_tokens:
             _should_merge_small_chunk(current, min_tokens)
             and index + 1 < len(chunks)
             and current.token_count + chunks[index + 1].token_count <= max_tokens
+            and _can_merge_chunk_pair(current, chunks[index + 1])
         ):
             forward_merged.append(_merge_chunk_pair(current, chunks[index + 1]))
             index += 2
@@ -263,6 +304,7 @@ def _merge_small_chunks(chunks: list[ChunkNode], *, max_tokens: int, min_tokens:
             final_merged
             and _should_merge_small_chunk(chunk, min_tokens)
             and final_merged[-1].token_count + chunk.token_count <= max_tokens
+            and _can_merge_chunk_pair(final_merged[-1], chunk)
         ):
             final_merged[-1] = _merge_chunk_pair(final_merged[-1], chunk)
         else:
@@ -358,7 +400,7 @@ def build_chunks(
                         max_tokens=max_tokens,
                     )
                 )
-        return chunks
+        return chunks + _emit_table_chunks(document, strategy=strategy, max_tokens=max_tokens)
 
     if strategy == "section_window":
         chunks: list[ChunkNode] = []
@@ -407,9 +449,12 @@ def build_chunks(
                     )
                 )
 
-        return _merge_small_chunks(chunks, max_tokens=max_tokens, min_tokens=min_tokens)
+        merged = _merge_small_chunks(chunks, max_tokens=max_tokens, min_tokens=min_tokens)
+        return merged + _emit_table_chunks(document, strategy=strategy, max_tokens=max_tokens)
 
-    return _build_parent_child_chunks(document, max_tokens=max_tokens)
+    return _build_parent_child_chunks(document, max_tokens=max_tokens) + _emit_table_chunks(
+        document, strategy=strategy, max_tokens=max_tokens
+    )
 
 
 def build_chunks_for_documents(

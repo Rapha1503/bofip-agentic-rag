@@ -410,7 +410,7 @@
             <h1>BOFiP Agentic RAG</h1>
             <p>
               Prototype full-corpus pour explorer la recherche augmentée sur la doctrine fiscale BOFiP :
-              parsing structuré, hybrid retrieval, embeddings denses, reranking expérimental et réponses sourcées.
+              parsing structuré, retrieval full-corpus, mode dense expérimental et réponses sourcées.
             </p>
             <div class="hero-actions">
               <a class="button primary" href="https://github.com/Rapha1503/bofip-agentic-rag">Voir le repo</a>
@@ -423,8 +423,8 @@
           </div>
         </div>
         <div class="status-strip">
-          <div class="status-item"><strong>5 666</strong><span>documents BOFiP commentary</span></div>
-          <div class="status-item"><strong>66 289</strong><span>chunks section-window</span></div>
+          <div class="status-item"><strong>9 048</strong><span>lignes source BOFiP</span></div>
+          <div class="status-item"><strong>79 160</strong><span>chunks section-window</span></div>
           <div class="status-item"><strong>50</strong><span>questions d'évaluation suivies</span></div>
           <div class="status-item"><strong>BYOK</strong><span>clé API saisie par l'utilisateur</span></div>
         </div>
@@ -474,16 +474,16 @@
           <div class="section-head">
             <h2>Artefacts full corpus</h2>
             <p>
-              Corpus BOFiP commentaire complet pour ce prototype : 5 666 documents observés jusqu'au
-              28 janvier 2026. Les gros fichiers sont versionnés hors Git et décrits dans un manifeste
+              Corpus BOFiP complet pour ce prototype : 9 048 lignes source observées jusqu'au
+              17 juin 2026. Les gros fichiers sont versionnés hors Git et décrits dans un manifeste
               avec tailles, formes et SHA-256.
             </p>
           </div>
           <div class="manifest">
-            <div class="manifest-row"><strong>raw_docs_sample_5666.jsonl</strong><span>5 666 lignes</span><span>197.9 MB</span></div>
-            <div class="manifest-row"><strong>chunks_section_window_sample_5666.jsonl</strong><span>66 289 lignes</span><span>125.3 MB</span></div>
-            <div class="manifest-row"><strong>doc_dense_cache_5666_sections_firstpara_e5large.npy</strong><span>(5666, 1024)</span><span>22.1 MB</span></div>
-            <div class="manifest-row"><strong>chunk_dense_cache_5666_full_e5large.npy</strong><span>(66289, 1024)</span><span>258.9 MB</span></div>
+            <div class="manifest-row"><strong>raw_docs.jsonl</strong><span>9 048 lignes</span><span>224.9 MB</span></div>
+            <div class="manifest-row"><strong>chunks.jsonl</strong><span>79 160 lignes</span><span>162.1 MB</span></div>
+            <div class="manifest-row"><strong>doc_dense_cache.npy</strong><span>(9048, 1024)</span><span>35.3 MB</span></div>
+            <div class="manifest-row"><strong>chunk_dense_cache.npy</strong><span>(79160, 1024)</span><span>309.2 MB</span></div>
           </div>
         </div>
       </section>

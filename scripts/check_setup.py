@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATH = PROJECT_ROOT / "docs" / "full_corpus_manifest.json"
 
 
 @dataclass(frozen=True)
@@ -21,17 +22,17 @@ class CheckResult:
 
 
 RUNTIME_FILES = [
-    ("raw_docs", Path("data/interim/raw_docs_sample_5666.jsonl"), "expected 5,666 BOFiP commentary rows"),
-    ("chunks", Path("data/interim/chunks_section_window_sample_5666.jsonl"), "expected 66,289 section-window rows"),
+    ("raw_docs", Path("data/interim/raw_docs.jsonl"), "expected full BOFiP parsed runtime rows"),
+    ("chunks", Path("data/interim/chunks.jsonl"), "expected full-corpus section-window rows"),
     (
         "doc_embeddings",
-        Path("data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy"),
-        "expected shape (5666, 1024)",
+        Path("data/interim/doc_dense_cache.npy"),
+        "expected full-corpus document embeddings with 1024 dimensions",
     ),
     (
         "chunk_embeddings",
-        Path("data/interim/chunk_dense_cache_5666_full_e5large.npy"),
-        "expected shape (66289, 1024)",
+        Path("data/interim/chunk_dense_cache.npy"),
+        "expected full-corpus chunk embeddings with 1024 dimensions",
     ),
 ]
 
@@ -45,24 +46,35 @@ EXPECTED_MODELS = [
 ]
 
 OPTIONAL_MODELS = [
-    (
-        "reranker_model",
-        Path("data/models/BAAI--bge-reranker-v2-m3"),
-        "optional local cross-encoder directory; otherwise sentence-transformers may download/cache it",
-    ),
+    # No optional local model is part of the default artifact contract. The
+    # reranker can still be downloaded by sentence-transformers when enabled.
 ]
 
-EXPECTED_NPY_SHAPES = {
-    "doc_embeddings": (5666, 1024),
-    "chunk_embeddings": (66289, 1024),
-}
-
 EXPECTED_JSONL_COUNTS = {
-    "raw_docs": 5666,
-    "chunks": 66289,
     "eval_queries": 50,
     "passage_gold": 50,
 }
+MIN_JSONL_COUNTS = {
+    "raw_docs": 9048,
+    "chunks": 79000,
+}
+MIN_NPY_ROWS = {
+    "doc_embeddings": 9048,
+    "chunk_embeddings": 79000,
+}
+EXPECTED_EMBEDDING_DIM = 1024
+
+
+def _manifest_artifacts() -> dict[str, dict]:
+    if not MANIFEST_PATH.exists():
+        return {}
+    with MANIFEST_PATH.open("r", encoding="utf-8") as handle:
+        manifest = json.load(handle)
+    return {
+        str(item.get("path", "")).replace("\\", "/"): item
+        for item in manifest.get("artifacts", [])
+        if item.get("path")
+    }
 
 
 def _count_jsonl(path: Path) -> int:
@@ -90,7 +102,14 @@ def _npy_shape(path: Path) -> tuple[int, ...]:
     return tuple(payload["shape"])
 
 
-def _check_file(name: str, rel_path: Path, detail: str, *, deep: bool) -> CheckResult:
+def _check_file(
+    name: str,
+    rel_path: Path,
+    detail: str,
+    *,
+    deep: bool,
+    manifest_artifacts: dict[str, dict],
+) -> CheckResult:
     path = PROJECT_ROOT / rel_path
     display = rel_path.as_posix()
     if not path.exists():
@@ -101,14 +120,34 @@ def _check_file(name: str, rel_path: Path, detail: str, *, deep: bool) -> CheckR
         size_mb = path.stat().st_size / (1024 * 1024)
         return CheckResult(name, display, True, f"present ({size_mb:.1f} MB)")
 
+    manifest_item = manifest_artifacts.get(display)
+    if manifest_item and "rows" in manifest_item:
+        count = _count_jsonl(path)
+        expected = int(manifest_item["rows"])
+        return CheckResult(name, display, count == expected, f"{count} rows; manifest expects {expected}")
+    if manifest_item and "shape" in manifest_item:
+        shape = _npy_shape(path)
+        expected = tuple(int(value) for value in manifest_item["shape"])
+        return CheckResult(name, display, shape == expected, f"shape {shape}; manifest expects {expected}")
+
     if name in EXPECTED_JSONL_COUNTS:
         count = _count_jsonl(path)
         expected = EXPECTED_JSONL_COUNTS[name]
         return CheckResult(name, display, count == expected, f"{count} rows; expected {expected}")
-    if name in EXPECTED_NPY_SHAPES:
+    if name in MIN_JSONL_COUNTS:
+        count = _count_jsonl(path)
+        minimum = MIN_JSONL_COUNTS[name]
+        return CheckResult(name, display, count >= minimum, f"{count} rows; expected at least {minimum}")
+    if name in MIN_NPY_ROWS:
         shape = _npy_shape(path)
-        expected = EXPECTED_NPY_SHAPES[name]
-        return CheckResult(name, display, shape == expected, f"shape {shape}; expected {expected}")
+        expected_rows = MIN_NPY_ROWS[name]
+        ok = len(shape) == 2 and shape[0] >= expected_rows and shape[1] == EXPECTED_EMBEDDING_DIM
+        return CheckResult(
+            name,
+            display,
+            ok,
+            f"shape {shape}; expected >= {expected_rows} rows and {EXPECTED_EMBEDDING_DIM} dims",
+        )
     return CheckResult(name, display, True, "present")
 
 
@@ -124,7 +163,11 @@ def _check_model(name: str, rel_path: Path, detail: str) -> CheckResult:
 
 def run_checks(*, deep: bool, skip_models: bool, tracked_only: bool) -> list[CheckResult]:
     files = TRACKED_FILES if tracked_only else [*RUNTIME_FILES, *TRACKED_FILES]
-    results = [_check_file(name, rel_path, detail, deep=deep) for name, rel_path, detail in files]
+    manifest_artifacts = _manifest_artifacts() if deep else {}
+    results = [
+        _check_file(name, rel_path, detail, deep=deep, manifest_artifacts=manifest_artifacts)
+        for name, rel_path, detail in files
+    ]
     if not skip_models:
         results.extend(_check_model(name, rel_path, detail) for name, rel_path, detail in EXPECTED_MODELS)
         if not tracked_only:

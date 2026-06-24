@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 
 import numpy as np
 
@@ -123,14 +124,64 @@ class DenseEncoder:
             model_kwargs={"dtype": "auto"},
         )
 
-    def encode_queries(self, queries: list[str], *, batch_size: int = 32, show_progress_bar: bool = False) -> np.ndarray:
-        return np.asarray(
-            self.model.encode(
-                [_query_text(query, prompt_style=self.prompt_style) for query in queries],
-                batch_size=batch_size,
-                normalize_embeddings=True,
-                show_progress_bar=show_progress_bar,
+    def _encode_texts(
+        self,
+        texts: list[str],
+        *,
+        batch_size: int,
+        show_progress_bar: bool,
+        progress_callback: Callable[[int, int], None] | None = None,
+        progress_batch_size: int | None = None,
+    ) -> np.ndarray:
+        if batch_size < 1:
+            raise ValueError("batch_size must be >= 1")
+        if progress_callback is None:
+            return np.asarray(
+                self.model.encode(
+                    texts,
+                    batch_size=batch_size,
+                    normalize_embeddings=True,
+                    show_progress_bar=show_progress_bar,
+                )
             )
+
+        encoded_batches = []
+        total = len(texts)
+        update_size = progress_batch_size or batch_size
+        if update_size < 1:
+            raise ValueError("progress_batch_size must be >= 1")
+        for start in range(0, total, update_size):
+            end = min(start + update_size, total)
+            encoded_batches.append(
+                np.asarray(
+                    self.model.encode(
+                        texts[start:end],
+                        batch_size=batch_size,
+                        normalize_embeddings=True,
+                        show_progress_bar=show_progress_bar,
+                    )
+                )
+            )
+            progress_callback(end, total)
+        if not encoded_batches:
+            return np.empty((0, 0), dtype=np.float32)
+        return np.vstack(encoded_batches)
+
+    def encode_queries(
+        self,
+        queries: list[str],
+        *,
+        batch_size: int = 32,
+        show_progress_bar: bool = False,
+        progress_callback: Callable[[int, int], None] | None = None,
+        progress_batch_size: int | None = None,
+    ) -> np.ndarray:
+        return self._encode_texts(
+            [_query_text(query, prompt_style=self.prompt_style) for query in queries],
+            batch_size=batch_size,
+            show_progress_bar=show_progress_bar,
+            progress_callback=progress_callback,
+            progress_batch_size=progress_batch_size,
         )
 
     def encode_chunks(
@@ -140,15 +191,16 @@ class DenseEncoder:
         mode: str = "full",
         batch_size: int = 32,
         show_progress_bar: bool = False,
+        progress_callback: Callable[[int, int], None] | None = None,
+        progress_batch_size: int | None = None,
     ) -> np.ndarray:
         texts = [_passage_text(build_dense_chunk_text(chunk, mode=mode), prompt_style=self.prompt_style) for chunk in chunks]
-        return np.asarray(
-            self.model.encode(
-                texts,
-                batch_size=batch_size,
-                normalize_embeddings=True,
-                show_progress_bar=show_progress_bar,
-            )
+        return self._encode_texts(
+            texts,
+            batch_size=batch_size,
+            show_progress_bar=show_progress_bar,
+            progress_callback=progress_callback,
+            progress_batch_size=progress_batch_size,
         )
 
     def encode_documents(
@@ -158,15 +210,16 @@ class DenseEncoder:
         mode: str = "sections_firstpara",
         batch_size: int = 32,
         show_progress_bar: bool = False,
+        progress_callback: Callable[[int, int], None] | None = None,
+        progress_batch_size: int | None = None,
     ) -> np.ndarray:
         texts = [_passage_text(build_dense_document_text(document, mode=mode), prompt_style=self.prompt_style) for document in documents]
-        return np.asarray(
-            self.model.encode(
-                texts,
-                batch_size=batch_size,
-                normalize_embeddings=True,
-                show_progress_bar=show_progress_bar,
-            )
+        return self._encode_texts(
+            texts,
+            batch_size=batch_size,
+            show_progress_bar=show_progress_bar,
+            progress_callback=progress_callback,
+            progress_batch_size=progress_batch_size,
         )
 
 

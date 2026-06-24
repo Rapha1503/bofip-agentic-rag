@@ -1,0 +1,1890 @@
+{
+  "name": "bofip_agentic_rag_50_human_questions_v2",
+  "version": "2026-06-24",
+  "language": "fr",
+  "purpose": "Évaluer un agentic RAG BOFiP sur des questions utilisateur réalistes, sans fuite de sources ou d’indices dans les prompts runtime.",
+  "runtime_instruction": "Pour chaque cas, envoyer uniquement le champ runtime_question au modèle BOFiP Agentic RAG. Ne jamais envoyer gold_eval, expected_bofip_refs, expected_answer_points, failure_signals, core_axes ou toute autre métadonnée d’évaluation.",
+  "anti_leakage_policy": {
+    "runtime_question_contains_no_boi_refs": true,
+    "runtime_question_contains_no_article_refs": true,
+    "runtime_question_should_not_include_gold_domain": true,
+    "gold_metadata_external_only": true,
+    "do_not_train_or_prompt_with_gold": true
+  },
+  "scoring_rubric": {
+    "source_retrieval": {
+      "points": 35,
+      "description": "Présence de sources BOFiP de fond attendues, rejet des sources bruitées, pas de confusion de famille documentaire."
+    },
+    "answer_grounding": {
+      "points": 25,
+      "description": "Chaque conclusion substantielle est appuyée par des passages BOFiP pertinents."
+    },
+    "fiscal_reasoning": {
+      "points": 20,
+      "description": "Bonne qualification, distinction des régimes, gestion des réserves et alternatives."
+    },
+    "calculation": {
+      "points": 10,
+      "description": "Calculs arithmétiques exacts et uniquement lorsque les données nécessaires sont disponibles."
+    },
+    "uncertainty_and_limits": {
+      "points": 5,
+      "description": "Demande de précisions ou réserves lorsque les faits sont insuffisants."
+    },
+    "clarity": {
+      "points": 5,
+      "description": "Réponse compréhensible pour un utilisateur non fiscaliste."
+    }
+  },
+  "hard_fail_conditions": [
+    "Utilise des sources non BOFiP comme fondement principal.",
+    "Invente un BOI ou cite un BOI non récupéré.",
+    "Répond avec un calcul chiffré alors qu’un axe de calcul obligatoire manque.",
+    "Confond deux familles fiscales d’une manière qui change la conclusion.",
+    "Marque supported alors qu’un axe core est sans source de fond.",
+    "Injecte des informations de gold_eval dans le prompt runtime."
+  ],
+  "recommended_run_outputs": [
+    "case_id",
+    "runtime_question",
+    "agent_status",
+    "coverage",
+    "final_answer",
+    "final_sources",
+    "source_doc_ids",
+    "missing_axes",
+    "covered_axes",
+    "iterations",
+    "elapsed_seconds",
+    "retrieval_trace",
+    "critic_trace",
+    "calculation_outputs"
+  ],
+  "cases": [
+    {
+      "theme": "TVA",
+      "difficulty": "intermediate",
+      "question_type": "option_regime",
+      "runtime_question": "Je loue un local vide à une société qui va y installer ses bureaux. Le bail n’est pas destiné à de l’habitation. Est-ce que je peux mettre de la TVA sur le loyer ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "La location de locaux nus est en principe exonérée de TVA.",
+          "Une option à la TVA peut être possible pour des locaux nus loués pour les besoins de l’activité du preneur, sous conditions.",
+          "Si le preneur n’est pas assujetti, le bail doit notamment mentionner expressément l’option.",
+          "Réponse sous réserve de la nature exacte des locaux, de l’usage effectif et des modalités d’option."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "régime TVA location nue",
+          "option TVA",
+          "usage professionnel du local"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-CHAMP-30-10-50",
+            "BOI-TVA-CHAMP-50-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Traite comme location d’habitation.",
+          "Affirme TVA obligatoire.",
+          "Oublie le principe d’exonération des locaux nus."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-001",
+      "id": "CASE-001"
+    },
+    {
+      "theme": "TVA",
+      "difficulty": "intermediate",
+      "question_type": "exigibility",
+      "runtime_question": "Je facture une prestation de maintenance à une entreprise. Le client m’a versé un acompte en décembre 2024, mais l’intervention aura lieu en janvier 2025. À quel moment la TVA devient-elle exigible ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Pour les prestations de services, la TVA est en principe exigible lors de l’encaissement des acomptes, du prix ou de la rémunération.",
+          "L’acompte encaissé en décembre entraîne donc une exigibilité à hauteur de l’acompte, sauf règle particulière ou option pertinente.",
+          "Ne pas confondre date d’exécution de la prestation et encaissement."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "prestation de services",
+          "exigibilité TVA",
+          "acompte"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-BASE-20-20"
+          ],
+          "should_include": [
+            "BOI-TVA-BASE-20-50-10"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond janvier uniquement car prestation réalisée en janvier.",
+          "Traite comme livraison de biens.",
+          "Ignore l’acompte."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-002",
+      "id": "CASE-002"
+    },
+    {
+      "theme": "TVA",
+      "difficulty": "intermediate",
+      "question_type": "exigibility",
+      "runtime_question": "Je vends du matériel à un client. Il a payé un acompte en décembre 2024 et je livrerai le matériel en février 2025. Est-ce que la TVA est déjà due sur l’acompte ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Pour une livraison de biens, il faut vérifier la règle BOFiP d’exigibilité applicable aux acomptes.",
+          "Si la source BOFiP applicable est récupérée, la TVA peut être exigible au moment de l’encaissement de l’acompte, à concurrence du montant encaissé.",
+          "Réponse sous réserve que l’opération soit bien une livraison de biens taxable en France."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "livraison de biens",
+          "acompte",
+          "exigibilité TVA"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-BASE-20-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond toujours à la livraison uniquement.",
+          "Traite comme prestation de services.",
+          "Ne limite pas l’exigibilité au montant de l’acompte."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-003",
+      "id": "CASE-003"
+    },
+    {
+      "theme": "TVA",
+      "difficulty": "intermediate",
+      "question_type": "reverse_charge",
+      "runtime_question": "Je suis sous-traitant dans le bâtiment et je facture des travaux de rénovation à l’entreprise principale. Est-ce que je dois mettre de la TVA sur ma facture ou indiquer une autoliquidation ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier le régime d’autoliquidation applicable aux travaux de construction ou assimilés réalisés en sous-traitance.",
+          "Si les conditions sont réunies, le sous-traitant ne facture pas la TVA et la facture doit porter la mention d’autoliquidation.",
+          "Il faut vérifier la nature des travaux, l’existence d’un contrat de sous-traitance et la qualité du preneur."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "sous-traitance BTP",
+          "redevable TVA",
+          "mention facture"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-DECLA-10-10-20"
+          ],
+          "should_include": [
+            "BOI-TVA-DECLA-30-20-10-20",
+            "BOI-RES-TVA-000037"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Facture la TVA sans examiner l’autoliquidation.",
+          "Traite comme prestation B2B internationale.",
+          "Oublie la mention facture."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-004",
+      "id": "CASE-004"
+    },
+    {
+      "theme": "TVA",
+      "difficulty": "intermediate",
+      "question_type": "margin_scheme",
+      "runtime_question": "J’achète des meubles d’occasion à des particuliers pour les revendre dans ma boutique. Est-ce que je dois calculer la TVA sur tout le prix de vente ou seulement sur ma marge ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier le régime des biens d’occasion et la qualité d’assujetti-revendeur.",
+          "Le régime de taxation sur la marge peut s’appliquer dans certains cas d’achat à des personnes qui n’ont pas facturé de TVA.",
+          "Il faut vérifier l’origine des biens, la qualité du vendeur et les conditions de tenue des justificatifs.",
+          "Ne pas appliquer automatiquement la marge si les conditions ne sont pas établies."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "biens d’occasion",
+          "assujetti-revendeur",
+          "taxation sur marge"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-SECT-90-10",
+            "BOI-TVA-SECT-90-20-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Applique toujours la TVA sur le prix total.",
+          "Applique la marge sans vérifier la qualité du vendeur.",
+          "Part en BIC résultat."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-005",
+      "id": "CASE-005"
+    },
+    {
+      "theme": "TVA",
+      "difficulty": "advanced",
+      "question_type": "real_estate_vat",
+      "runtime_question": "Je suis professionnel de l’immobilier et je revends un terrain sur lequel un permis de construire permet de bâtir. Est-ce que la TVA se calcule forcément sur le prix total ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier si le bien est un terrain à bâtir au sens BOFiP.",
+          "Les cessions de terrains à bâtir par un assujetti agissant comme tel relèvent de règles TVA immobilières.",
+          "La base peut être le prix total en principe, mais il faut vérifier si un régime de marge peut s’appliquer selon les conditions d’acquisition.",
+          "Ne pas conclure sans informations sur l’acquisition et le droit à déduction initial."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "terrain à bâtir",
+          "assujetti immobilier",
+          "base TVA",
+          "marge éventuelle"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-IMM-10-10-10-20",
+            "BOI-TVA-IMM-20-10-10-10",
+            "BOI-TVA-IMM-10-20-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond prix total sans analyser la marge.",
+          "Ignore la qualification de terrain à bâtir.",
+          "Traite comme droits d’enregistrement uniquement."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-006",
+      "id": "CASE-006"
+    },
+    {
+      "theme": "TVA",
+      "difficulty": "intermediate",
+      "question_type": "gifts_deduction",
+      "runtime_question": "J’ai acheté des petits objets publicitaires que je donne gratuitement à des prospects, un seul objet par personne. Est-ce que la TVA sur ces achats est récupérable ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les biens cédés gratuitement sont en principe concernés par une exclusion du droit à déduction.",
+          "Une exception existe pour les biens de très faible valeur, sous conditions et avec appréciation par bénéficiaire.",
+          "Il faut connaître la valeur unitaire TTC par bénéficiaire pour conclure.",
+          "Ne pas conclure sans la valeur des objets."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "biens cédés gratuitement",
+          "faible valeur",
+          "droit à déduction"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-TVA-DED-30-30-50",
+            "BOI-TVA-CHAMP-10-20-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond oui sans connaître la valeur unitaire.",
+          "Répond non sans traiter l’exception faible valeur.",
+          "Part uniquement en BIC cadeaux."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "TVA-008",
+      "id": "CASE-007"
+    },
+    {
+      "theme": "BIC",
+      "difficulty": "intermediate",
+      "question_type": "client_gifts",
+      "runtime_question": "J’ai offert des coffrets à mes meilleurs clients en fin d’année. Est-ce que mon entreprise peut les passer en charges ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les cadeaux d’affaires peuvent être déductibles s’ils sont faits dans l’intérêt de l’entreprise et si leur valeur n’est pas excessive.",
+          "Il faut vérifier que la distribution n’est pas prohibée et que l’entreprise peut justifier les bénéficiaires et l’intérêt commercial.",
+          "Selon les montants, des obligations déclaratives particulières peuvent exister."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "cadeaux d’affaires",
+          "intérêt entreprise",
+          "valeur non excessive",
+          "justification"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BIC-CHG-40-20-40"
+          ],
+          "should_include": [
+            "BOI-BIC-CHG-40-60-10",
+            "BOI-BIC-CHG-10"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit automatiquement tous les cadeaux.",
+          "Rejette automatiquement tous les cadeaux.",
+          "Ne traite pas la valeur excessive."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BIC-001",
+      "id": "CASE-008"
+    },
+    {
+      "theme": "BIC",
+      "difficulty": "intermediate",
+      "question_type": "meals_individual_operator",
+      "runtime_question": "Je suis commerçant indépendant et je mange souvent au restaurant le midi parce que je suis trop loin de mon domicile. Quelle partie de ces repas peut être déduite ?",
+      "gold_eval": {
+        "expected_status": "needs_clarification",
+        "expected_answer_points": [
+          "Les frais supplémentaires de repas peuvent être déductibles s’ils sont nécessités par l’exercice de la profession, justifiés et d’un montant raisonnable.",
+          "Il faut demander les montants, les justificatifs, la distance au domicile et les plafonds applicables.",
+          "Ne pas calculer sans montant de repas ni barème/limites BOFiP."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "frais supplémentaires de repas",
+          "justification",
+          "montant raisonnable"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BIC-CHG-10-10-10"
+          ],
+          "should_include": [
+            "BOI-BNC-BASE-40-60-60"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit tous les repas.",
+          "Refuse toute déduction.",
+          "Calcule sans montant et sans limite."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BIC-002",
+      "id": "CASE-009"
+    },
+    {
+      "theme": "BIC",
+      "difficulty": "intermediate",
+      "question_type": "doubtful_debt_provision",
+      "runtime_question": "Un client en difficulté me doit 18 000 € depuis plus d’un an. Puis-je passer une provision fiscale parce que je pense qu’il ne paiera pas ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Une provision pour créance douteuse peut être admise si les conditions de fond et de forme sont réunies.",
+          "La perte ou dépréciation doit être nettement précisée et probable.",
+          "Il faut des éléments objectifs: relances, procédure collective, contestation, ancienneté, solvabilité.",
+          "La provision doit être comptabilisée et documentée."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "créance douteuse",
+          "provision",
+          "probabilité",
+          "comptabilisation"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BIC-PROV-40-20",
+            "BOI-BIC-PROV-20-10-20",
+            "BOI-BIC-PROV-20-10-40"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Autorise sur simple intuition.",
+          "Déduit directement la créance en perte sans analyse.",
+          "Ne demande aucun élément objectif."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BIC-003",
+      "id": "CASE-010"
+    },
+    {
+      "theme": "BIC",
+      "difficulty": "simple",
+      "question_type": "penalty_nondeductible",
+      "runtime_question": "Mon entreprise a payé une pénalité administrative pour non-respect d’une obligation légale. Est-ce que c’est déductible fiscalement ?",
+      "gold_eval": {
+        "expected_status": "supported",
+        "expected_answer_points": [
+          "Les pénalités et amendes de toute nature mises à la charge de contrevenants à des obligations légales ne sont pas déductibles.",
+          "La réponse ne dépend pas seulement du fait que la dépense est comptabilisée ou payée par l’entreprise."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "pénalité",
+          "obligation légale",
+          "non-déductibilité"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BIC-CHG-60-20",
+            "BOI-BIC-CHG-60-20-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit parce que payé par l’entreprise.",
+          "Traite comme charge commerciale normale.",
+          "Ne cite pas les pénalités/amendes."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BIC-004",
+      "id": "CASE-011"
+    },
+    {
+      "theme": "BIC",
+      "difficulty": "intermediate",
+      "question_type": "shareholder_interest",
+      "runtime_question": "Un associé a prêté de l’argent à ma société et la société lui verse des intérêts. Est-ce que ces intérêts sont toujours déductibles ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les intérêts versés sur avances d’associés sont soumis à des conditions et limites de déduction.",
+          "Il faut vérifier notamment la libération du capital, le taux maximum admis et les règles propres aux avances d’associés.",
+          "Ne pas conclure à une déduction intégrale sans examiner le taux et les conditions."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "intérêts associés",
+          "conditions de déduction",
+          "taux limite"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BIC-CHG-50-50-10",
+            "BOI-BIC-CHG-50-50-30"
+          ],
+          "should_include": [
+            "BOI-BIC-CHG-50-20-10"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit tous les intérêts sans plafond.",
+          "Ne vérifie pas la libération du capital.",
+          "Part uniquement en RPPM bénéficiaire."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BIC-006",
+      "id": "CASE-012"
+    },
+    {
+      "theme": "BIC",
+      "difficulty": "intermediate",
+      "question_type": "sponsorship",
+      "runtime_question": "Mon entreprise finance un événement sportif local et son logo apparaît sur les affiches et le site de l’événement. Est-ce une charge déductible ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Analyser comme dépense de parrainage/publicité si l’entreprise obtient une contrepartie identifiable.",
+          "La dépense doit être engagée dans l’intérêt de l’entreprise et ne pas être excessive au regard de l’avantage attendu.",
+          "Distinguer parrainage et mécénat/don sans contrepartie."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "parrainage",
+          "contrepartie publicitaire",
+          "intérêt entreprise"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BIC-CHG-40-20-40",
+            "BOI-BIC-CHG-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Traite automatiquement comme don non déductible.",
+          "Déduit sans contrepartie ni intérêt.",
+          "Ne distingue pas sponsoring et mécénat."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BIC-007",
+      "id": "CASE-013"
+    },
+    {
+      "theme": "BNC",
+      "difficulty": "simple",
+      "question_type": "cash_basis",
+      "runtime_question": "J’ai terminé une mission en décembre 2024 mais le client ne m’a payé qu’en janvier 2025. Je suis en activité libérale. Dans quelle année dois-je déclarer cette recette ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "En BNC, le principe est la prise en compte des recettes encaissées au cours de l’année d’imposition.",
+          "La recette encaissée en janvier 2025 relève en principe de 2025, sauf option ou régime dérogatoire.",
+          "Vérifier que le contribuable est bien imposé selon le principe encaissements/décaissements."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "BNC",
+          "recettes encaissées",
+          "année d’imposition"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BNC-BASE-20-10-10"
+          ],
+          "should_include": [
+            "BOI-BNC-BASE-20-10-20"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déclare en 2024 uniquement car mission faite en 2024.",
+          "Oublie les options/dérogations.",
+          "Part en BIC factures émises."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BNC-001",
+      "id": "CASE-014"
+    },
+    {
+      "theme": "BNC",
+      "difficulty": "intermediate",
+      "question_type": "debours",
+      "runtime_question": "Un client m’a remboursé exactement des frais que j’avais avancés pour lui et que j’ai reversés à un tiers. Est-ce que ce remboursement augmente mes recettes imposables ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Distinguer honoraires, remboursement de frais et débours proprement dits.",
+          "Les sommes encaissées pour le compte d’un client et reversées à un tiers peuvent être exclues des recettes si les conditions de débours sont remplies.",
+          "Il faut vérifier les justificatifs, le mandat, l’enregistrement séparé et l’absence de marge."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "BNC",
+          "débours",
+          "recettes imposables"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BNC-BASE-20-20"
+          ],
+          "should_include": [
+            "BOI-BNC-BASE-20-10"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Inclut toujours tout remboursement en recette.",
+          "Exclut sans vérifier les conditions de débours.",
+          "Confond remboursement de frais forfaitaire et débours."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BNC-002",
+      "id": "CASE-015"
+    },
+    {
+      "theme": "BNC",
+      "difficulty": "intermediate",
+      "question_type": "vehicle_expenses",
+      "runtime_question": "Je suis professionnel libéral et j’utilise ma voiture personnelle pour visiter des clients. Puis-je utiliser un barème ou dois-je garder toutes les factures ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les frais de véhicule en BNC peuvent être déterminés selon des règles réelles ou forfaitaires selon les conditions.",
+          "Le barème couvre certains frais mais pas nécessairement tous.",
+          "Il faut justifier le kilométrage professionnel et distinguer l’usage privé/professionnel."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "frais véhicule",
+          "barème",
+          "usage professionnel"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BNC-BASE-40-60-40-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Applique un barème sans kilométrage.",
+          "Déduit 100 % sans usage pro/privé.",
+          "Oublie les frais couverts par le barème."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BNC-003",
+      "id": "CASE-016"
+    },
+    {
+      "theme": "BNC",
+      "difficulty": "intermediate",
+      "question_type": "accrual_option",
+      "runtime_question": "Je suis au régime réel BNC et je voudrais déclarer selon les factures émises plutôt que les encaissements. Est-ce possible ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Le principe BNC est celui des recettes encaissées.",
+          "Une dérogation permet, sous conditions, de tenir compte des créances acquises et dépenses engagées.",
+          "Il faut vérifier l’option et ses modalités."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "BNC",
+          "encaissements",
+          "créances acquises",
+          "option"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BNC-BASE-20-10-10",
+            "BOI-BNC-BASE-20-10-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond impossible sans évoquer la dérogation.",
+          "Répond oui sans conditions.",
+          "Confond avec comptabilité commerciale BIC."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BNC-004",
+      "id": "CASE-017"
+    },
+    {
+      "theme": "BNC",
+      "difficulty": "intermediate",
+      "question_type": "mixed_vat_receipts",
+      "runtime_question": "Je suis professionnel libéral assujetti à la TVA et mes clients me paient des honoraires TVA comprise. Pour le bénéfice BNC, je retiens les recettes TTC ou HT ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les recettes BNC sont en principe déterminées toutes taxes comprises.",
+          "Le BOFiP admet une option de déclaration hors TVA dans un souci de neutralité fiscale sous conditions.",
+          "Réponse à formuler avec réserve sur l’option et la cohérence du traitement."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "BNC",
+          "recettes TTC/HT",
+          "TVA",
+          "option"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BNC-BASE-20-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond toujours HT.",
+          "Répond toujours TTC sans mentionner l’option.",
+          "Part uniquement en TVA déclarative."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BNC-005",
+      "id": "CASE-018"
+    },
+    {
+      "theme": "RFPI",
+      "difficulty": "simple",
+      "question_type": "security_deposit",
+      "runtime_question": "Mon locataire est parti sans payer son dernier loyer et j’ai conservé son dépôt de garantie pour me rembourser. Est-ce que cette somme est imposable dans mes revenus fonciers ?",
+      "gold_eval": {
+        "expected_status": "supported",
+        "expected_answer_points": [
+          "Le dépôt de garantie conservé pour couvrir des loyers impayés devient imposable au titre de l’année où il est acquis au bailleur.",
+          "Il faut distinguer dépôt simplement détenu et dépôt conservé."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "dépôt de garantie",
+          "loyers impayés",
+          "revenus fonciers"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RFPI-BASE-10-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Dit que le dépôt de garantie n’est jamais imposable.",
+          "Oublie l’année d’acquisition.",
+          "Part en TVA ou ENR."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RFPI-001",
+      "id": "CASE-019"
+    },
+    {
+      "theme": "RFPI",
+      "difficulty": "simple",
+      "question_type": "loan_interest",
+      "runtime_question": "J’ai un emprunt pour acheter un appartement que je loue vide. Les intérêts payés à la banque sont-ils déductibles au régime réel ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Au régime réel, les intérêts d’emprunt contractés pour l’acquisition, conservation, réparation ou amélioration d’un immeuble donné en location peuvent être déductibles.",
+          "Vérifier que le bien est donné en location et que l’emprunt est affecté au bien générateur de revenus fonciers.",
+          "Ne pas appliquer au micro-foncier."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "intérêts d’emprunt",
+          "régime réel",
+          "bien loué"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RFPI-BASE-20-80",
+            "BOI-RFPI-DECLA-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit les intérêts au micro-foncier.",
+          "Oublie l’affectation de l’emprunt.",
+          "Confond avec capital remboursé."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RFPI-002",
+      "id": "CASE-020"
+    },
+    {
+      "theme": "RFPI",
+      "difficulty": "intermediate",
+      "question_type": "free_use",
+      "runtime_question": "Je laisse gratuitement un appartement à un proche sans percevoir de loyer. Dois-je déclarer un revenu foncier théorique ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Il faut examiner si le propriétaire se réserve la jouissance ou met gratuitement le bien à disposition.",
+          "Le BOFiP prévoit des règles sur la valeur locative des immeubles dont le propriétaire se réserve la jouissance.",
+          "Réponse à nuancer selon le type de bien, la mise à disposition et le régime applicable."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "mise à disposition gratuite",
+          "valeur locative",
+          "revenus fonciers"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RFPI-BASE-10-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond toujours aucun revenu sans analyse.",
+          "Impose automatiquement un loyer réel inventé.",
+          "Oublie la jouissance gratuite."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RFPI-003",
+      "id": "CASE-021"
+    },
+    {
+      "theme": "RFPI",
+      "difficulty": "intermediate",
+      "question_type": "unrecovered_charges",
+      "runtime_question": "Un locataire est parti en laissant 700 € de charges récupérables impayées. Est-ce que je peux les déduire de mes revenus fonciers ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les charges locatives sont en principe à la charge du locataire.",
+          "Les charges locatives non remboursées par le locataire à son départ peuvent être déductibles sous conditions.",
+          "Il faut vérifier qu’elles n’ont pas été remboursées au 31 décembre de l’année du départ et qu’elles sont justifiées."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "charges locatives",
+          "non remboursement",
+          "déduction"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RFPI-BASE-20-40"
+          ],
+          "should_include": [
+            "BOI-RFPI-DECLA-20"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit toutes les charges récupérables même remboursées.",
+          "Refuse sans traiter l’exception du locataire parti.",
+          "Ne demande pas la date de départ."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RFPI-004",
+      "id": "CASE-022"
+    },
+    {
+      "theme": "RFPI",
+      "difficulty": "intermediate",
+      "question_type": "insurance_premium",
+      "runtime_question": "Je paie une assurance propriétaire non occupant pour un appartement loué vide. Est-ce déductible au régime réel ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les primes d’assurance liées à un immeuble donné en location peuvent faire partie des charges déductibles selon les règles BOFiP.",
+          "Vérifier le régime réel, l’affectation au bien loué et le paiement effectif dans l’année.",
+          "Ne pas appliquer si le contribuable est au micro-foncier."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "prime d’assurance",
+          "régime réel",
+          "bien loué"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RFPI-BASE-20-60",
+            "BOI-RFPI-DECLA-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit au micro-foncier.",
+          "Confond prime d’assurance emprunteur et assurance propriétaire sans nuance.",
+          "Ne vérifie pas le bien loué."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RFPI-005",
+      "id": "CASE-023"
+    },
+    {
+      "theme": "ENR",
+      "difficulty": "intermediate",
+      "question_type": "life_insurance_death",
+      "runtime_question": "Mon père est décédé et je suis bénéficiaire d’un contrat d’assurance-vie. Est-ce que c’est traité comme une succession classique ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Le traitement fiscal des capitaux d’assurance-vie au décès dépend notamment de l’âge de l’assuré lors du versement des primes et du régime applicable.",
+          "Ne pas assimiler automatiquement à l’actif successoral classique.",
+          "Demander date de souscription, date et montant des primes, âge au versement, bénéficiaire et montant reçu."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "assurance-vie décès",
+          "régime successoral",
+          "âge primes"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-ENR-DMTG-10-10-20-20"
+          ],
+          "should_include": [
+            "BOI-TCAS-AUT-60"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Traite toujours comme héritage classique.",
+          "Conclut sans âge au versement des primes.",
+          "Ignore le contrat d’assurance-vie."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "ENR-001",
+      "id": "CASE-024"
+    },
+    {
+      "theme": "ENR",
+      "difficulty": "intermediate",
+      "question_type": "funeral_expenses",
+      "runtime_question": "Dans une succession, peut-on déduire les frais d’obsèques avant de calculer les droits ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les frais funéraires peuvent être admis au passif de succession dans certaines limites et conditions.",
+          "Il faut vérifier le montant, les justificatifs et le plafond applicable dans le BOFiP.",
+          "Ne pas déduire tous les frais sans limite."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "succession",
+          "passif déductible",
+          "frais funéraires"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-ENR-DMTG-10-40-20-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit tous les frais sans plafond.",
+          "Refuse toute déduction.",
+          "Confond avec impôt sur le revenu."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "ENR-002",
+      "id": "CASE-025"
+    },
+    {
+      "theme": "ENR",
+      "difficulty": "advanced",
+      "question_type": "debt_deduction_estate",
+      "runtime_question": "Au décès de ma mère, il reste un prêt immobilier et des factures non payées. Quelles dettes peut-on déduire pour les droits de succession ?",
+      "gold_eval": {
+        "expected_status": "needs_clarification",
+        "expected_answer_points": [
+          "Les dettes existant au jour du décès peuvent être déductibles sous conditions.",
+          "Il faut vérifier la réalité, la justification, l’exigibilité et les exclusions éventuelles.",
+          "Demander la nature des dettes, les justificatifs, la date de naissance de la dette et le débiteur."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "succession",
+          "passif",
+          "dettes déductibles"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-ENR-DMTG-10-40-20-10",
+            "BOI-ENR-DMTG-10-40-20-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit toutes les dettes sans justificatif.",
+          "Refuse les prêts immobiliers par principe.",
+          "Conclut sans détails."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "ENR-003",
+      "id": "CASE-026"
+    },
+    {
+      "theme": "ENR",
+      "difficulty": "intermediate",
+      "question_type": "gift_between_siblings",
+      "runtime_question": "Ma sœur veut me donner 20 000 €. Est-ce qu’il y aura des droits à payer ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier une donation entre collatéraux.",
+          "Vérifier l’abattement applicable entre frères et sœurs et les donations antérieures.",
+          "Calculer les droits uniquement si le tarif et les informations nécessaires sont récupérés.",
+          "Ne pas appliquer l’abattement parent-enfant."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "donation",
+          "frère/sœur",
+          "abattement",
+          "rappel fiscal"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-ENR-DMTG-10-50-20",
+            "BOI-ENR-DMTG-20-30-20-20",
+            "BOI-ENR-DMTG-10-50-50"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Applique l’abattement parent-enfant.",
+          "Dit aucun droit sans vérifier abattement et dons antérieurs.",
+          "Confond avec présent d’usage sans circonstance."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "ENR-004",
+      "id": "CASE-027"
+    },
+    {
+      "theme": "PAT_IFI",
+      "difficulty": "intermediate",
+      "question_type": "usufruct",
+      "runtime_question": "J’ai l’usufruit d’un appartement et mes enfants en ont la nue-propriété. Pour l’IFI, qui doit déclarer la valeur du bien ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "En matière d’IFI, les biens grevés d’usufruit sont en principe compris dans le patrimoine de l’usufruitier pour leur valeur en pleine propriété, sauf cas particuliers.",
+          "Il faut vérifier l’origine du démembrement et les exceptions éventuelles.",
+          "Les nus-propriétaires ne déclarent pas nécessairement leur seule nue-propriété si le principe s’applique."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "IFI",
+          "usufruit",
+          "nue-propriété",
+          "pleine propriété"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-PAT-IFI-20-20-30-10",
+            "BOI-PAT-IFI-30-10-10-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répartit automatiquement entre usufruitier et nus-propriétaires.",
+          "Oublie les exceptions.",
+          "Confond avec droits de donation."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IFI-001",
+      "id": "CASE-028"
+    },
+    {
+      "theme": "PAT_IFI",
+      "difficulty": "advanced_calculation",
+      "question_type": "company_shares_real_estate_ratio",
+      "runtime_question": "Je possède 40 % d’une société non cotée. La société vaut 1 000 000 € et son seul immeuble vaut 600 000 €, le reste étant de la trésorerie et du matériel. Comment raisonner pour l’IFI ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les parts de sociétés peuvent être imposables à l’IFI à hauteur de la fraction de leur valeur représentative d’actifs immobiliers imposables.",
+          "Le calcul attendu applique un coefficient immobilier aux parts détenues, sous réserve des dettes et exclusions.",
+          "Ne pas imposer toute la valeur des parts sans ratio immobilier."
+        ],
+        "expected_calculation": "Ratio immobilier simplifié: 600 000 / 1 000 000 = 60 %. Valeur des parts détenues: 1 000 000 × 40 % = 400 000. Fraction immobilière indicative: 400 000 × 60 % = 240 000, sous réserve des règles d’évaluation et exclusions.",
+        "core_axes": [
+          "IFI",
+          "parts de société",
+          "ratio immobilier",
+          "valorisation"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-PAT-IFI-20-20-20-10",
+            "BOI-PAT-IFI-20-30-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Impose 400 000 sans ratio.",
+          "Ignore la détention de 40 %.",
+          "Calcule l’IFI final."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IFI-002",
+      "id": "CASE-029"
+    },
+    {
+      "theme": "PAT_IFI",
+      "difficulty": "intermediate",
+      "question_type": "forest_property",
+      "runtime_question": "Je possède des bois et forêts dans mon patrimoine. Est-ce qu’ils sont imposables en totalité à l’IFI ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les bois et forêts peuvent bénéficier d’une exonération partielle d’IFI sous conditions.",
+          "Il faut vérifier les engagements, certificats et conditions BOFiP.",
+          "Ne pas exclure totalement sans vérifier les conditions."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "IFI",
+          "bois et forêts",
+          "exonération partielle"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-PAT-IFI-30-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Exonère 100 % sans conditions.",
+          "Impose 100 % sans analyser l’exonération partielle.",
+          "Confond avec taxe foncière."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IFI-003",
+      "id": "CASE-030"
+    },
+    {
+      "theme": "PAT_IFI",
+      "difficulty": "intermediate",
+      "question_type": "professional_asset_company",
+      "runtime_question": "Je détiens des parts d’une société opérationnelle qui possède ses locaux d’exploitation. Est-ce que la valeur de ces locaux entre dans mon IFI ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les actifs affectés à l’activité opérationnelle peuvent être exonérés d’IFI sous conditions.",
+          "Il faut vérifier les fonctions exercées, la rémunération, l’activité de la société et l’affectation des actifs.",
+          "Ne pas conclure sans connaître le rôle du redevable dans la société."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "IFI",
+          "parts de société",
+          "actifs professionnels",
+          "activité opérationnelle"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-PAT-IFI-30-10-30-10",
+            "BOI-PAT-IFI-20-20-20-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Inclut automatiquement tous les immeubles détenus via société.",
+          "Exclut automatiquement sans conditions.",
+          "Oublie les fonctions/rémunération."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IFI-004",
+      "id": "CASE-031"
+    },
+    {
+      "theme": "RSA",
+      "difficulty": "simple_calculation",
+      "question_type": "apprentice_wages",
+      "runtime_question": "Mon enfant apprenti a gagné 14 000 € en 2024. Est-ce que tout doit être déclaré dans notre revenu imposable ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les salaires d’apprentis bénéficient d’une exonération dans une certaine limite.",
+          "Seule la fraction qui excède la limite d’exonération doit être déclarée, si la limite est dépassée.",
+          "Il faut récupérer la limite BOFiP applicable à l’année."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "salaires d’apprenti",
+          "exonération",
+          "fraction imposable"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RSA-CHAMP-20-50-50"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Impose tout le salaire.",
+          "Exonère tout sans comparer à la limite.",
+          "Confond avec stage étudiant."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RSA-001",
+      "id": "CASE-032"
+    },
+    {
+      "theme": "RSA",
+      "difficulty": "intermediate",
+      "question_type": "meals_benefit",
+      "runtime_question": "Mon employeur me fournit gratuitement les repas tous les midis. Est-ce que c’est un avantage imposable ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les avantages en nature sont en principe pris en compte dans le revenu imposable.",
+          "La nourriture fournie par l’employeur peut être évaluée forfaitairement selon les règles BOFiP.",
+          "Il faut vérifier le nombre de repas et le barème applicable."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "avantage en nature",
+          "nourriture",
+          "évaluation"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RSA-CHAMP-20-30-50",
+            "BOI-RSA-BASE-20-20"
+          ],
+          "should_include": [
+            "BOI-BAREME-000014"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Dit non car ce n’est pas de l’argent.",
+          "Calcule sans nombre de repas ni barème.",
+          "Oublie avantage en nature."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RSA-002",
+      "id": "CASE-033"
+    },
+    {
+      "theme": "RSA",
+      "difficulty": "intermediate",
+      "question_type": "allowance_compensating_benefit",
+      "runtime_question": "Au lieu de me loger, mon employeur me verse une indemnité pour compenser le logement que je devrais recevoir. Est-ce imposable ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Une indemnité représentative d’un avantage en nature peut être imposable comme l’avantage qu’elle remplace.",
+          "Il faut vérifier la nature de l’indemnité et le droit à l’avantage initial.",
+          "Ne pas traiter comme remboursement de frais professionnels sans justification."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "indemnité compensatrice",
+          "avantage en nature",
+          "revenu imposable"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RSA-CHAMP-20-30-10-10",
+            "BOI-RSA-CHAMP-20-30-50"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Exonère comme remboursement de frais.",
+          "Oublie la nature d’avantage remplacé.",
+          "Ne traite pas RSA."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RSA-003",
+      "id": "CASE-034"
+    },
+    {
+      "theme": "RSA",
+      "difficulty": "intermediate",
+      "question_type": "mileage_reimbursement",
+      "runtime_question": "Mon employeur me rembourse des déplacements professionnels avec ma voiture personnelle. Est-ce que je dois déclarer ces remboursements ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les remboursements de frais professionnels peuvent être exonérés s’ils correspondent à des frais réels ou sont utilisés conformément à leur objet.",
+          "Il faut vérifier kilométrage, barème, justificatifs et nature professionnelle des déplacements.",
+          "Ne pas confondre remboursement employeur et option personnelle pour frais réels."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "remboursement frais professionnels",
+          "kilométrage",
+          "justificatifs"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RSA-CHAMP-20-50-10-20",
+            "BOI-RSA-BASE-30-50-30-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Impose tout automatiquement.",
+          "Exonère tout sans barème/justificatifs.",
+          "Confond trajet domicile-travail et mission."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RSA-004",
+      "id": "CASE-035"
+    },
+    {
+      "theme": "RPPM",
+      "difficulty": "simple",
+      "question_type": "current_account_interest",
+      "runtime_question": "J’ai prêté de l’argent à une société dont je suis associé et elle me verse des intérêts. Dans quelle catégorie ces intérêts sont-ils imposés ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les intérêts de créances, dépôts, cautionnements et comptes courants relèvent en principe des revenus de capitaux mobiliers, sauf rattachement à une activité professionnelle.",
+          "Il faut distinguer l’imposition du bénéficiaire de la déduction éventuelle dans la société."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "intérêts",
+          "compte courant",
+          "revenus de capitaux mobiliers"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RPPM-RCM-10-10-40"
+          ],
+          "should_include": [
+            "BOI-RPPM-RCM-20-10-20-30"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Traite comme dividendes.",
+          "Part uniquement en BIC société.",
+          "Oublie la réserve activité professionnelle."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RPPM-001",
+      "id": "CASE-036"
+    },
+    {
+      "theme": "RPPM",
+      "difficulty": "intermediate_calculation",
+      "question_type": "average_price_shares",
+      "runtime_question": "J’ai acheté 100 actions à 20 € puis 100 actions à 30 €. J’en revends 150 à 40 €. Comment déterminer le gain de cession si les titres sont fongibles ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Pour des titres fongibles acquis à des prix différents, la règle du prix moyen pondéré peut s’appliquer.",
+          "Calculer le prix moyen d’acquisition puis le gain sur les titres cédés.",
+          "Réserve sur frais, titres éligibles et régime applicable."
+        ],
+        "expected_calculation": "Prix moyen: ((100×20)+(100×30))/200 = 25 €. Prix d’acquisition des 150 titres cédés: 150×25=3 750 €. Prix de cession: 150×40=6 000 €. Gain brut: 2 250 €, hors frais et ajustements.",
+        "core_axes": [
+          "titres fongibles",
+          "prix moyen pondéré",
+          "gain de cession"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RPPM-PVBMI-20-10",
+            "BOI-RPPM-PVBMI-20-10-20-40",
+            "BOI-RPPM-PVBMI-20-10-10-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Utilise seulement les titres les plus anciens sans justification.",
+          "Oublie prix moyen pondéré.",
+          "Confond avec dividendes."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RPPM-002",
+      "id": "CASE-037"
+    },
+    {
+      "theme": "RPPM",
+      "difficulty": "intermediate",
+      "question_type": "associate_loan_as_distribution",
+      "runtime_question": "Ma société m’a avancé de l’argent sur mon compte d’associé sans remboursement prévu. Est-ce que ça peut être considéré comme un revenu distribué ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les avances, prêts ou acomptes consentis aux associés peuvent relever des revenus distribués sous conditions.",
+          "Il faut vérifier la réalité du prêt, les modalités de remboursement et la situation du compte.",
+          "Ne pas assimiler automatiquement tout prêt régulier à une distribution sans analyse."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "avance à associé",
+          "revenu distribué",
+          "remboursement"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RPPM-RCM-10-20-20-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Traite comme dividende régulier sans analyse.",
+          "Ignore les modalités de remboursement.",
+          "Part uniquement en abus de bien social."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RPPM-003",
+      "id": "CASE-038"
+    },
+    {
+      "theme": "IS",
+      "difficulty": "intermediate",
+      "question_type": "loss_carryforward",
+      "runtime_question": "Ma société à l’IS a fait un déficit cette année. Peut-elle l’utiliser sur les bénéfices des années suivantes ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les déficits des sociétés soumises à l’IS peuvent être reportés en avant selon les règles BOFiP.",
+          "Il faut vérifier les plafonds et conditions éventuels d’imputation.",
+          "Ne pas confondre avec report en arrière."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "IS",
+          "déficit",
+          "report en avant"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-IS-DEF-10-10",
+            "BOI-IS-DEF-10-30"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond que le déficit est perdu.",
+          "Traite seulement carry-back.",
+          "Ignore les conditions et limites."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IS-001",
+      "id": "CASE-039"
+    },
+    {
+      "theme": "IS",
+      "difficulty": "intermediate",
+      "question_type": "carryback",
+      "runtime_question": "Ma société à l’IS a un déficit et elle avait payé de l’IS sur un bénéfice l’an dernier. Peut-elle demander un report en arrière ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Le report en arrière des déficits peut faire naître une créance sur le Trésor sous conditions.",
+          "Il faut vérifier le déficit éligible, l’exercice bénéficiaire, l’option et les modalités déclaratives.",
+          "Ne pas confondre avec report en avant."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "IS",
+          "déficit",
+          "report en arrière",
+          "option"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-IS-DEF-20-10",
+            "BOI-IS-DECLA-20-10-30"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Répond uniquement report en avant.",
+          "Dit créance automatique sans option.",
+          "Ne demande pas bénéfices antérieurs."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IS-002",
+      "id": "CASE-040"
+    },
+    {
+      "theme": "IS",
+      "difficulty": "advanced_calculation",
+      "question_type": "financial_expense_limitation",
+      "runtime_question": "Ma société a 4 500 000 € de charges financières nettes et un EBITDA fiscal ajusté de 12 000 000 €. Quelle limite de déduction faut-il examiner ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier le dispositif de limitation des charges financières nettes.",
+          "Comparer le plafond fixe et le pourcentage de l’EBITDA fiscal ajusté si les conditions du dispositif sont réunies.",
+          "Réponse sous réserve des règles de groupe, sous-capitalisation et exclusions."
+        ],
+        "expected_calculation": "Plafond fixe de droit commun à comparer avec 30 % de l’EBITDA fiscal ajusté: 12 000 000 × 30 % = 3 600 000. Le plafond de 3 600 000 est supérieur à 3 000 000 ; charges potentiellement non déductibles avant autres règles: 4 500 000 - 3 600 000 = 900 000.",
+        "core_axes": [
+          "charges financières nettes",
+          "EBITDA fiscal",
+          "limitation"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-IS-BASE-35-40-10-10",
+            "BOI-IS-BASE-35-40-10-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Déduit 4 500 000 en totalité sans analyse.",
+          "Applique seulement 3 M€ sans comparer à l’EBITDA.",
+          "Ignore sous-capitalisation/régime de groupe en réserve."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IS-003",
+      "id": "CASE-041"
+    },
+    {
+      "theme": "IF_CFE",
+      "difficulty": "simple",
+      "question_type": "seasonal_cfe",
+      "runtime_question": "J’exploite un petit stand de glaces seulement en juillet et août, mais tous les étés. Est-ce que cette activité peut quand même être soumise à la CFE ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "La CFE suppose une activité exercée à titre habituel, professionnel et non salarié.",
+          "Une activité saisonnière peut remplir le critère d’habitude si elle se répète.",
+          "Il faut vérifier le caractère lucratif, professionnel, non salarié et les éventuelles exonérations."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "CFE",
+          "activité habituelle",
+          "activité saisonnière"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-IF-CFE-10-20-20-10",
+            "BOI-IF-CFE-10-20-20-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": [
+            "BOI-CF"
+          ]
+        },
+        "failure_signals": [
+          "Route vers CF contrôle fiscal.",
+          "Répond non uniquement parce que l’activité dure deux mois.",
+          "Ignore le caractère récurrent."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IF-001",
+      "id": "CASE-042"
+    },
+    {
+      "theme": "CF",
+      "difficulty": "intermediate",
+      "question_type": "late_interest",
+      "runtime_question": "J’ai oublié une partie de mes revenus et je veux régulariser. Est-ce que l’administration peut appliquer des intérêts de retard ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "L’intérêt de retard répare le préjudice financier subi par le Trésor du fait du paiement tardif.",
+          "Il faut distinguer intérêt de retard et pénalités/majorations.",
+          "Réponse sous réserve des modalités de régularisation et des réductions éventuelles."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "intérêt de retard",
+          "régularisation",
+          "pénalités distinctes"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-CF-INF-10-10-10"
+          ],
+          "should_include": [
+            "BOI-CF-INF-10-20-20"
+          ],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Confond avec CFE.",
+          "Répond seulement sanction pénale.",
+          "Oublie distinction intérêt/pénalité."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "CF-001",
+      "id": "CASE-043"
+    },
+    {
+      "theme": "CF",
+      "difficulty": "intermediate",
+      "question_type": "mention_express",
+      "runtime_question": "J’ai appliqué une position fiscale discutable mais je l’ai expliquée clairement dans ma déclaration. Est-ce que ça peut avoir un effet sur les intérêts de retard ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Examiner la mention expresse et ses effets éventuels sur l’intérêt de retard.",
+          "La position doit être indiquée de manière suffisamment précise pour permettre à l’administration d’apprécier la situation.",
+          "Ne pas confondre avec un rescrit ou une garantie automatique contre tout redressement."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "mention expresse",
+          "intérêt de retard",
+          "déclaration"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-CF-INF-10-10-20"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Dit aucun risque fiscal.",
+          "Confond avec rescrit.",
+          "Ne traite pas l’effet limité sur intérêts de retard."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "CF-002",
+      "id": "CASE-044"
+    },
+    {
+      "theme": "IR",
+      "difficulty": "simple_calculation",
+      "question_type": "childcare_credit",
+      "runtime_question": "J’ai payé 2 400 € de frais de garde pour mon enfant de 4 ans. Comment savoir quelle partie ouvre droit à l’avantage fiscal ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier le crédit d’impôt pour frais de garde des jeunes enfants hors du domicile.",
+          "Vérifier l’âge de l’enfant, les dépenses éligibles, les aides reçues et le plafond.",
+          "Calculer uniquement la base retenue et le crédit si les plafonds/taux BOFiP sont récupérés."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "crédit d’impôt",
+          "frais de garde",
+          "enfant",
+          "plafond"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-IR-RICI-300"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Calcule sans tenir compte des aides.",
+          "Oublie l’âge de l’enfant.",
+          "Part en RSA salaire."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IR-001",
+      "id": "CASE-045"
+    },
+    {
+      "theme": "IR",
+      "difficulty": "intermediate",
+      "question_type": "home_employment_credit",
+      "runtime_question": "J’ai payé une personne pour faire du ménage à mon domicile. Est-ce que ces dépenses peuvent donner droit à un avantage fiscal ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier le crédit d’impôt pour emploi d’un salarié à domicile.",
+          "Vérifier la nature des services, le domicile, les plafonds et aides éventuelles.",
+          "Ne pas calculer sans montant, aides ou plafond applicable."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "emploi à domicile",
+          "crédit d’impôt",
+          "dépenses éligibles"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-IR-RICI-150"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Calcule sans montant.",
+          "Oublie les aides reçues.",
+          "Confond avec charges professionnelles."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IR-002",
+      "id": "CASE-046"
+    },
+    {
+      "theme": "IR",
+      "difficulty": "intermediate",
+      "question_type": "student_wages",
+      "runtime_question": "Mon fils étudiant a travaillé l’été et a gagné 4 500 €. Est-ce que ces salaires sont imposables si je le rattache à mon foyer ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Les salaires des étudiants peuvent bénéficier d’une exonération dans une certaine limite sous conditions d’âge et d’activité.",
+          "Seule la fraction excédentaire éventuelle est imposable.",
+          "Vérifier l’âge, le statut étudiant et la limite applicable à l’année."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "salaires étudiants",
+          "exonération",
+          "foyer fiscal"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RSA-CHAMP-20-50-50"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Impose tout.",
+          "Exonère sans limite.",
+          "Confond étudiant et apprenti sans nuance."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "IR-003",
+      "id": "CASE-047"
+    },
+    {
+      "theme": "BA",
+      "difficulty": "intermediate",
+      "question_type": "agricultural_average",
+      "runtime_question": "Je suis agriculteur et mes recettes varient beaucoup d’une année à l’autre. Est-ce que le bénéfice imposable peut être calculé avec une moyenne ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier les règles applicables aux bénéfices agricoles et au régime concerné.",
+          "Le micro-BA utilise une moyenne triennale des recettes si les conditions du régime sont réunies.",
+          "Demander les recettes des années concernées et vérifier l’éligibilité."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "bénéfices agricoles",
+          "moyenne triennale",
+          "régime"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-BA-REG-10-10",
+            "BOI-BA-BASE-15-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Applique un abattement sans recettes.",
+          "Part en BIC/BNC.",
+          "Ne vérifie pas le régime applicable."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "BA-001",
+      "id": "CASE-048"
+    },
+    {
+      "theme": "RPPM",
+      "difficulty": "intermediate",
+      "question_type": "pea_withdrawal",
+      "runtime_question": "J’ai un PEA ouvert depuis 3 ans et je veux retirer une partie de l’argent. Quelles conséquences fiscales dois-je vérifier ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier les conséquences fiscales d’un retrait ou rachat d’un PEA selon l’ancienneté du plan.",
+          "Un retrait avant certains délais peut entraîner clôture et imposition du gain selon les règles BOFiP.",
+          "Il faut connaître la date d’ouverture, le montant des versements, la valeur du plan et le retrait."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "PEA",
+          "retrait",
+          "ancienneté",
+          "gain"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RPPM-PVBMI-40-30-30-10",
+            "BOI-ANNX-000072"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Traite comme cession de titres ordinaire sans PEA.",
+          "Ne tient pas compte de l’ancienneté du plan.",
+          "Calcule sans valeur liquidative."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RPPM-004",
+      "id": "CASE-049"
+    },
+    {
+      "theme": "RPPM",
+      "difficulty": "advanced",
+      "question_type": "capital_loss_offset",
+      "runtime_question": "J’ai vendu des actions avec une perte en 2024, et j’ai aussi une plus-value sur d’autres actions. Est-ce que la perte peut réduire la plus-value ?",
+      "gold_eval": {
+        "expected_status": "supported_with_limits",
+        "expected_answer_points": [
+          "Identifier le régime d’imputation des moins-values sur plus-values de même nature.",
+          "Vérifier l’année de réalisation, la nature des titres et les règles de report éventuel.",
+          "Ne pas imputer sur des revenus d’une autre catégorie sans source."
+        ],
+        "expected_calculation": null,
+        "core_axes": [
+          "plus-values mobilières",
+          "moins-values",
+          "imputation"
+        ],
+        "expected_bofip_refs": {
+          "must_include": [
+            "BOI-RPPM-PVBMI-20-10",
+            "BOI-RPPM-PVBMI-30-10"
+          ],
+          "should_include": [],
+          "avoid_as_primary": []
+        },
+        "failure_signals": [
+          "Impute sur salaires ou dividendes.",
+          "Ignore la nature des titres.",
+          "Ne distingue pas moins-value et abattement."
+        ],
+        "review_notes": ""
+      },
+      "legacy_id": "RPPM-005",
+      "id": "CASE-050"
+    }
+  ]
+}

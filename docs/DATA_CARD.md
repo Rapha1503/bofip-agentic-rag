@@ -2,45 +2,52 @@
 
 ## Dataset Purpose
 
-This project uses a local BOFiP export to build a retrieval corpus for French tax doctrine question answering. The goal is to test whether a structured RAG pipeline can retrieve and cite relevant BOFiP commentary for accountant-style answers.
+This project uses the public `bofip-vigueur` API from data.economie.gouv.fr to build a retrieval corpus for French tax doctrine question answering. The goal is to test whether a structured RAG pipeline can retrieve and cite relevant BOFiP material for accountant-style answers.
 
 ## Current Runtime Scope
 
 | Field | Value |
 | --- | --- |
-| Runtime corpus | BOFiP commentary documents |
-| Raw document rows | 5,666 |
-| Unique BOI references | 5,657 |
-| Chunk rows | 66,289 |
+| Runtime corpus | No-filter `bofip-vigueur` source snapshot |
+| Raw source rows | 9,048 |
+| Stable document IDs | 9,048 |
+| Base BOI references | 9,025 |
+| Duplicate base-reference extra rows preserved | 23 |
+| Chunk rows | 79,160 |
 | Chunk strategy | `section_window` |
-| Document embedding cache | E5-large, `(5666, 1024)` |
-| Chunk embedding cache | E5-large, `(66289, 1024)` |
-| Local max publication date observed | `2026-01-28` |
+| Document embedding cache | E5-large, `(9048, 1024)` |
+| Chunk embedding cache | E5-large, `(79160, 1024)` |
+| Local max publication date observed | `2026-06-17` |
 
-The local directory also contains a broader 6,295-document export including non-commentary content types, but the active runtime uses the 5,666-document commentary corpus.
+The active runtime stores `document_id` as a stable BOFiP permalink/PGP identity. `boi_reference` remains the legal BOI reference used for citations, grouping, and routing.
 
 ## Source Assumptions
 
-The parsers expect a local BOFiP export shaped like:
+The source acquisition script requests the public dataset without a series filter:
 
 ```text
-Contenu/**/document.xml
-Contenu/**/data.html or data.htm
+https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/bofip-vigueur/records
 ```
 
-The repository does not currently include a public acquisition script for the full export. A production-grade release should add:
+The source identity policy is:
 
-- acquisition method;
+- keep every API row exposed by the no-filter snapshot;
+- use the BOFiP permalink PGP id to disambiguate duplicate base references;
+- keep `boi_reference` separate from `document_id`.
+
+A production-grade release should continue to publish:
+
 - collection timestamp;
-- official source URL;
 - file hashes;
-- document counts by content type;
+- document counts by series and content type;
 - parser, chunker, and embedding versions;
-- explicit exclusions.
+- explicit exclusions, if any.
 
 ## Traceability Preserved
 
-Raw documents preserve:
+The runtime file `data/interim/raw_docs.jsonl` contains parsed, structured runtime documents. The raw API snapshot used for rebuild/audit is stored separately as `data/raw/latest_snapshot.jsonl` when present locally.
+
+Parsed runtime documents preserve:
 
 - `document_id`;
 - `boi_reference`;
@@ -70,17 +77,16 @@ Chunks preserve:
 
 ## Known Data Quality Risks
 
-- Freshness risk: the local corpus observed during audit ends at `2026-01-28`; official BOFiP may include newer publications.
-- Duplicate-reference risk: 9 BOI references appear more than once with different document IDs or titles.
-- Table evidence risk: many BOFiP tables are parsed but not yet first-class chunks.
-- Scope risk: current runtime is commentary-only and excludes some content types available in the broader local export.
+- Freshness risk: the local corpus observed during audit ends at `2026-06-17`; official BOFiP may include newer publications after that snapshot.
+- Duplicate-reference risk: 23 extra source rows share a base BOI reference with another row; they are preserved via stable `document_id`.
+- Empty-source risk: 50 API rows have no useful body text and therefore do not produce chunks.
+- Evaluation provenance risk: `data/interim/eval_queries_v1.jsonl` and `data/interim/passage_gold_v3.jsonl` are legacy retrieval gold files preserved for regression checks, not a fresh answer-quality certification.
 - Licensing and redistribution risk: heavy raw/model artifacts are intentionally not committed to this repository.
 
 ## Phase 2 Data Work
 
-- Add checksum validation into the preflight path.
-- Key runtime identity by `document_id`, not only by `boi_reference`.
-- Add table chunks with table IDs, row indices, and headers.
+- Track source series counts in the manifest or a signed audit artifact.
+- Add table-specific evaluation queries for table-heavy BOFiP pages.
 - Publish a tracked evaluation report that ties metrics to a corpus manifest.
 
 ## Local Artifact Check
@@ -91,6 +97,6 @@ The repository includes a preflight script for the current artifact contract:
 python scripts/check_setup.py --deep
 ```
 
-This is not a replacement for a signed manifest, but it catches missing files, wrong JSONL counts, and wrong embedding shapes before the app starts.
+This is not a replacement for a signed manifest, but it catches missing files, wrong JSONL counts, and wrong embedding shapes before the app starts. In deep mode, runtime artifact counts and shapes are checked against the tracked manifest.
 
 The current machine-readable artifact reference is tracked in [full_corpus_manifest.json](full_corpus_manifest.json).

@@ -10,10 +10,23 @@ _NUM_RE = re.compile(
 )
 
 
+MONTH_RE = re.compile(
+    r"\b(janvier|fevrier|février|mars|avril|mai|juin|juillet|aout|août|septembre|octobre|novembre|decembre|décembre)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_date_or_year(value: int, context: str) -> bool:
+    if 1900 <= value <= 2100:
+        return True
+    return 1 <= value <= 31 and bool(MONTH_RE.search(context))
+
+
 def _extract_numbers(text: str) -> list[dict]:
-    """Extract numbers with surrounding context from user question."""
+    """Extract numeric facts with surrounding context from user question."""
     found = []
-    for m in re.finditer(r"(\d[\d\s]*\d+|\d{3,})\s*(?:euros?|€)?", text):
+    pattern = re.compile(r"(\d[\d\s]*\d+|\d+)\s*(euros?|€|%|pour\s*cent)?", re.IGNORECASE)
+    for m in pattern.finditer(text):
         val_str = m.group(1).replace(" ", "")
         try:
             val = int(val_str)
@@ -22,7 +35,16 @@ def _extract_numbers(text: str) -> list[dict]:
         start = max(0, m.start() - 40)
         end = min(len(text), m.end() + 40)
         ctx = text[start:end].replace("\n", " ").strip()
-        found.append({"value": val, "context": ctx})
+        raw_unit = (m.group(2) or "").lower()
+        if _is_date_or_year(val, ctx) and not raw_unit:
+            continue
+        if raw_unit in {"€", "euro", "euros"}:
+            unit = "euros"
+        elif raw_unit in {"%", "pour cent"}:
+            unit = "%"
+        else:
+            unit = "nombre"
+        found.append({"value": val, "unit": unit, "context": ctx})
     return found
 
 
@@ -34,12 +56,21 @@ def build_system_prompt() -> str:
         "Si l'utilisateur donne des montants, applique les regles des extraits "
         "a SES chiffres et donne le resultat calcule. "
         "Ne recite pas la loi sans repondre a la question.\n\n"
-        "CRITERES DE COUVERTURE (sois pragmatique):\n"
-        "- supported: tu peux repondre a la question principale.\n"
-        "- partial: un axe FISCAL SUBSTANTIF manque.\n"
-        "- axes_manquants: UNIQUEMENT les axes substantifs. "
-        "Jamais de references BOI/CGI, cas particuliers non demandes, "
-        "ou concepts fiscaux differents de la question.\n"
+        "REGLE DE PREUVE: un taux, seuil, montant fiscal, abattement ou formule "
+        "doit etre cite avec [n]. Si une valeur utile manque, ne l'invente pas: "
+        "reponds quand meme a la question principale avec les elements prouves, "
+        "puis place la valeur manquante en limite si elle ne change pas la "
+        "qualification fiscale principale.\n\n"
+        "POLITIQUE DE STATUT (stricte et stable):\n"
+        "- supported: tu peux repondre a la question principale a partir des extraits, "
+        "meme avec des reserves, hypotheses, exceptions non declenchees, options ou "
+        "precisions a signaler dans limits.\n"
+        "- insufficient_evidence: les extraits ne permettent pas de repondre a la question principale.\n"
+        "- partial est deconseille dans cette application: si une reponse principale est possible, "
+        "utilise supported et mets les reserves dans limits. Si elle n'est pas possible, "
+        "utilise insufficient_evidence.\n"
+        "- axes_manquants n'est pas un verdict de verite: laisse [] sauf en cas "
+        "insufficient_evidence, ou tu peux indiquer brievement la preuve absente.\n"
         "Si tu peux repondre: answer_status='supported' et axes_manquants=[]."
     )
 
@@ -64,13 +95,13 @@ def build_prompt(query: str, chunks: list[dict]) -> str:
     if nums:
         base += "DONNEES CHIFFREES DE L'UTILISATEUR (tu DOIS les utiliser dans ton calcul):\n"
         for n in nums:
-            base += f"- {n['value']} euros (contexte: {n['context']})\n"
+            base += f"- {n['value']} {n['unit']} (contexte: {n['context']})\n"
         base += "\n"
 
     base += (
         "EXTRAITS BOFIP:\n" + "\n\n".join(blocks) + "\n\n"
         "TA REPONSE (objet JSON, rien d'autre):\n"
-        '{"answer_status":"supported|partial|insufficient_evidence",'
+        '{"answer_status":"supported|insufficient_evidence",'
         '"conclusion":"reponse directe avec montant calcule si applicable",'
         '"justification_bullets":["etape calcul avec [n]","etape 2",...],'
         '"axes_requis":["axe1"],"axes_couverts":["axe1"],'
@@ -82,7 +113,9 @@ def build_prompt(query: str, chunks: list[dict]) -> str:
         "le calcul etape par etape dans justification_bullets en utilisant "
         "ces montants. Montre l'operation, les valeurs, le resultat.\n"
         "3. conclusion: une phrase avec le resultat final (chiffre si calcul).\n"
-        "4. limits: 50 mots max.\n"
-        "5. N'invente rien. Sources = [n]."
+        "4. limits: 70 mots max. Mets-y les hypotheses, exceptions et precisions non bloquantes.\n"
+        "5. N'invente rien. Sources = [n].\n"
+        "6. Tout taux, seuil, montant fiscal, abattement ou formule doit etre cite avec [n]. "
+        "S'il n'est pas dans les extraits, ne le donne pas; signale seulement la limite."
     )
     return base

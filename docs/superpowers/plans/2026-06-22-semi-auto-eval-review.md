@@ -105,10 +105,10 @@ class EvalSchemaTests(unittest.TestCase):
         self.assertEqual(normalize_boi_family("BOI-RFPI-BASE-20-70"), "BOI-RFPI-BASE-20-70")
 
     def test_redact_secrets_removes_api_like_values(self):
-        text = "key sk-1234567890abcdef and hf_abcdefghijklmnopqrstuvwxyz"
+        text = "key " + "sk-" + "1234567890abcdef and " + "hf_" + "abcdefghijklmnopqrstuvwxyz"
         redacted = redact_secrets(text)
-        self.assertNotIn("sk-1234567890abcdef", redacted)
-        self.assertNotIn("hf_abcdefghijklmnopqrstuvwxyz", redacted)
+        self.assertNotIn("sk-" + "1234567890abcdef", redacted)
+        self.assertNotIn("hf_" + "abcdefghijklmnopqrstuvwxyz", redacted)
         self.assertIn("[REDACTED_SECRET]", redacted)
 
     def test_per_query_result_carries_sources_and_trace(self):
@@ -394,7 +394,7 @@ class EvalArtifactsTests(unittest.TestCase):
 
     def test_secret_scan_rejects_keys(self):
         with self.assertRaises(ValueError):
-            assert_no_secrets("DEEPSEEK_API_KEY=sk-1234567890abcdef")
+            assert_no_secrets("DEEPSEEK_API_KEY=" + "sk-" + "1234567890abcdef")
 ```
 
 - [ ] **Step 2: Run the failing test**
@@ -1199,7 +1199,7 @@ class QAReleaseTests(unittest.TestCase):
             root = Path(tmp)
             docs = root / "docs" / "evaluation" / "latest"
             docs.mkdir(parents=True)
-            (docs / "summary.md").write_text("sk-1234567890abcdef", encoding="utf-8")
+            (docs / "summary.md").write_text("sk-" + "1234567890abcdef", encoding="utf-8")
             problems = scan_for_forbidden_public_content(docs)
             self.assertTrue(problems)
 

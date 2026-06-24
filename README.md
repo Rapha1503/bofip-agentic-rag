@@ -2,11 +2,11 @@
 
 Full-corpus RAG prototype for French BOFiP tax doctrine, created by **Raphael Ifergan**.
 
-The project combines hybrid retrieval with a controlled agentic loop: domain classification, BOFiP retrieval, structured answer generation, coverage self-evaluation, targeted reformulation when evidence is missing, and cited output with explicit limits.
+The project combines full-corpus BOFiP retrieval with a controlled agentic loop: fiscal planning, retrieval per axis, source criticism, targeted relaunch when evidence is missing, and cited output with explicit limits.
 
 [![Python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-50%20passing-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-187%20passing-brightgreen)](tests/)
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange)](docs/ROADMAP.md)
 [![Demo](https://img.shields.io/badge/demo-Hugging%20Face-yellow)](https://rapha1503-bofip-agentic-rag.hf.space/)
 
@@ -14,21 +14,21 @@ The project combines hybrid retrieval with a controlled agentic loop: domain cla
 
 ```text
 Question utilisateur
-  -> classification domaine BOFiP
-  -> retrieval hybride BM25 + E5 + fusion RRF
-  -> réponse JSON sourcée + auto-évaluation des axes couverts
-  -> si preuve insuffisante: reformulation cibl?e + second retrieval
-  -> réponse finale avec sources et limites
+  -> plan fiscal: faits, ambiguïtés, axes core/calculation/reserve/alternative
+  -> retrieval par axe: BM25 full-corpus par défaut, E5/RRF optionnel en local
+  -> critique des sources: passages utiles, hors sujet, axes encore fragiles
+  -> si besoin: recherche intra-document puis relance ciblée
+  -> réponse finale sourcée avec limites explicites
 ```
 
-The live app uses the full commentary corpus. No reduced demo corpus is used.
+The live app uses the full no-filter `bofip-vigueur` source snapshot. No reduced demo corpus is used.
 
 | Layer | Current state |
 | --- | --- |
-| Corpus | 5,666 BOFiP commentary documents observed through `2026-01-28` |
-| Index | 66,289 section-window passages |
-| Retrieval | BM25 variants, E5-large dense retrieval, confidence-weighted RRF, per-document chunk selection |
-| Agent | `AgenticRAG`: classify, retrieve, answer, self-evaluate, reformulate, retry |
+| Corpus | 9,048 BOFiP source rows observed through `2026-06-17` |
+| Index | 79,160 section-window passages |
+| Retrieval | BM25 full-corpus by default; optional E5/RRF benchmark mode; per-document chunk selection |
+| Agent | `AgenticRAG`: plan, retrieve per axis, critic, intra-document rescue, answer |
 | Output | `supported`, `partial`, or `insufficient_evidence` with visible BOFiP sources |
 | Hosting | Streamlit BYOK app on Hugging Face Spaces |
 
@@ -46,7 +46,7 @@ Copy-Item .env.example .env.local
 Add at least one provider key to `.env.local`, for example:
 
 ```text
-DEEPSEEK_API_KEY=sk-...
+DEEPSEEK_API_KEY=<votre-cle-api-deepseek>
 ```
 
 Download or place the full-corpus runtime artifacts:
@@ -75,12 +75,12 @@ Large artifacts are intentionally not committed to Git. They are tracked by `doc
 
 | Artifact | Path |
 | --- | --- |
-| Raw documents | `data/interim/raw_docs_sample_5666.jsonl` |
-| Chunks | `data/interim/chunks_section_window_sample_5666.jsonl` |
-| Document embeddings | `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` |
-| Chunk embeddings | `data/interim/chunk_dense_cache_5666_full_e5large.npy` |
+| Parsed runtime documents | `data/interim/raw_docs.jsonl` |
+| Chunks | `data/interim/chunks.jsonl` |
+| Document embeddings | `data/interim/doc_dense_cache.npy` |
+| Chunk embeddings | `data/interim/chunk_dense_cache.npy` |
 
-Small evaluation files are versioned:
+Small legacy evaluation files are versioned:
 
 - `data/interim/eval_queries_v1.jsonl`
 - `data/interim/passage_gold_v3.jsonl`
@@ -103,7 +103,7 @@ The hosted demo keeps the reranker off by default for free CPU hosting. The agen
 ```text
 src/bofip_agentic/
   agent_rag.py              Agent loop and trace
-  rag_runtime.py            Hybrid retrieval runtime
+  rag_runtime.py            Retrieval runtime
   prompt_utils.py           Citation and coverage prompt
   providers.py              BYOK provider/model config
   artifact_download.py      Release artifact downloader
@@ -113,8 +113,8 @@ src/bofip_agentic/
   reranker.py               Optional cross-encoder reranker
 
 scripts/
-  setup.py                  Build corpus from source
-  sync.py                   Refresh corpus safely
+  sync.py                   Authoritative full-corpus refresh from the API
+  setup.py                  Legacy local parser/chunker helper
   eval_full.py              50-query agentic evaluation
   eval_agent.py             Agent benchmark helper
   check_setup.py            Artifact preflight

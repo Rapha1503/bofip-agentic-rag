@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 
 from bofip_agentic.dense_retrieval import (
+    DenseEncoder,
     DenseDocumentIndex,
     DenseIndex,
     _dense_prompt_style,
@@ -17,6 +18,30 @@ from bofip_agentic.models import ChunkNode, RawDocument, RawSectionNode
 
 
 class DenseRetrievalTests(unittest.TestCase):
+    def test_dense_encoder_progress_callback_reports_batch_completion(self) -> None:
+        class FakeModel:
+            def __init__(self) -> None:
+                self.calls: list[list[str]] = []
+
+            def encode(self, texts, **kwargs):
+                self.calls.append(list(texts))
+                return np.ones((len(texts), 2), dtype=np.float32)
+
+        encoder = object.__new__(DenseEncoder)
+        encoder.model = FakeModel()
+        encoder.prompt_style = "plain"
+
+        events: list[tuple[int, int]] = []
+        embeddings = encoder.encode_queries(
+            ["premier", "deuxieme", "troisieme"],
+            batch_size=2,
+            progress_callback=lambda done, total: events.append((done, total)),
+        )
+
+        self.assertEqual(events, [(2, 3), (3, 3)])
+        self.assertEqual(encoder.model.calls, [["premier", "deuxieme"], ["troisieme"]])
+        self.assertEqual(embeddings.shape, (3, 2))
+
     def test_build_dense_chunk_text_includes_metadata(self) -> None:
         chunk = ChunkNode(
             chunk_id="c1",

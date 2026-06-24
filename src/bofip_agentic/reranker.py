@@ -31,10 +31,11 @@ class CrossEncoderReranker:
             device=device,
             trust_remote_code=True,
         )
-        try:
-            self.model.model.half()
-        except Exception:
-            pass
+        if str(device).lower() not in {"cpu", "none"}:
+            try:
+                self.model.model.half()
+            except Exception:
+                pass
         self.batch_size = batch_size
         self.model_name = model_name
         self.model.predict([["warmup", "warmup"]], batch_size=1, show_progress_bar=False)

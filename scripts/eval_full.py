@@ -416,6 +416,7 @@ def main():
                 "conclusion": agent_result.get("conclusion", ""),
                 "justification_bullets": agent_result.get("justification_bullets", []),
                 "retrieved_docs": retrieved_docs,
+                "step_timings": agent_result.get("step_timings", []),
                 "trace": agent_result.get("trace", []),
             }
             results.append(r)

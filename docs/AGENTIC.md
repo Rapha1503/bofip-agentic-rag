@@ -2,62 +2,45 @@
 
 ## Design
 
-**Controlled workflow, not free agent.** A deterministic loop: classify domain → retrieve → answer + evaluate → reformulate if needed → retry. No dynamic tool selection. Reproducible and debuggable.
+**Controlled workflow, not a free agent.** The system uses a bounded planner/critic loop: understand the fiscal question, retrieve per axis, review source coverage, relaunch targeted searches when evidence is missing, then answer from retained BOFiP passages only.
 
 ## Full pipeline
 
 ```
 AgenticRAG.run(question)
   |
-  +-- _classify_domain(question)              → LLM returns "RPPM-PVBMI-20-10-40"
-  |     One cheap call (~200ms) classifies the BOFIP family + sub-family.
+  +-- _plan_question(question)                → LLM returns facts, ambiguities, facets
+  |     Each facet has a goal, query, optional BOFiP prefix, role, and blocking flag.
   |
-  +-- Iteration 1:
-  |     retrieve(question, boost_prefix)       → RagRuntime
-  |       - BM25 lexical (3 variants) + Dense E5-large + taxonomy ranking
-  |       - boost_prefix bypasses dense-anchor filter for matching docs
-  |     mismatch detection                     → if >50% docs are wrong family, retry
-  |     answer(chunks, question)               → LLM (structured JSON)
-  |     evaluate(answer)                       → inline (same LLM call)
-  |     if supported: RETURN
+  +-- Retrieval per facet:
+  |     retrieve(facet.query, boost_prefix)    → RagRuntime
+  |       - BM25 full-corpus by default
+  |       - optional E5/RRF mode for local benchmarking
+  |       - local chunk retrieval inside selected documents
   |
-  +-- Iteration 2:
-  |     reformulate(missing_axes)              → LLM returns {bofip_family, search_query}
-  |     retrieve(reformulated_query)           → RagRuntime (with family prefix)
-  |     merge(new_chunks)                      → deduplicate by chunk_id
-  |     answer(merged_chunks, question)        → LLM
-  |     RETURN best answer
+  +-- Source critic:
+  |     useful chunks, rejected chunks, covered axes, blocking missing axes
+  |     if needed: intra-document rescue, then targeted relaunch
   |
-  +-- Max 2 iterations
+  +-- Final answer:
+        cited JSON answer, status cleanup, source list, agent trace
 ```
 
-## Domain classification (LLM, not keyword banks)
+## Planning and routing
 
-Before any retrieval, the LLM maps the question to a BOFIP document prefix:
+Before retrieval, the planner decomposes the question into fiscal facets. The LLM can propose BOFiP prefixes, but the code only normalizes their syntax. It does not rewrite CFE to IF, RFPI to RPPM, or any other family. Prefixes are soft ranking hints, not routing locks.
 
-```
-Q: "J'ai 10000 euros dans un compte titre... que se passe-t-il ?"
-→ "RPPM-PVBMI-20-10-40"
-```
-
-This prefix is used three ways:
-1. Prepended to the search query → BM25 lexical boost
-2. Passed as `boost_prefix` to `retrieve()` → bypasses dense-anchor filter for matching docs
-3. Compared against actual retrieved families → triggers mismatch retry if wrong
-
-Zero hardcoded keyword lists. Works for any language, any tax domain.
+The important constraint is not "zero heuristics"; it is **no answer hardcoding and no hard routing gate**. Generic lexical, section, numeric, and prefix-overlap signals can rank evidence, but they must not inject fiscal conclusions, rates, thresholds, or final answers.
 
 ## Retrieval pipeline
 
 ```
-User query with domain prefix
+Facet query with optional soft prefix
   → BM25 lexical (3 variants: base, sections_leads, sections_leads_stem)
-  → Dense semantic (E5-large, 1024-dim, fp16)
-  → Taxonomy ranking (boost docs matching domain prefix by depth)
-  → Confidence-weighted RRF fusion (dense weight 2.0, lexical 0.5, taxonomy 1.0)
-  → Dense-anchor filter (lexical results kept only if in dense top-20 OR match boost_prefix)
+  → optional dense semantic retrieval (E5-large, 1024-dim)
+  → optional confidence-weighted RRF fusion
   → Stage 2 per-document BM25 chunk selection
-  → Cross-encoder reranker (bge-reranker-v2-m3, fp16)
+  → optional cross-encoder reranker
   → Diversity selection (max 3 chunks/doc, section-path penalty)
   → Top-8 chunks to Agent
 ```
@@ -108,7 +91,7 @@ The reformulated query includes the BOFIP family prefix for domain-aware retriev
 | Model | Size | VRAM (fp16) | Role |
 |---|---|---|---|
 | intfloat/multilingual-e5-large | 560M | 1.07 GB | Document + chunk embeddings |
-| BAAI/bge-reranker-v2-m3 | 568M | 1.08 GB | Cross-encoder reranking |
+| BAAI/bge-reranker-v2-m3 | 568M | optional | Cross-encoder reranking when explicitly enabled |
 | LLM (configurable) | varies | N/A (API) | Domain classification + answer + self-evaluation + reformulation |
 
 ## Performance
@@ -116,8 +99,9 @@ The reformulated query includes the BOFIP family prefix for domain-aware retriev
 | Stage | Time |
 |---|---|
 | Domain classification | ~0.2s |
-| BM25 + Dense retrieval | ~1.0s |
-| Cross-encoder reranker | ~0.5s |
+| BM25 retrieval | sub-second after cache warmup |
+| Dense/hybrid retrieval | optional, depends on model load and hardware |
+| Cross-encoder reranker | optional, CPU-hosting unfriendly |
 | LLM answer | 2-10s |
 | Reformulation | ~1s |
 | **Total (GPU, p50)** | **~14s** |

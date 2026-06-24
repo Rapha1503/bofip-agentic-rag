@@ -19,10 +19,10 @@ The shared retrieval engine is `src/bofip_agentic/rag_runtime.py`. The agentic o
 ## Data Flow
 
 ```text
-Local BOFiP export
-  -> discovery.py
-  -> xml_parser.py + html_parser.py
-  -> document_builder.py
+data.economie.gouv.fr bofip-vigueur API
+  -> scripts/sync.py no-filter source download
+  -> stable source identity from BOFiP permalink / PGP id
+  -> html_parser.py
   -> RawDocument JSONL
   -> chunking.py
   -> ChunkNode JSONL
@@ -31,21 +31,32 @@ Local BOFiP export
   -> agent_rag.py controlled multi-pass loop
 ```
 
-Current full commentary runtime:
+Current full source runtime:
 
 | Layer | Artifact |
 | --- | --- |
-| Raw documents | `data/interim/raw_docs_sample_5666.jsonl` |
-| Chunks | `data/interim/chunks_section_window_sample_5666.jsonl` |
-| Document embeddings | `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` |
-| Chunk embeddings | `data/interim/chunk_dense_cache_5666_full_e5large.npy` |
+| Parsed runtime documents | `data/interim/raw_docs.jsonl` |
+| Chunks | `data/interim/chunks.jsonl` |
+| Document embeddings | `data/interim/doc_dense_cache.npy` |
+| Chunk embeddings | `data/interim/chunk_dense_cache.npy` |
+
+Current active counts:
+
+| Metric | Value |
+| --- | ---: |
+| BOFiP source rows | 9,048 |
+| Stable document IDs | 9,048 |
+| Base BOI references | 9,025 |
+| Section-window chunks | 79,160 |
+| Document embeddings | `(9048, 1024)` |
+| Chunk embeddings | `(79160, 1024)` |
 
 ## Core Modules
 
 | Module | Responsibility |
 | --- | --- |
 | `agent_rag.py` | Controlled agent loop: classify, retrieve, answer, evaluate, reformulate, retry. |
-| `rag_runtime.py` | Hybrid retrieval runtime and result contract. |
+| `rag_runtime.py` | Retrieval runtime and result contract. BM25 full-corpus is the public default; E5 hybrid mode is optional. |
 | `prompt_utils.py` | Citation-constrained answer prompt and coverage schema. |
 | `providers.py` | Provider/model dropdown configuration for BYOK usage. |
 | `artifact_download.py` | Runtime artifact download and manifest validation. |
@@ -65,8 +76,8 @@ Current full commentary runtime:
 ## Public Interfaces
 
 - `app.py`: Streamlit BYOK UI with visible agent trace.
-- `scripts/setup.py`: first-time corpus build.
-- `scripts/sync.py`: corpus refresh pipeline.
+- `scripts/sync.py`: authoritative full-corpus refresh pipeline from the public API.
+- `scripts/setup.py`: legacy local parser/chunker helper; it should not be used to copy artifacts from older projects.
 - `scripts/eval_full.py`: 50-query agentic evaluation.
 - `scripts/eval_agent.py`: focused agent benchmark helper.
 - `scripts/check_setup.py`: local artifact and model preflight check.
@@ -81,8 +92,8 @@ The tracked evaluation set contains 50 questions across direct lookup, paraphras
 
 ## Known Technical Risks
 
-- Some BOI references are duplicated across distinct documents; retrieval identity should move to stable `document_id`.
-- Tables are parsed but not yet chunked as first-class retrievable evidence.
+- Some BOI references are duplicated across distinct documents; runtime identity uses stable `document_id` while `boi_reference` remains the citation/routing reference.
+- Tables are parsed and emitted as retrievable chunks, but table-heavy answer evaluation is still thin.
 - Runtime artifacts are large and must be managed outside Git with a manifest and checksums.
 - The hosted CPU demo disables the cross-encoder reranker by default; local GPU runs can enable it.
 - The project is a research prototype and must not be presented as tax advice.
