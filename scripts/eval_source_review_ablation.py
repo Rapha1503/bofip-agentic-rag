@@ -12,6 +12,10 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from bofip_agentic.env_utils import load_default_env_files
+
 DEFAULT_BANK = PROJECT_ROOT / "data" / "eval" / "bofip_agentic_rag_50_human_questions_v2.json"
 DEFAULT_PILOT_IDS: tuple[str, ...] = (
     "CASE-006",
@@ -143,6 +147,7 @@ def command_for(args: argparse.Namespace, variant: ReviewVariant, run_id: str) -
 
 def main() -> int:
     args = parse_args()
+    load_default_env_files()
     variants = selected_variants(args.variants)
     using_fixed_case_ids = bool(str(args.case_ids or "").strip()) and str(args.case_ids).strip().lower() not in {
         "random",

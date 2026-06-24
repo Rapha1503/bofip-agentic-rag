@@ -22,6 +22,7 @@ from .eval_artifacts import (
     write_public_csv,
     write_summary_markdown,
 )
+from .env_utils import load_default_env_files
 from .eval_schema import (
     AgenticScores,
     EvalJudgement,
@@ -483,6 +484,7 @@ def run_eval(
     runtime_factory: Callable[..., Any] | None = None,
     agent_factory: Callable[..., Any] | None = None,
 ) -> dict[str, Any]:
+    load_default_env_files()
     bank_path = Path(question_bank)
     if not bank_path.is_absolute():
         bank_path = PROJECT_ROOT / bank_path
