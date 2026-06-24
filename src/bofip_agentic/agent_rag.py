@@ -59,6 +59,11 @@ class AgenticRAG:
         client=None,
         use_reranker: bool = True,
         progress_callback=None,
+        source_review_mode: str = "full",
+        source_review_chunk_limit: int = 16,
+        source_review_text_limit: int = 900,
+        post_relaunch_review: bool = True,
+        max_missing_axes: int = 3,
     ):
         self.rt = runtime
         self.api_key = api_key
@@ -68,6 +73,11 @@ class AgenticRAG:
         self._client = client
         self.use_reranker = use_reranker
         self.progress_callback = progress_callback
+        self.source_review_mode = source_review_mode.strip().lower() or "full"
+        self.source_review_chunk_limit = max(1, int(source_review_chunk_limit))
+        self.source_review_text_limit = max(120, int(source_review_text_limit))
+        self.post_relaunch_review = bool(post_relaunch_review) and self.source_review_mode != "initial_only"
+        self.max_missing_axes = max(0, int(max_missing_axes))
         self._run_started_at: float | None = None
         self._last_progress_at: float | None = None
         self._step_timings: list[dict] = []
@@ -162,17 +172,26 @@ class AgenticRAG:
                 ],
             )
 
-        self._progress(
-            "Critique des sources demandée",
-            detail="Contrôle documentaire avant rédaction: utile, hors sujet, ou axe à relancer.",
-            fields=[{"label": "Passages à juger", "value": str(len(all_chunks))}],
-        )
-        source_review = self._review_sources(original_question, plan, all_chunks)
-        source_review = _complete_source_review_with_plan_gaps(
-            _ensure_nonempty_source_review(source_review, plan),
-            plan,
-            all_chunks,
-        )
+        review_skipped = self.source_review_mode in {"none", "off", "disabled", "skip"}
+        if review_skipped:
+            self._progress(
+                "Critique des sources ignorée",
+                detail="Mode benchmark sans critique documentaire LLM; les meilleurs passages récupérés sont transmis directement.",
+                fields=[{"label": "Passages disponibles", "value": str(len(all_chunks))}],
+            )
+            source_review = _skipped_source_review(plan, all_chunks)
+        else:
+            self._progress(
+                "Critique des sources demandée",
+                detail="Contrôle documentaire avant rédaction: utile, hors sujet, ou axe à relancer.",
+                fields=[{"label": "Passages à juger", "value": str(len(all_chunks))}],
+            )
+            source_review = self._review_sources(original_question, plan, all_chunks)
+            source_review = _complete_source_review_with_plan_gaps(
+                _ensure_nonempty_source_review(source_review, plan),
+                plan,
+                all_chunks,
+            )
         selected_chunks = _select_reviewed_chunks(all_chunks, source_review)
         self._progress(
             "Critique des sources",
@@ -186,8 +205,8 @@ class AgenticRAG:
 
         relaunch_log: list[dict] = []
         missing_axes = source_review.get("missing_axes", []) or []
-        if self.max_iterations > 1 and missing_axes:
-            for missing in missing_axes[:3]:
+        if self.max_iterations > 1 and missing_axes and not review_skipped:
+            for missing in missing_axes[: self.max_missing_axes]:
                 facet = _facet_from_missing_axis(missing)
                 if not facet.query:
                     continue
@@ -259,7 +278,7 @@ class AgenticRAG:
                     ],
                 )
 
-            if relaunch_log:
+            if relaunch_log and self.post_relaunch_review and not review_skipped:
                 source_review = _complete_source_review_with_plan_gaps(
                     _merge_source_reviews(
                         source_review,
@@ -276,6 +295,15 @@ class AgenticRAG:
                     fields=[
                         {"label": "Sources utiles", "value": "\n".join(_source_labels(selected_chunks[:10])) or "Aucune"},
                         {"label": "Axes encore manquants", "value": _format_missing_axes(source_review.get("missing_axes", [])) or "Aucun"},
+                    ],
+                )
+            elif relaunch_log:
+                selected_chunks = _select_reviewed_chunks(all_chunks, source_review)
+                self._progress(
+                    "Selection apres relance",
+                    detail="Les passages relances sont ajoutes a la selection sans second appel de critique documentaire.",
+                    fields=[
+                        {"label": "Sources transmises", "value": "\n".join(_source_labels(selected_chunks[:10])) or "Aucune"},
                     ],
                 )
 
@@ -487,14 +515,14 @@ class AgenticRAG:
             }
 
         chunk_blocks = []
-        for chunk in _chunks_for_source_review(chunks, limit=16):
+        for chunk in _chunks_for_source_review(chunks, limit=self.source_review_chunk_limit):
             chunk_blocks.append(
                 f"ID: {chunk['chunk_id']}\n"
                 f"Axe de recherche: {chunk.get('facet', '')}\n"
                 f"BOI: {chunk['boi_reference']}\n"
                 f"Titre: {chunk['title']}\n"
                 f"Section: {chunk['section_path']}\n"
-                f"Texte: {_short(chunk['text'], 900)}"
+                f"Texte: {_short(chunk['text'], self.source_review_text_limit)}"
             )
 
         prompt = (
@@ -1510,6 +1538,29 @@ def _ensure_nonempty_source_review(review: dict, plan: SearchPlan) -> dict:
     updated["coverage_status"] = "needs_more_sources"
     updated["missing_axes"] = missing_axes[:4]
     return updated
+
+
+def _skipped_source_review(plan: SearchPlan, chunks: list[dict]) -> dict:
+    useful_ids = [
+        chunk.get("chunk_id", "")
+        for chunk in _sort_chunks(chunks)[:12]
+        if chunk.get("chunk_id")
+    ]
+    return {
+        "coverage_status": "skipped",
+        "covered_axes": [],
+        "missing_axes": [],
+        "non_blocking_axes": [
+            {
+                "axis": "Critique documentaire LLM",
+                "why_needed": "Mode benchmark sans source review; les sources n'ont pas ete filtrees par critique LLM.",
+                "role": "reserve",
+                "blocking": False,
+            }
+        ],
+        "useful_chunk_ids": _unique_strings(useful_ids),
+        "rejected_chunks": [],
+    }
 
 
 def _matching_nonblocking_plan_facet(item: dict, plan: SearchPlan) -> SearchFacet | None:

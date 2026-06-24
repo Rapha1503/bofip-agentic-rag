@@ -464,6 +464,55 @@ class AgenticRAGTests(unittest.TestCase):
         self.assertTrue(all(isinstance(item["elapsed_s"], float) for item in timings))
         self.assertEqual(result["trace"][0]["step_timings"], timings)
 
+    def test_source_review_mode_none_skips_critic_and_relaunch_even_with_two_iterations(self):
+        responses = [
+            json.dumps(
+                {
+                    "reformulated_question": "Quel taux de TVA appliquer ?",
+                    "facts": ["question sur un taux de TVA"],
+                    "ambiguities": [],
+                    "facets": [
+                        {
+                            "name": "TVA applicable",
+                            "goal": "Identifier le taux applicable",
+                            "bofip_prefix": "TVA",
+                            "search_query": "TVA taux applicable operation",
+                            "priority": 1,
+                            "expected_evidence": ["taux applicable"],
+                        }
+                    ],
+                    "excluded_axes": [],
+                }
+            ),
+            json.dumps(
+                {
+                    "answer_status": "supported",
+                    "conclusion": "Reponse supportee.",
+                    "axes_requis": ["taux applicable"],
+                    "axes_couverts": ["taux applicable"],
+                    "axes_manquants": [],
+                    "justification_bullets": ["Axe couvert."],
+                    "limits": "",
+                }
+            ),
+        ]
+        runtime = _FakeRuntime()
+        client = _FakeClient(responses)
+        agent = AgenticRAG(
+            runtime,
+            client=client,
+            max_iterations=2,
+            use_reranker=False,
+            source_review_mode="none",
+        )
+
+        result = agent.run("Quel taux de TVA appliquer ?")
+
+        self.assertEqual(len(client.chat.completions.calls), 2)
+        self.assertEqual(runtime.intra_calls, [])
+        self.assertEqual(result["source_review"]["coverage_status"], "skipped")
+        self.assertEqual(result["trace"][0]["relaunches"], [])
+
     def test_facet_retrieval_rescues_each_expected_evidence_inside_candidate_docs(self):
         runtime = _FakeRuntime()
         runtime.intra_results = [

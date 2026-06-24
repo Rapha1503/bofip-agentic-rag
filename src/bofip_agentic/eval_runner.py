@@ -4,12 +4,13 @@ import json
 import os
 import random
 import re
+import hashlib
 import subprocess
 import time
 import unicodedata
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 from .agent_rag import AgenticRAG
 from .eval_artifacts import (
@@ -100,12 +101,19 @@ def _coerce_list(value: Any) -> list[str]:
     return [str(value)]
 
 
-def load_question_bank(path: str | Path, *, limit: int = 0, sample: int = 0, seed: int = 42) -> list[EvalQuestion]:
+def load_question_bank(
+    path: str | Path,
+    *,
+    limit: int = 0,
+    sample: int = 0,
+    seed: int = 42,
+    case_ids: Sequence[str] | None = None,
+) -> list[EvalQuestion]:
     questions: list[EvalQuestion] = []
     for index, row in enumerate(_iter_question_rows(path), start=1):
         gold = row.get("gold_eval") or {}
         refs = gold.get("expected_bofip_refs") or {}
-        question = row.get("user_question") or row.get("question") or row.get("runtime_question")
+        question = _runtime_question_from_row(row, index)
         if not question:
             raise ValueError(f"missing user_question/question/runtime_question at row {index}")
         questions.append(
@@ -133,6 +141,13 @@ def load_question_bank(path: str | Path, *, limit: int = 0, sample: int = 0, see
                 failure_signals=_coerce_list(row.get("failure_signals") or gold.get("failure_signals")),
             )
         )
+    if case_ids:
+        wanted = [str(item).strip() for item in case_ids if str(item).strip()]
+        by_id = {question.id: question for question in questions}
+        missing = [item for item in wanted if item not in by_id]
+        if missing:
+            raise ValueError(f"unknown case id(s): {', '.join(missing)}")
+        questions = [by_id[item] for item in wanted]
     if sample:
         rng = random.Random(seed)
         count = min(sample, len(questions))
@@ -140,6 +155,24 @@ def load_question_bank(path: str | Path, *, limit: int = 0, sample: int = 0, see
     if limit:
         questions = questions[:limit]
     return questions
+
+
+def _runtime_question_from_row(row: dict[str, Any], index: int) -> str:
+    runtime_question = str(row.get("runtime_question") or "").strip()
+    candidates = {
+        key: str(row.get(key) or "").strip()
+        for key in ("user_question", "question")
+        if row.get(key)
+    }
+    if runtime_question:
+        for key, value in candidates.items():
+            if value and value != runtime_question:
+                raise ValueError(
+                    f"row {index} has runtime_question and {key} with different text; "
+                    "refusing to guess which prompt is safe to send"
+                )
+        return runtime_question
+    return candidates.get("user_question") or candidates.get("question") or ""
 
 
 def _iter_question_rows(path: str | Path) -> list[dict[str, Any]]:
@@ -186,6 +219,25 @@ def git_commit() -> str:
         ).strip()
     except Exception:
         return ""
+
+
+def git_status_porcelain() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=PROJECT_ROOT,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return ""
+
+
+def git_status_hash() -> str:
+    status = git_status_porcelain()
+    if not status:
+        return ""
+    return hashlib.sha256(status.encode("utf-8")).hexdigest()[:16]
 
 
 def source_from_agent_chunk(chunk: dict[str, Any]) -> EvalSource:
@@ -247,8 +299,16 @@ def compute_agentic_scores(question: EvalQuestion, result: dict[str, Any]) -> Ag
     timings = result.get("step_timings", []) or []
     labels = " ".join(str(item.get("label", "")) for item in timings).lower()
     stages = " ".join(str(item.get("stage", "")) for item in trace).lower()
+    source_review_skipped = any(
+        isinstance(item, dict)
+        and isinstance(item.get("source_review"), dict)
+        and item["source_review"].get("coverage_status") == "skipped"
+        for item in trace
+    )
     has_plan = "plan" in labels or "plan" in stages
-    has_source_review = "critique" in labels or "source_review" in json.dumps(trace, ensure_ascii=False).lower()
+    has_source_review = (
+        "critique" in labels or "source_review" in json.dumps(trace, ensure_ascii=False).lower()
+    ) and not source_review_skipped
     has_retrieval = "recherche" in labels or "routes" in json.dumps(trace, ensure_ascii=False).lower()
     has_answer_step = "réponse" in labels or "reponse" in labels or bool(result.get("conclusion"))
     has_relaunch = int(result.get("iterations", 1) or 1) > 1 or "relance" in labels or "intra-document" in labels
@@ -409,10 +469,16 @@ def run_eval(
     limit: int = 0,
     sample: int = 0,
     seed: int = 42,
+    case_ids: Sequence[str] | None = None,
     retrieval_mode: str = "lexical",
     reranker: bool = False,
     device: str = "cpu",
     max_iterations: int = 2,
+    source_review_mode: str = "full",
+    source_review_chunk_limit: int = 16,
+    source_review_text_limit: int = 900,
+    post_relaunch_review: bool = True,
+    max_missing_axes: int = 3,
     resume: bool = False,
     runtime_factory: Callable[..., Any] | None = None,
     agent_factory: Callable[..., Any] | None = None,
@@ -420,7 +486,7 @@ def run_eval(
     bank_path = Path(question_bank)
     if not bank_path.is_absolute():
         bank_path = PROJECT_ROOT / bank_path
-    questions = load_question_bank(bank_path, limit=limit, sample=sample, seed=seed)
+    questions = load_question_bank(bank_path, limit=limit, sample=sample, seed=seed, case_ids=case_ids)
     run_dir = Path(output_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -452,13 +518,33 @@ def run_eval(
         reranker=reranker,
         device=device,
         max_iterations=max_iterations,
+        source_review_mode=source_review_mode,
+        source_review_chunk_limit=source_review_chunk_limit,
+        source_review_text_limit=source_review_text_limit,
+        post_relaunch_review=post_relaunch_review,
+        max_missing_axes=max_missing_axes,
         git_commit=git_commit(),
+        git_dirty=bool(git_status_porcelain()),
+        git_status_hash=git_status_hash(),
         corpus_manifest_hash=_hash_if_exists(PROJECT_ROOT / "docs" / "full_corpus_manifest.json"),
         eval_set_hash=hash_file(bank_path),
+        question_count=len(questions),
+        case_ids=[question.id for question in questions],
     )
-    write_json(run_dir / "run_manifest.json", config_record)
+    manifest_path = run_dir / "run_manifest.json"
+    has_existing_results = (run_dir / "per_query").exists() and bool(list((run_dir / "per_query").glob("*.json")))
+    if resume and manifest_path.exists():
+        _assert_resume_manifest_compatible(manifest_path, config_record)
+    elif resume and has_existing_results:
+        raise ValueError(f"cannot resume {run_dir}: per-query artifacts exist but run_manifest.json is missing")
+    elif not resume and has_existing_results:
+        raise ValueError(f"run directory already has per-query artifacts: {run_dir}; use --resume or a new --run-id")
+    write_json(manifest_path, config_record)
 
     completed = _load_completed(run_dir / "per_query") if resume else {}
+    unexpected_completed = sorted(set(completed) - {question.id for question in questions})
+    if unexpected_completed:
+        raise ValueError(f"resume found completed case IDs outside current question set: {', '.join(unexpected_completed)}")
     results: list[PerQueryResult] = list(completed.values())
     pending = [question for question in questions if question.id not in completed]
 
@@ -498,6 +584,11 @@ def run_eval(
                     max_iterations=max_iterations,
                     use_reranker=reranker,
                     progress_callback=progress_callback,
+                    source_review_mode=source_review_mode,
+                    source_review_chunk_limit=source_review_chunk_limit,
+                    source_review_text_limit=source_review_text_limit,
+                    post_relaunch_review=post_relaunch_review,
+                    max_missing_axes=max_missing_axes,
                 )
             else:
                 agent = AgenticRAG(
@@ -508,6 +599,11 @@ def run_eval(
                     max_iterations=max_iterations,
                     use_reranker=reranker,
                     progress_callback=progress_callback,
+                    source_review_mode=source_review_mode,
+                    source_review_chunk_limit=source_review_chunk_limit,
+                    source_review_text_limit=source_review_text_limit,
+                    post_relaunch_review=post_relaunch_review,
+                    max_missing_axes=max_missing_axes,
                 )
         else:
             agent = agent_factory(
@@ -516,6 +612,11 @@ def run_eval(
                 provider=provider_name,
                 model=selected_model,
                 api_key=runtime_api_key,
+                source_review_mode=source_review_mode,
+                source_review_chunk_limit=source_review_chunk_limit,
+                source_review_text_limit=source_review_text_limit,
+                post_relaunch_review=post_relaunch_review,
+                max_missing_axes=max_missing_axes,
             )
 
         for index, question in enumerate(pending, start=1):
@@ -553,7 +654,7 @@ def run_eval(
             result = dataclasses_replace(result, auto_verdict=auto_verdict(result))
             _write_query_artifacts(run_dir, result)
             results.append(result)
-            _write_rollups(run_dir, results)
+            _write_rollups(run_dir, results, expected_count=len(questions))
             print(
                 f"  -> {result.auto_verdict} | status={result.answer_status} | "
                 f"cov={result.coverage:.0%} | doc={result.scores.required_doc_recall:.0%} | "
@@ -561,10 +662,13 @@ def run_eval(
                 flush=True,
             )
 
-    _write_rollups(run_dir, results)
+    _write_rollups(run_dir, results, expected_count=len(questions))
+    final_summary = compute_summary(results)
+    final_summary["expected_queries"] = len(questions)
+    final_summary["is_complete"] = len(results) == len(questions)
     return {
         "run_dir": str(run_dir),
-        "summary": compute_summary(results),
+        "summary": final_summary,
         "results": [as_jsonable(row) for row in results],
     }
 
@@ -650,13 +754,29 @@ def _write_query_artifacts(run_dir: Path, result: PerQueryResult) -> None:
     write_evidence_card(run_dir / "evidence_cards" / f"{result.id}.md", result)
 
 
-def _write_rollups(run_dir: Path, results: list[PerQueryResult]) -> None:
+def _write_rollups(run_dir: Path, results: list[PerQueryResult], *, expected_count: int | None = None) -> None:
     ordered = sorted(results, key=lambda row: row.id)
     summary = compute_summary(ordered)
+    if expected_count is not None:
+        summary["expected_queries"] = expected_count
+        summary["is_complete"] = len(ordered) == expected_count
     write_json(run_dir / "summary.json", summary)
     write_summary_markdown(run_dir / "summary.md", summary, title="BOFiP Agentic RAG Evaluation")
     write_jsonl(run_dir / "per_query.jsonl", ordered)
     write_public_csv(run_dir / "per_query_public.csv", ordered)
+
+
+def _assert_resume_manifest_compatible(path: Path, expected: EvalRunConfig) -> None:
+    existing = json.loads(path.read_text(encoding="utf-8"))
+    expected_payload = as_jsonable(expected)
+    mismatches = [
+        key
+        for key, value in expected_payload.items()
+        if existing.get(key) != value
+    ]
+    if mismatches:
+        details = ", ".join(sorted(mismatches))
+        raise ValueError(f"resume manifest mismatch for {path.parent}: {details}; use a new --run-id")
 
 
 def _load_completed(per_query_dir: Path) -> dict[str, PerQueryResult]:

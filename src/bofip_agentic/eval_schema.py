@@ -32,9 +32,18 @@ class EvalRunConfig:
     reranker: bool
     device: str
     max_iterations: int
+    source_review_mode: str = "full"
+    source_review_chunk_limit: int = 16
+    source_review_text_limit: int = 900
+    post_relaunch_review: bool = True
+    max_missing_axes: int = 3
     git_commit: str = ""
+    git_dirty: bool = False
+    git_status_hash: str = ""
     corpus_manifest_hash: str = ""
     eval_set_hash: str = ""
+    question_count: int = 0
+    case_ids: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

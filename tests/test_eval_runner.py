@@ -113,12 +113,47 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertEqual(questions[0].id, "CASE-001")
         self.assertEqual(questions[0].question, "Question runtime uniquement.")
 
+    def test_load_question_bank_rejects_conflicting_runtime_and_annotated_question(self):
+        row = {
+            "id": "CASE-001",
+            "runtime_question": "Question pure envoyee au runtime.",
+            "question": "Question annotee avec gold.",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bank.jsonl"
+            path.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "runtime_question"):
+                load_question_bank(path)
+
+    def test_load_question_bank_filters_case_ids_in_requested_order(self):
+        rows = [
+            {"id": "CASE-001", "runtime_question": "Q1"},
+            {"id": "CASE-002", "runtime_question": "Q2"},
+            {"id": "CASE-003", "runtime_question": "Q3"},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bank.jsonl"
+            path.write_text("\n".join(json.dumps(row, ensure_ascii=False) for row in rows), encoding="utf-8")
+            questions = load_question_bank(path, case_ids=["CASE-003", "CASE-001"])
+
+        self.assertEqual([question.id for question in questions], ["CASE-003", "CASE-001"])
+
     def test_per_query_result_scores_trace_and_doc_recall(self):
         question = EvalQuestion(id="Q001", question="Question", required_docs=["BOI-TVA-BASE-10"])
         result = per_query_from_agent_result(question, FakeAgent().run("Question"))
         self.assertEqual(result.scores.required_doc_recall, 1.0)
         self.assertGreaterEqual(result.scores.trace_score, 0.75)
         self.assertEqual(auto_verdict(result), "candidate_pass")
+
+    def test_trace_score_does_not_count_skipped_source_review_as_llm_review(self):
+        question = EvalQuestion(id="Q001", question="Question")
+        agent_result = FakeAgent().run("Question")
+        agent_result["trace"][0]["source_review"] = {"coverage_status": "skipped"}
+
+        result = per_query_from_agent_result(question, agent_result)
+
+        self.assertFalse(result.scores.has_source_review)
 
     def test_auto_verdict_accepts_supported_answer_when_gold_sources_are_partial(self):
         question = EvalQuestion(
@@ -233,6 +268,91 @@ class EvalRunnerTests(unittest.TestCase):
             self.assertEqual(captured["api_key"], "sk-" + "1234567890abcdef")
             artifact_text = (Path(result["run_dir"]) / "run_manifest.json").read_text(encoding="utf-8")
             self.assertNotIn("1234567890abcdef", artifact_text)
+
+    def test_run_eval_resume_rejects_manifest_mismatch(self):
+        row = {"id": "Q001", "user_question": "Question runtime uniquement."}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bank = root / "bank.jsonl"
+            bank.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+            output_dir = root / "run"
+
+            run_eval(
+                question_bank=bank,
+                output_dir=output_dir,
+                provider="codex",
+                limit=1,
+                runtime_factory=lambda **_: object(),
+                agent_factory=lambda **_: FakeAgent(),
+            )
+
+            with self.assertRaisesRegex(ValueError, "manifest mismatch"):
+                run_eval(
+                    question_bank=bank,
+                    output_dir=output_dir,
+                    provider="codex",
+                    limit=1,
+                    source_review_mode="none",
+                    resume=True,
+                    runtime_factory=lambda **_: object(),
+                    agent_factory=lambda **_: FakeAgent(),
+                )
+
+    def test_run_eval_resume_rejects_missing_manifest_with_existing_results(self):
+        row = {"id": "Q001", "user_question": "Question runtime uniquement."}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bank = root / "bank.jsonl"
+            bank.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+            output_dir = root / "run"
+
+            run_eval(
+                question_bank=bank,
+                output_dir=output_dir,
+                provider="codex",
+                limit=1,
+                runtime_factory=lambda **_: object(),
+                agent_factory=lambda **_: FakeAgent(),
+            )
+            (output_dir / "run_manifest.json").unlink()
+
+            with self.assertRaisesRegex(ValueError, "run_manifest"):
+                run_eval(
+                    question_bank=bank,
+                    output_dir=output_dir,
+                    provider="codex",
+                    limit=1,
+                    resume=True,
+                    runtime_factory=lambda **_: object(),
+                    agent_factory=lambda **_: FakeAgent(),
+                )
+
+    def test_run_eval_fresh_run_refuses_existing_per_query_artifacts(self):
+        row = {"id": "Q001", "user_question": "Question runtime uniquement."}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bank = root / "bank.jsonl"
+            bank.write_text(json.dumps(row, ensure_ascii=False) + "\n", encoding="utf-8")
+            output_dir = root / "run"
+
+            run_eval(
+                question_bank=bank,
+                output_dir=output_dir,
+                provider="codex",
+                limit=1,
+                runtime_factory=lambda **_: object(),
+                agent_factory=lambda **_: FakeAgent(),
+            )
+
+            with self.assertRaisesRegex(ValueError, "already has per-query artifacts"):
+                run_eval(
+                    question_bank=bank,
+                    output_dir=output_dir,
+                    provider="codex",
+                    limit=1,
+                    runtime_factory=lambda **_: object(),
+                    agent_factory=lambda **_: FakeAgent(),
+                )
 
     def test_build_run_id_is_filesystem_safe(self):
         self.assertRegex(build_run_id("Eval DeepSeek / hybrid"), r"^\d{8}_\d{6}_eval-deepseek-hybrid$")
