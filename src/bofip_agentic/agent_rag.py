@@ -1931,7 +1931,7 @@ def _candidate_refs_for_missing_axis(missing: dict, chunks: list[dict], route_lo
         if not value:
             return ""
         if not value.startswith("BOI-"):
-            value = "BOI-" + value.removeprefix("BOI-")
+            return ""
         return value
 
     def add(ref: object, score: float) -> None:
@@ -1952,7 +1952,7 @@ def _candidate_refs_for_missing_axis(missing: dict, chunks: list[dict], route_lo
     for route in route_log:
         facet = route.get("facet", {}) if isinstance(route, dict) else {}
         route_axis_score = _route_axis_overlap_score(axis_query, route)
-        for key, evidence_boost in (("selected_refs", 6.0), ("stage2_refs", 4.0), ("stage1_refs", 0.0)):
+        for key, evidence_boost in (("stage2_refs", 6.0), ("stage1_refs", 3.0), ("selected_refs", 1.0)):
             for ref in route.get(key, []) or []:
                 ref_score = float(_chunk_axis_overlap_score(axis_query, {"boi_reference": normalize_ref(ref)}))
                 ref_matches_prefix = _ref_matches_prefix(str(ref), prefix) if prefix else False
@@ -1979,7 +1979,7 @@ def _candidate_refs_for_missing_axis(missing: dict, chunks: list[dict], route_lo
             add(chunk.get("boi_reference", ""), float(score))
 
     ranked = sorted(candidates.items(), key=lambda item: (-item[1][0], item[1][1], item[0]))
-    return [ref for ref, (_score, _order) in ranked[:6]]
+    return _diversify_candidate_refs([ref for ref, _score_order in ranked], limit=6)
 
 
 def _candidate_refs_from_retrieval_result(result) -> list[str]:
@@ -1991,6 +1991,39 @@ def _candidate_refs_from_retrieval_result(result) -> list[str]:
         refs.extend(pipeline_log.get("stage1_doc_refs", []) or [])
     refs.extend(getattr(hit, "boi_reference", "") for hit in getattr(result, "stage1_hits", []) or [])
     return _unique_strings(refs)[:8]
+
+
+def _diversify_candidate_refs(refs: list[str], *, limit: int) -> list[str]:
+    selected: list[str] = []
+    seen_refs: set[str] = set()
+    seen_branches: set[str] = set()
+
+    for ref in refs:
+        branch = _doc_branch_key(ref)
+        if branch and branch in seen_branches:
+            continue
+        selected.append(ref)
+        seen_refs.add(ref)
+        if branch:
+            seen_branches.add(branch)
+        if len(selected) >= limit:
+            return selected
+
+    for ref in refs:
+        if ref in seen_refs:
+            continue
+        selected.append(ref)
+        seen_refs.add(ref)
+        if len(selected) >= limit:
+            break
+    return selected
+
+
+def _doc_branch_key(ref: str) -> str:
+    parts = _prefix_parts_without_date(ref)
+    if len(parts) >= 3:
+        return "-".join(parts[:3])
+    return "-".join(parts)
 
 
 def _exact_boi_references(value: str) -> list[str]:

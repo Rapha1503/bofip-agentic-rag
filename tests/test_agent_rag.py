@@ -1982,6 +1982,56 @@ class AgenticRAGTests(unittest.TestCase):
         self.assertLess(refs.index("BOI-RPPM-RCM-40-50-40"), refs.index("BOI-RPPM-RCM-20-10-20-50"))
         self.assertIn("BOI-ANNX-000072", refs[:3])
 
+    def test_candidate_refs_for_missing_axis_prefers_unselected_candidates_for_relaunch(self):
+        missing = {
+            "axis": "Imposition des gains lors d'un retrait anticipe",
+            "search_query": "PEA retrait avant cinq ans imposition gain cloture",
+            "bofip_prefix": "RPPM",
+            "why_needed": "les sources selectionnees n'ont pas couvert le retrait du plan",
+        }
+        route_log = [
+            {
+                "facet": {
+                    "name": "Imposition des gains lors du retrait",
+                    "goal": "Verifier le traitement fiscal du gain",
+                    "query": "PEA retrait avant cinq ans imposition gain",
+                    "prefix": "RPPM",
+                },
+                "selected_refs": [
+                    "BOI-RPPM-RCM-20-10-20-50",
+                    "BOI-RPPM-RCM-20-15",
+                ],
+                "stage2_refs": [
+                    "BOI-RPPM-RCM-20-10-20-50",
+                    "BOI-RPPM-RCM-20-15",
+                    "BOI-RPPM-RCM-20-10-20-10",
+                ],
+            },
+            {
+                "facet": {
+                    "name": "Retrait anticipe avec motif particulier",
+                    "goal": "Verifier les consequences d'un retrait PEA avant le delai",
+                    "query": "PEA retrait anticipe avant cinq ans",
+                    "prefix": "RPPM",
+                },
+                "selected_refs": [
+                    "BOI-RPPM-RCM-30-10-20-30",
+                    "BOI-RPPM-RCM-30-10-20-10",
+                ],
+                "stage2_refs": [
+                    "BOI-RPPM-RCM-30-10-20-30",
+                    "BOI-RPPM-RCM-30-10-20-10",
+                    "BOI-RPPM-RCM-10-30-20-20",
+                    "BOI-RPPM-RCM-10-10-40",
+                    "BOI-RPPM-RCM-40-50-40",
+                ],
+            },
+        ]
+
+        refs = _candidate_refs_for_missing_axis(missing, [], route_log)
+
+        self.assertIn("BOI-RPPM-RCM-40-50-40", refs[:5])
+
     def test_candidate_refs_include_sibling_document_under_same_parent_prefix(self):
         missing = {
             "axis": "Cotisation minimum et seuil de chiffre d'affaires",
