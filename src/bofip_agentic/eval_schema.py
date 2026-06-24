@@ -37,6 +37,9 @@ class EvalRunConfig:
     source_review_text_limit: int = 900
     post_relaunch_review: bool = True
     max_missing_axes: int = 3
+    candidate_top_docs: int = 6
+    candidate_chunks_per_doc: int = 3
+    candidate_max_chunks: int = 4
     git_commit: str = ""
     git_dirty: bool = False
     git_status_hash: str = ""

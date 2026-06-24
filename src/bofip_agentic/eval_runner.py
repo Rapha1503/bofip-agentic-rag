@@ -480,6 +480,9 @@ def run_eval(
     source_review_text_limit: int = 900,
     post_relaunch_review: bool = True,
     max_missing_axes: int = 3,
+    candidate_top_docs: int = 6,
+    candidate_chunks_per_doc: int = 3,
+    candidate_max_chunks: int = 4,
     resume: bool = False,
     runtime_factory: Callable[..., Any] | None = None,
     agent_factory: Callable[..., Any] | None = None,
@@ -525,6 +528,9 @@ def run_eval(
         source_review_text_limit=source_review_text_limit,
         post_relaunch_review=post_relaunch_review,
         max_missing_axes=max_missing_axes,
+        candidate_top_docs=candidate_top_docs,
+        candidate_chunks_per_doc=candidate_chunks_per_doc,
+        candidate_max_chunks=candidate_max_chunks,
         git_commit=git_commit(),
         git_dirty=bool(git_status_porcelain()),
         git_status_hash=git_status_hash(),
@@ -591,6 +597,9 @@ def run_eval(
                     source_review_text_limit=source_review_text_limit,
                     post_relaunch_review=post_relaunch_review,
                     max_missing_axes=max_missing_axes,
+                    candidate_top_docs=candidate_top_docs,
+                    candidate_chunks_per_doc=candidate_chunks_per_doc,
+                    candidate_max_chunks=candidate_max_chunks,
                 )
             else:
                 agent = AgenticRAG(
@@ -606,6 +615,9 @@ def run_eval(
                     source_review_text_limit=source_review_text_limit,
                     post_relaunch_review=post_relaunch_review,
                     max_missing_axes=max_missing_axes,
+                    candidate_top_docs=candidate_top_docs,
+                    candidate_chunks_per_doc=candidate_chunks_per_doc,
+                    candidate_max_chunks=candidate_max_chunks,
                 )
         else:
             agent = agent_factory(
@@ -619,6 +631,9 @@ def run_eval(
                 source_review_text_limit=source_review_text_limit,
                 post_relaunch_review=post_relaunch_review,
                 max_missing_axes=max_missing_axes,
+                candidate_top_docs=candidate_top_docs,
+                candidate_chunks_per_doc=candidate_chunks_per_doc,
+                candidate_max_chunks=candidate_max_chunks,
             )
 
         for index, question in enumerate(pending, start=1):

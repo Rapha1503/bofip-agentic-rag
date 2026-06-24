@@ -34,6 +34,9 @@ def main() -> int:
     parser.add_argument("--source-review-text-limit", type=int, default=900)
     parser.add_argument("--no-post-relaunch-review", action="store_true")
     parser.add_argument("--max-missing-axes", type=int, default=3)
+    parser.add_argument("--candidate-top-docs", type=int, default=6)
+    parser.add_argument("--candidate-chunks-per-doc", type=int, default=3)
+    parser.add_argument("--candidate-max-chunks", type=int, default=4)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
@@ -63,6 +66,9 @@ def main() -> int:
         source_review_text_limit=args.source_review_text_limit,
         post_relaunch_review=not args.no_post_relaunch_review and args.source_review_mode != "initial_only",
         max_missing_axes=args.max_missing_axes,
+        candidate_top_docs=args.candidate_top_docs,
+        candidate_chunks_per_doc=args.candidate_chunks_per_doc,
+        candidate_max_chunks=args.candidate_max_chunks,
         resume=args.resume,
     )
     print(f"\nRun dir: {result['run_dir']}")

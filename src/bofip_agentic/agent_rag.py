@@ -64,6 +64,9 @@ class AgenticRAG:
         source_review_text_limit: int = 900,
         post_relaunch_review: bool = True,
         max_missing_axes: int = 3,
+        candidate_top_docs: int = 6,
+        candidate_chunks_per_doc: int = 0,
+        candidate_max_chunks: int = 4,
     ):
         self.rt = runtime
         self.api_key = api_key
@@ -78,6 +81,9 @@ class AgenticRAG:
         self.source_review_text_limit = max(120, int(source_review_text_limit))
         self.post_relaunch_review = bool(post_relaunch_review) and self.source_review_mode != "initial_only"
         self.max_missing_axes = max(0, int(max_missing_axes))
+        self.candidate_top_docs = max(1, int(candidate_top_docs))
+        self.candidate_chunks_per_doc = max(0, int(candidate_chunks_per_doc))
+        self.candidate_max_chunks = max(1, int(candidate_max_chunks))
         self._run_started_at: float | None = None
         self._last_progress_at: float | None = None
         self._step_timings: list[dict] = []
@@ -374,8 +380,9 @@ class AgenticRAG:
         chunk_query = _build_facet_chunk_query(facet, original_question)
         result = self.rt.retrieve(
             query,
-            top_docs=6,
-            max_chunks=4,
+            top_docs=self.candidate_top_docs,
+            chunks_per_doc=self.candidate_chunks_per_doc or 3,
+            max_chunks=self.candidate_max_chunks,
             use_reranker=self.use_reranker,
             boost_prefix=facet.prefix,
             chunk_query=chunk_query,

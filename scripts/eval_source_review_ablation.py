@@ -17,49 +17,38 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from bofip_agentic.env_utils import load_default_env_files
 
 DEFAULT_BANK = PROJECT_ROOT / "data" / "eval" / "bofip_agentic_rag_50_human_questions_v2.json"
-DEFAULT_PILOT_IDS: tuple[str, ...] = (
-    "CASE-006",
-    "CASE-010",
-    "CASE-017",
-    "CASE-023",
-    "CASE-026",
-    "CASE-027",
-    "CASE-029",
-    "CASE-032",
-    "CASE-037",
-    "CASE-041",
-    "CASE-042",
-    "CASE-043",
-    "CASE-045",
-    "CASE-048",
-    "CASE-050",
-)
-
-
 @dataclass(frozen=True)
 class ReviewVariant:
     name: str
+    retrieval_mode: str = ""
+    reranker: bool = False
     source_review_mode: str = "full"
     chunk_limit: int = 16
     text_limit: int = 900
     post_relaunch_review: bool = True
     max_missing_axes: int = 3
     max_iterations: int | None = None
+    candidate_top_docs: int = 6
+    candidate_chunks_per_doc: int = 3
+    candidate_max_chunks: int = 4
 
 
 DEFAULT_VARIANTS: tuple[ReviewVariant, ...] = (
-    ReviewVariant("full16"),
-    ReviewVariant("full12", chunk_limit=12),
-    ReviewVariant("full8", chunk_limit=8),
-    ReviewVariant("full8_short500", chunk_limit=8, text_limit=500),
-    ReviewVariant("full6_short400", chunk_limit=6, text_limit=400),
-    ReviewVariant("review16_onepass", max_iterations=1),
-    ReviewVariant("review8_onepass", chunk_limit=8, max_iterations=1),
-    ReviewVariant("initial16", source_review_mode="initial_only", post_relaunch_review=False),
-    ReviewVariant("initial8", source_review_mode="initial_only", chunk_limit=8, post_relaunch_review=False),
-    ReviewVariant("one_axis16", max_missing_axes=1),
-    ReviewVariant("one_axis8_initial", source_review_mode="initial_only", chunk_limit=8, post_relaunch_review=False, max_missing_axes=1),
+    ReviewVariant("baseline_full16"),
+    ReviewVariant("initial_only16", source_review_mode="initial_only", post_relaunch_review=False),
+    ReviewVariant("onepass16", max_iterations=1),
     ReviewVariant("no_review", source_review_mode="none", post_relaunch_review=False, max_missing_axes=0, max_iterations=1),
+    ReviewVariant("full12", chunk_limit=12),
+    ReviewVariant("hybrid_full16", retrieval_mode="hybrid"),
+    ReviewVariant("reranker_full16", reranker=True),
+    ReviewVariant(
+        "candidate_more_chunks_initial_only16",
+        source_review_mode="initial_only",
+        post_relaunch_review=False,
+        candidate_top_docs=8,
+        candidate_chunks_per_doc=4,
+        candidate_max_chunks=8,
+    ),
 )
 
 
@@ -71,14 +60,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--provider", default="deepseek")
     parser.add_argument("--model", default="deepseek-v4-flash")
     parser.add_argument("--retrieval-mode", choices=["lexical", "hybrid"], default="lexical")
-    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--device", default="cuda")
     parser.add_argument("--max-iterations", type=int, default=2)
     parser.add_argument(
         "--case-ids",
-        default=",".join(DEFAULT_PILOT_IDS),
-        help="Comma-separated case IDs. Use 'random' to use --sample/--limit instead. Defaults to a frozen stratified pilot.",
+        default="random",
+        help="Comma-separated case IDs. Defaults to random, using --sample and --seed.",
     )
-    parser.add_argument("--sample", type=int, default=0)
+    parser.add_argument("--sample", type=int, default=10)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--seed", type=int, default=20260624)
     parser.add_argument("--parallel", type=int, default=2)
@@ -103,6 +92,7 @@ def selected_variants(value: str) -> list[ReviewVariant]:
 
 
 def command_for(args: argparse.Namespace, variant: ReviewVariant, run_id: str) -> list[str]:
+    retrieval_mode = variant.retrieval_mode or args.retrieval_mode
     command = [
         sys.executable,
         str(PROJECT_ROOT / "scripts" / "eval_run.py"),
@@ -117,7 +107,7 @@ def command_for(args: argparse.Namespace, variant: ReviewVariant, run_id: str) -
         "--model",
         args.model,
         "--retrieval-mode",
-        args.retrieval_mode,
+        retrieval_mode,
         "--device",
         args.device,
         "--max-iterations",
@@ -130,7 +120,15 @@ def command_for(args: argparse.Namespace, variant: ReviewVariant, run_id: str) -
         str(variant.text_limit),
         "--max-missing-axes",
         str(variant.max_missing_axes),
+        "--candidate-top-docs",
+        str(variant.candidate_top_docs),
+        "--candidate-chunks-per-doc",
+        str(variant.candidate_chunks_per_doc),
+        "--candidate-max-chunks",
+        str(variant.candidate_max_chunks),
     ]
+    if variant.reranker:
+        command.append("--reranker")
     case_ids = str(args.case_ids or "").strip()
     if case_ids and case_ids.lower() not in {"random", "none"}:
         command.extend(["--case-ids", case_ids])
@@ -171,6 +169,8 @@ def main() -> int:
     parallel = max(1, int(args.parallel))
     if using_fixed_case_ids:
         print(f"case_ids={args.case_ids}", flush=True)
+    else:
+        print(f"random_sample={args.sample} seed={args.seed}", flush=True)
 
     while pending or running:
         while pending and len(running) < parallel:
@@ -225,12 +225,17 @@ def write_comparison(output_root: Path, stamp: str, completed: list[tuple[str, i
                 "variant": name,
                 "exit": status,
                 "run_dir": str(run_dir),
+                "retrieval_mode": manifest.get("retrieval_mode"),
+                "reranker": manifest.get("reranker"),
                 "source_review_mode": manifest.get("source_review_mode"),
                 "source_review_chunk_limit": manifest.get("source_review_chunk_limit"),
                 "source_review_text_limit": manifest.get("source_review_text_limit"),
                 "post_relaunch_review": manifest.get("post_relaunch_review"),
                 "max_missing_axes": manifest.get("max_missing_axes"),
                 "max_iterations": manifest.get("max_iterations"),
+                "candidate_top_docs": manifest.get("candidate_top_docs"),
+                "candidate_chunks_per_doc": manifest.get("candidate_chunks_per_doc"),
+                "candidate_max_chunks": manifest.get("candidate_max_chunks"),
                 "expected_queries": summary.get("expected_queries"),
                 "total_queries": summary.get("total_queries"),
                 "is_complete": summary.get("is_complete"),
@@ -252,14 +257,17 @@ def write_comparison(output_root: Path, stamp: str, completed: list[tuple[str, i
         "",
         "Same question set per variant. Gold metadata is used only after generation for scoring; runtime receives only the user question.",
         "",
-        "| Variant | Complete | Errors | Avg s | Coverage | Trace | Doc recall | Answer recall | Verdicts |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
+        "| Variant | Retrieval | Review | Candidates | Complete | Errors | Avg s | Coverage | Trace | Doc recall | Answer recall | Verdicts |",
+        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for row in rows:
         verdicts = ", ".join(f"{key}:{value}" for key, value in sorted(dict(row["auto_verdict"]).items()))
         lines.append(
-            "| {variant} | {complete} | {errors} | {avg_s} | {cov} | {trace} | {doc} | {answer} | {verdicts} |".format(
+            "| {variant} | {retrieval} | {review} | {candidates} | {complete} | {errors} | {avg_s} | {cov} | {trace} | {doc} | {answer} | {verdicts} |".format(
                 variant=row["variant"],
+                retrieval=f"{row['retrieval_mode']}{' + reranker' if row['reranker'] else ''}",
+                review=f"{row['source_review_mode']} / {row['source_review_chunk_limit']}",
+                candidates=f"{row['candidate_top_docs']} docs, {row['candidate_max_chunks']} chunks",
                 complete=row["is_complete"],
                 errors=row["errors"],
                 avg_s=row["avg_time_s"],
