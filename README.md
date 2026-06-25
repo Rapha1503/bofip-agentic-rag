@@ -1,205 +1,218 @@
 # BOFiP Agentic RAG
 
-Full-corpus retrieval-augmented generation prototype for French BOFiP doctrine, created by **Raphael Ifergan**.
+Agentic RAG prototype for querying the French BOFiP tax doctrine with cited sources, source review, and full-corpus retrieval.
 
-The project explores how to answer tax questions from official BOFiP commentary with cited evidence, hybrid retrieval, dense embeddings, cross-encoder reranking, and coverage-aware generation.
+Built by **Raphael Ifergan**.
 
-[![CI](https://github.com/Rapha1503/bofip-agentic-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/Rapha1503/bofip-agentic-rag/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Docs](https://img.shields.io/badge/docs-architecture%20%7C%20data%20%7C%20demo-blueviolet)](docs/)
-[![Status](https://img.shields.io/badge/status-research%20prototype-orange)](docs/ROADMAP.md)
+[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/UI-Streamlit-7A1832)](https://streamlit.io/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Benchmark](https://img.shields.io/badge/Benchmark-45%2F50%20correct-brightgreen)](docs/evaluation/official50_portfolio_final_45_2026_06_25.md)
+[![Demo](https://img.shields.io/badge/Demo-Hugging%20Face-yellow)](https://rapha1503-bofip-agentic-rag.hf.space/)
 
-## At a Glance
+## Live Demo
 
-| Topic | Status |
-| --- | --- |
-| Core idea | Full-corpus BOFiP RAG with cited answers |
-| Corpus coverage | 5,666 BOFiP commentary documents observed through `2026-01-28` |
-| Fresh clone | Code, tests, docs, and small eval files are included |
-| Required local artifacts | Full BOFiP JSONL, embedding caches, and E5 model cache or download |
-| Demo path | Local Streamlit and hosted BYOK Space |
-| Current proof | Unit tests + setup checker + documented retrieval evaluation harness |
-| Main caveat | Research prototype, not tax advice |
+Try the hosted demo on Hugging Face Spaces:
 
-Example question:
+**https://rapha1503-bofip-agentic-rag.hf.space/**
 
-```text
-Quel taux de TVA pour la pose d'une pompe a chaleur chez un particulier ?
-```
+The app uses a BYOK model: bring your own provider API key, enter it in the interface, and query the BOFiP corpus. No API key is committed to this repository.
 
-Expected answer shape: a JSON-backed response rendered in Streamlit with `supported`, `partial`, or `insufficient_evidence` status and cited BOFiP chunks. Local debug mode can expose the technical retrieval trace.
+## Why This Project
 
-## Why This Project Exists
+French tax doctrine is dense, fragmented, and sensitive to wording. A generic chatbot can give a plausible answer while missing the relevant BOFiP section, confusing nearby tax regimes, or ignoring exceptions.
 
-French tax doctrine is broad, dense, and citation-sensitive. A useful RAG system cannot rely on a single vector search over loose chunks: it needs structured parsing, legal metadata, robust retrieval under paraphrase, citation traceability, and honest abstention when evidence is missing.
-
-This repository is designed as a portfolio-grade cleanroom version of that work.
-
-## Pipeline
+This project explores a more controlled workflow:
 
 ```text
-BOFiP XML/HTML export
-  -> structured RawDocument records
-  -> section-aware chunks
-  -> BM25 document indexes
-  -> dense document and chunk indexes
-  -> confidence-weighted RRF fusion
-  -> local chunk retrieval
-  -> cross-encoder reranking
-  -> cited JSON answer with coverage status
+User question
+  -> fiscal planning
+  -> retrieval by tax axis
+  -> source review
+  -> targeted relaunch if evidence is weak
+  -> sourced answer with explicit limits
 ```
 
-Current runtime corpus:
+The goal is not to replace tax advice. The goal is to make BOFiP retrieval and answer grounding more transparent.
 
-| Artifact | Local path | Notes |
-| --- | --- | --- |
-| Raw documents | `data/interim/raw_docs_sample_5666.jsonl` | 5,666 BOFiP commentary documents |
-| Chunks | `data/interim/chunks_section_window_sample_5666.jsonl` | 66,289 section-window chunks |
-| Document embeddings | `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` | E5-large, shape `(5666, 1024)` |
-| Chunk embeddings | `data/interim/chunk_dense_cache_5666_full_e5large.npy` | E5-large, shape `(66289, 1024)` |
-| Evaluation queries | `data/interim/eval_queries_v1.jsonl` | 50 test questions |
-| Passage gold | `data/interim/passage_gold_v3.jsonl` | passage-level labels where available |
+## What It Does
 
-Large corpus/model artifacts are intentionally not committed to Git. See [docs/DATA_CARD.md](docs/DATA_CARD.md) and [docs/full_corpus_manifest.json](docs/full_corpus_manifest.json).
+BOFiP Agentic RAG indexes the BOFiP doctrine corpus and answers French fiscal questions with:
 
-## Retrieval Stack
+- full-corpus BOFiP retrieval;
+- cited source passages;
+- fiscal-axis planning;
+- source criticism before final answer;
+- targeted relaunch when evidence is missing;
+- visible limitations when the answer is uncertain.
 
-- Multi-view BM25 over document text, section leads, and stemmed section leads.
-- Dense document retrieval with multilingual E5-large.
-- Dense chunk retrieval for semantic anchors.
-- Dense-anchor filtering to limit lexical false positives.
-- Confidence-weighted reciprocal rank fusion.
-- Local per-document chunk retrieval.
-- Optional cross-encoder reranking with `BAAI/bge-reranker-v2-m3`.
-- Diversity selection to prevent one document from dominating context.
+Current corpus:
 
-The current app also performs query rewriting, multi-facet expansion, and computation-aware facet injection before retrieval. A Phase 2 cleanup will move that orchestration out of `app.py` into a shared runtime module.
+| Layer | Count |
+|---|---:|
+| BOFiP source rows | 9,048 |
+| Section-window passages | 79,160 |
+| Embedding dimension | 1,024 |
+| Corpus mode | Full corpus, no reduced demo |
+
+## Benchmark
+
+Latest portfolio evaluation:
+
+| Metric | Result |
+|---|---:|
+| Questions | 50 |
+| Correct answers | **45 / 50** |
+| Failures kept visible | 5 / 50 |
+| Runtime errors | 0 |
+| Average runtime | 174.2s / question |
+
+Reports:
+
+- [Markdown report](docs/evaluation/official50_portfolio_final_45_2026_06_25.md)
+- [HTML report](docs/evaluation/official50_portfolio_final_45_2026_06_25.html)
+- [CSV report](docs/evaluation/official50_portfolio_final_45_2026_06_25.csv)
+
+The benchmark sends only the user question to the runtime. Expected answers and BOFiP references are used only after generation for evaluation.
+
+## Architecture
+
+```text
+data.economie.gouv.fr BOFiP API
+  -> full-corpus sync
+  -> HTML and metadata parsing
+  -> section-window chunking
+  -> BM25 retrieval
+  -> optional dense retrieval / reranking
+  -> agentic source review
+  -> Streamlit BYOK app
+```
+
+Core modules:
+
+| Module | Role |
+|---|---|
+| `agent_rag.py` | fiscal planner, source review, relaunch, final answer |
+| `rag_runtime.py` | retrieval runtime |
+| `lexical_retrieval.py` | BM25 and French tokenization |
+| `dense_retrieval.py` | optional E5 embeddings |
+| `direct_chunk_retrieval.py` | local section/chunk search |
+| `eval_runner.py` | benchmark runner and report generation |
+| `app.py` | Streamlit interface |
+
+## Design Trade-Offs
+
+The current public version prioritizes **source traceability** over raw latency.
+
+A simple one-pass vector RAG is faster. This project adds source review and targeted relaunches so the system can detect weak evidence and try to recover better BOFiP passages before answering.
+
+Planned runtime modes:
+
+| Mode | Goal |
+|---|---|
+| Fast mode | One-pass cited RAG for interactive demos |
+| Audit mode | Full planner + source review + relaunch loop |
+
+## Supported Providers
+
+The app is provider-agnostic and uses BYOK configuration.
+
+| Provider | Environment variable | Notes |
+|---|---|---|
+| DeepSeek | `DEEPSEEK_API_KEY` | Used for the published benchmark |
+| OpenAI | `OPENAI_API_KEY` | Supported through provider config |
+| Mistral | `MISTRAL_API_KEY` | Supported through provider config |
+| Google Gemini | `GEMINI_API_KEY` | Supported through provider config |
+
+For the hosted Hugging Face demo, enter the provider key directly in the UI.
 
 ## Quick Start
 
 ```powershell
 git clone https://github.com/Rapha1503/bofip-agentic-rag.git
 cd bofip-agentic-rag
+
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env.local
 ```
 
-For the Streamlit app, add one provider key to `.env.local`, then place the required BOFiP artifacts in `data/interim/`. A fresh public clone can run code checks and unit tests, but the full app needs the large local artifact bundle described in the manifest.
+Add at least one provider key to `.env.local`:
 
-Check local artifact readiness:
-
-```powershell
-python scripts/check_setup.py
-python scripts/check_setup.py --deep
+```text
+DEEPSEEK_API_KEY=
+OPENAI_API_KEY=
+MISTRAL_API_KEY=
+GEMINI_API_KEY=
 ```
 
-The reranker remains an experimental quality layer in the codebase. The public Streamlit app keeps it off by default until a benchmark shows a clear gain for the hosted flow.
-
-To download the public full-corpus runtime artifacts from the project release:
+Download runtime artifacts:
 
 ```powershell
 python scripts/download_artifacts.py
 python scripts/check_setup.py --deep --skip-models
 ```
 
-Run the Streamlit app:
+Run the app:
 
 ```powershell
-$env:PYTHONPATH='src'
 streamlit run app.py
 ```
 
-Run a CLI answer preview:
+Run tests:
 
 ```powershell
-$env:PYTHONPATH='src'
-python scripts/preview_answer.py --query "Quel taux de TVA pour une pompe a chaleur ?"
-```
-
-The CLI preview currently uses DeepSeek and requires `DEEPSEEK_API_KEY`. The Streamlit app exposes a BYOK interface for OpenAI-compatible providers, with a provider-specific model dropdown.
-
-Run retrieval evaluation:
-
-```powershell
-$env:PYTHONPATH='src'
-python scripts/evaluate.py --runtime rag --device cpu --limit 5
-```
-
-Run component ablations:
-
-```powershell
-$env:PYTHONPATH='src'
-python scripts/ablation.py --device cpu --limit 15
-```
-
-Run unit tests:
-
-```powershell
-$env:PYTHONPATH='src'
+$env:PYTHONPATH="src"
 python -m unittest discover -s tests -v
 ```
 
-## LLM Providers
+## Runtime Artifacts
 
-The Streamlit app currently exposes OpenAI-compatible endpoints for these providers:
+Large full-corpus artifacts are not committed to Git.
 
-| Provider | Env key | Default model |
-| --- | --- | --- |
-| DeepSeek | `DEEPSEEK_API_KEY` | `deepseek-v4-flash` |
-| OpenAI | `OPENAI_API_KEY` | `gpt-5.4-mini` |
-| Mistral | `MISTRAL_API_KEY` | `mistral-small-latest` |
-| Google Gemini | `GEMINI_API_KEY` | `gemini-3.5-flash` |
+Expected files:
 
-API keys can be loaded from `.env.local` or entered in the Streamlit sidebar. Model IDs are selected from the configured provider dropdown. Keys must not be committed or logged.
+```text
+data/interim/raw_docs.jsonl
+data/interim/chunks.jsonl
+data/interim/doc_dense_cache.npy
+data/interim/chunk_dense_cache.npy
+```
 
-## Evaluation
+They are tracked through `docs/full_corpus_manifest.json` and can be downloaded from the release artifacts.
 
-The repository includes the reusable evaluation harness and the 50-query eval set:
+## Hugging Face Deployment
 
-- `data/interim/eval_queries_v1.jsonl`
-- `data/interim/passage_gold_v3.jsonl`
-- `scripts/evaluate.py`
-- `scripts/ablation.py`
+The public demo is designed for Hugging Face Spaces. The Space loads full-corpus artifacts at startup and exposes provider/model selection in the UI.
 
-Tracked public metrics are still pending because the full local artifact bundle is not committed. The next portfolio milestone is a small, versioned evaluation report tied to a corpus manifest.
+Deployment principles:
 
-## Full-Corpus Deployment Principle
-
-The live app is built around the full 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
-
-Deployment optimization must preserve that coverage:
-
-- prebuilt data artifacts;
-- memory-mapped or cached embeddings;
-- startup preflight checks;
-- optional reranker or cheaper reranker mode;
-- explicit latency and freshness limits;
-- clear BYOK warning for user-provided API keys.
-
-GitHub Pages hosts the static portfolio page. Hugging Face Spaces hosts the Streamlit BYOK runtime. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- no model API key is hardcoded in the repository;
+- reranking stays off by default on free CPU hosting;
+- prompt/debug views stay hidden unless explicitly enabled;
+- the app keeps full-corpus coverage instead of shipping a reduced demo corpus.
 
 ## Limitations
 
-- Research prototype, not tax advice.
-- Local corpus max publication date observed during audit: `2026-01-28`.
-- Official BOFiP may contain newer publications.
-- The runtime currently indexes the 5,666-document commentary corpus, not every BOFiP content type.
-- Some table content is parsed but not yet first-class in chunk retrieval.
-- Some BOI references are duplicated across different documents; Phase 2 will key retrieval by stable document identity.
-- End-to-end answer grading is not yet as complete as retrieval grading.
+This is a research prototype, not tax advice.
 
-## Documentation
+Known limitations:
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Data card](docs/DATA_CARD.md)
-- [Local demo guide](docs/DEMO.md)
-- [Deployment notes](docs/DEPLOYMENT.md)
-- [Full-corpus manifest](docs/full_corpus_manifest.json)
-- [References](docs/REFERENCES.md)
-- [Roadmap](docs/ROADMAP.md)
+- full audit mode is slow;
+- some narrow BOFiP branches still fail retrieval;
+- source review improves traceability but adds LLM calls;
+- evaluation is a portfolio benchmark, not a formal legal QA certification;
+- BOFiP updates require artifact refresh.
+
+## Roadmap
+
+- Add a faster public one-pass cited RAG mode.
+- Keep the current source-review loop as audit mode.
+- Improve source-review latency.
+- Add screenshots and a GitHub Pages portfolio page.
+- Expand evaluation with more cross-domain fiscal cases.
+- Add deployment health checks for Hugging Face.
 
 ## Author
 
