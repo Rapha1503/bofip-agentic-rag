@@ -1,6 +1,6 @@
 # BOFiP Agentic RAG
 
-Agentic RAG prototype for querying the French BOFiP tax doctrine with cited sources, source review, and full-corpus retrieval.
+Agentic RAG prototype for querying the French BOFiP tax doctrine with cited sources, full-corpus retrieval, and source-aware answers.
 
 Built by **Raphael Ifergan**.
 
@@ -28,8 +28,7 @@ This project explores a more controlled workflow:
 User question
   -> fiscal planning
   -> retrieval by tax axis
-  -> source review
-  -> targeted relaunch if evidence is weak
+  -> source-aware passage selection
   -> sourced answer with explicit limits
 ```
 
@@ -42,8 +41,8 @@ BOFiP Agentic RAG indexes the BOFiP doctrine corpus and answers French fiscal qu
 - full-corpus BOFiP retrieval;
 - cited source passages;
 - fiscal-axis planning;
-- source criticism before final answer;
-- targeted relaunch when evidence is missing;
+- source-aware answer generation;
+- structured answer status;
 - visible limitations when the answer is uncertain.
 
 Current corpus:
@@ -104,7 +103,9 @@ Core modules:
 
 The current public version prioritizes **source traceability** over raw latency.
 
-Instead of returning the first plausible answer, the pipeline plans the fiscal question, retrieves BOFiP passages, reviews source coverage, and can relaunch a targeted search before generation. This makes the demo slower than a one-pass RAG, but it keeps the answer auditable and preserves full-corpus coverage.
+Instead of returning the first plausible answer, the pipeline rewrites and decomposes the fiscal question, retrieves BOFiP passages, keeps retained sources visible, and constrains the final answer to the evidence shown. This makes the demo slower than a minimal one-pass RAG, but it keeps the answer auditable and preserves full-corpus coverage.
+
+In this repository, "agentic" means an orchestrated RAG workflow: planning, retrieval, source selection, and structured answer control remain explicit and inspectable.
 
 ## Supported Providers
 
@@ -194,7 +195,7 @@ Known limitations:
 
 - the traceability-first runtime is slower than a one-pass RAG;
 - some narrow BOFiP branches still fail retrieval;
-- source review improves traceability but adds LLM calls;
+- query rewriting and source-aware generation add LLM calls;
 - BOFiP updates require artifact refresh.
 
 ## Author

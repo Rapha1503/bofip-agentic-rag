@@ -21,7 +21,7 @@ This prevents evaluation data from leaking into prompts while keeping the result
 |---|---|
 | Retrieval | Did the system recover at least one useful BOFiP source for the answer? |
 | Source grounding | Is the final answer supported by retained passages? |
-| Agentic trace | Are planning, retrieval, source review, and answer steps visible? |
+| Agentic trace | Are planning, retrieval, source selection, and answer steps visible? |
 | Final answer | Does the response answer the user question without inventing unsupported rules? |
 
 ## Verdicts
