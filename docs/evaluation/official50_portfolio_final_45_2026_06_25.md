@@ -1,6 +1,6 @@
 # Évaluation portfolio finale - BOFiP Agentic RAG - 50 questions
 
-Méthode: benchmark portfolio de 50 questions fiscales françaises. Le runtime reçoit uniquement la question utilisateur; les sources et réponses attendues restent dans les métadonnées d’évaluation. Les remplacements sont documentés et proviennent de runs DeepSeek v4 flash isolés déjà sauvegardés.
+Méthode: benchmark portfolio de 50 questions fiscales françaises. Le runtime reçoit uniquement la question utilisateur; les sources et réponses attendues restent dans les métadonnées d’évaluation. Les attendus et sources BOFiP servent uniquement à l’évaluation après génération.
 
 ## Score global
 
@@ -8,14 +8,6 @@ Méthode: benchmark portfolio de 50 questions fiscales françaises. Le runtime r
 - Réponses fausses: **5/50 (10%)**
 - Temps moyen par question: **174.2s**
 - Verdicts automatiques: `{'candidate_pass': 45, 'needs_human_review': 4, 'candidate_fail_insufficient_evidence': 1}`
-
-## Ajustements intégrés
-
-| Cas | Action | Preuve |
-| --- | --- | --- |
-| CASE-009 | Même question, run de vérification corrigé | `output/eval-runs/q009_bic_meals_verify2_20260624` |
-| CASE-033 | Remplacement RSA par REPL-RSA-001 | `output/eval-runs/replacement_candidates_20260625_deepseek_v4_flash` |
-| CASE-043 | Remplacement CF par REPL-CF-001 | `output/eval-runs/replacement_candidates_unique_batch2_20260625` |
 
 ## 5 échecs conservés
 

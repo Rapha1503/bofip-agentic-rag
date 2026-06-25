@@ -78,14 +78,12 @@ The benchmark sends only the user question to the runtime. Expected answers and 
 ## Architecture
 
 ```text
-data.economie.gouv.fr BOFiP API
-  -> full-corpus sync
-  -> HTML and metadata parsing
-  -> section-window chunking
-  -> BM25 retrieval
-  -> optional dense retrieval / reranking
-  -> agentic source review
-  -> Streamlit BYOK app
+BOFiP public data
+  -> full-corpus parsing and section chunking
+  -> retrieval over the complete local corpus
+  -> agentic source review and targeted relaunch
+  -> sourced answer with visible limits
+  -> Streamlit BYOK interface
 ```
 
 Core modules:
@@ -104,14 +102,7 @@ Core modules:
 
 The current public version prioritizes **source traceability** over raw latency.
 
-A simple one-pass vector RAG is faster. This project adds source review and targeted relaunches so the system can detect weak evidence and try to recover better BOFiP passages before answering.
-
-Planned runtime modes:
-
-| Mode | Goal |
-|---|---|
-| Fast mode | One-pass cited RAG for interactive demos |
-| Audit mode | Full planner + source review + relaunch loop |
+Instead of returning the first plausible answer, the pipeline plans the fiscal question, retrieves BOFiP passages, reviews source coverage, and can relaunch a targeted search before generation. This makes the demo slower than a one-pass RAG, but it keeps the answer auditable and preserves full-corpus coverage.
 
 ## Supported Providers
 
@@ -199,18 +190,15 @@ This is a research prototype, not tax advice.
 
 Known limitations:
 
-- full audit mode is slow;
+- the traceability-first runtime is slower than a one-pass RAG;
 - some narrow BOFiP branches still fail retrieval;
 - source review improves traceability but adds LLM calls;
-- evaluation is a portfolio benchmark, not a formal legal QA certification;
 - BOFiP updates require artifact refresh.
 
 ## Roadmap
 
-- Add a faster public one-pass cited RAG mode.
-- Keep the current source-review loop as audit mode.
 - Improve source-review latency.
-- Add screenshots and a GitHub Pages portfolio page.
+- Add a faster cited-answer path for interactive demos.
 - Expand evaluation with more cross-domain fiscal cases.
 - Add deployment health checks for Hugging Face.
 
