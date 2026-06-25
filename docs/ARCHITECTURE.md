@@ -13,15 +13,15 @@ User question
   -> local chunk retrieval inside selected documents
   -> optional dense retrieval / reranking
   -> diversity-capped context selection
-  -> source-aware answer prompt
+  -> source review and answer prompt
   -> cited answer with explicit limits
 ```
 
 ## Data Pipeline
 
 ```text
-BOFiP XML/HTML export
-  -> metadata and section parsing
+BOFiP public API snapshot
+  -> metadata and content normalization
   -> RawDocument JSONL
   -> section-window chunking
   -> ChunkNode JSONL
@@ -34,10 +34,10 @@ BOFiP XML/HTML export
 
 | Artifact | Role |
 |---|---|
-| `data/interim/raw_docs_sample_5666.jsonl` | parsed BOFiP commentary documents |
-| `data/interim/chunks_section_window_sample_5666.jsonl` | section-window passages used for retrieval |
-| `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` | document-level E5 embeddings |
-| `data/interim/chunk_dense_cache_5666_full_e5large.npy` | chunk-level E5 embeddings |
+| `data/interim/raw_docs.jsonl` | parsed BOFiP commentary documents |
+| `data/interim/chunks.jsonl` | section-window passages used for retrieval |
+| `data/interim/doc_dense_cache.npy` | document-level E5 embeddings |
+| `data/interim/chunk_dense_cache.npy` | chunk-level E5 embeddings |
 | `docs/full_corpus_manifest.json` | public artifact contract with counts and checksums |
 
 The large runtime artifacts are intentionally kept outside Git and downloaded from release assets.
@@ -47,14 +47,14 @@ The large runtime artifacts are intentionally kept outside Git and downloaded fr
 | Module | Responsibility |
 |---|---|
 | `app.py` | Streamlit UI, provider selection, BYOK session handling |
-| `src/bofip_cleanroom/rag_runtime.py` | full retrieval runtime |
-| `src/bofip_cleanroom/lexical_retrieval.py` | BM25 retrieval and French tokenization |
-| `src/bofip_cleanroom/dense_retrieval.py` | E5 encoding and dense search |
-| `src/bofip_cleanroom/direct_chunk_retrieval.py` | chunk search inside selected BOFiP documents |
-| `src/bofip_cleanroom/hybrid_retrieval.py` | reciprocal-rank fusion |
-| `src/bofip_cleanroom/reranker.py` | optional cross-encoder reranking |
-| `src/bofip_cleanroom/llm_preview.py` | answer prompting, parsing, and fallbacks |
-| `src/bofip_cleanroom/eval_harness.py` | evaluation utilities |
+| `src/bofip_agentic/rag_runtime.py` | full retrieval runtime |
+| `src/bofip_agentic/lexical_retrieval.py` | BM25 retrieval and French tokenization |
+| `src/bofip_agentic/dense_retrieval.py` | E5 encoding and dense search |
+| `src/bofip_agentic/direct_chunk_retrieval.py` | chunk search inside selected BOFiP documents |
+| `src/bofip_agentic/hybrid_retrieval.py` | reciprocal-rank fusion |
+| `src/bofip_agentic/reranker.py` | optional cross-encoder reranking |
+| `src/bofip_agentic/agent_rag.py` | planner, source critic, relaunch loop, and final answer |
+| `src/bofip_agentic/eval_harness.py` | evaluation utilities |
 
 ## Design Choices
 

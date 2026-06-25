@@ -1,6 +1,6 @@
 # BOFiP Agentic RAG
 
-Agentic RAG prototype for querying the French BOFiP tax doctrine with cited sources, full-corpus retrieval, and source-aware answers.
+Agentic RAG prototype for querying the French BOFiP tax doctrine with cited sources, source review, targeted retrieval relaunches, and full-corpus retrieval.
 
 Built by **Raphael Ifergan**.
 
@@ -28,7 +28,8 @@ This project explores a more controlled workflow:
 User question
   -> fiscal planning
   -> retrieval by tax axis
-  -> source-aware passage selection
+  -> source review
+  -> targeted relaunch if evidence is weak
   -> sourced answer with explicit limits
 ```
 
@@ -49,10 +50,10 @@ Current corpus:
 
 | Layer | Count |
 |---|---:|
-| BOFiP commentary documents | 5,666 |
-| Section-window passages | 66,289 |
+| BOFiP source rows | 9,048 |
+| Section-window passages | 79,160 |
 | Embedding dimension | 1,024 |
-| Corpus mode | Full commentary corpus, no reduced demo |
+| Corpus mode | Full BOFiP API snapshot, no reduced demo |
 
 ## Benchmark
 
@@ -77,13 +78,14 @@ The benchmark sends only the user question to the runtime. Expected answers and 
 ## Architecture
 
 ```text
-BOFiP public doctrine
-  -> XML/HTML parsing and metadata normalization
-  -> full commentary corpus as JSONL documents
+BOFiP public API snapshot
+  -> metadata and content normalization
+  -> full BOFiP API snapshot as JSONL documents
   -> section-window chunking
   -> BM25 retrieval + optional E5 dense retrieval
   -> local chunk selection and optional reranking
-  -> source-aware answer generation
+  -> agentic source review and targeted relaunch
+  -> sourced answer generation
   -> Streamlit BYOK demo
 ```
 
@@ -91,21 +93,21 @@ Core modules:
 
 | Module | Role |
 |---|---|
-| `src/bofip_cleanroom/rag_runtime.py` | retrieval runtime |
-| `src/bofip_cleanroom/lexical_retrieval.py` | BM25 and French tokenization |
-| `src/bofip_cleanroom/dense_retrieval.py` | E5 dense retrieval |
-| `src/bofip_cleanroom/direct_chunk_retrieval.py` | local chunk search inside selected documents |
-| `src/bofip_cleanroom/llm_preview.py` | answer generation and structured output parsing |
-| `src/bofip_cleanroom/eval_harness.py` | retrieval and answer evaluation helpers |
+| `src/bofip_agentic/agent_rag.py` | planner, source critic, relaunch loop, final answer |
+| `src/bofip_agentic/rag_runtime.py` | retrieval runtime |
+| `src/bofip_agentic/lexical_retrieval.py` | BM25 and French tokenization |
+| `src/bofip_agentic/dense_retrieval.py` | E5 dense retrieval |
+| `src/bofip_agentic/direct_chunk_retrieval.py` | local chunk search inside selected documents |
+| `src/bofip_agentic/eval_runner.py` | benchmark runner and report generation |
 | `app.py` | Streamlit interface |
 
 ## Design Trade-Offs
 
 The current public version prioritizes **source traceability** over raw latency.
 
-Instead of returning the first plausible answer, the pipeline rewrites and decomposes the fiscal question, retrieves BOFiP passages, keeps retained sources visible, and constrains the final answer to the evidence shown. This makes the demo slower than a minimal one-pass RAG, but it keeps the answer auditable and preserves full-corpus coverage.
+Instead of returning the first plausible answer, the pipeline plans the fiscal question, retrieves BOFiP passages, reviews source coverage, and can relaunch targeted searches before generation. This makes the demo slower than a minimal one-pass RAG, but it keeps the answer auditable and preserves full-corpus coverage.
 
-In this repository, "agentic" means an orchestrated RAG workflow: planning, retrieval, source selection, and structured answer control remain explicit and inspectable.
+In this repository, "agentic" means an orchestrated RAG workflow: planning, retrieval, source criticism, targeted relaunches, and structured answer control remain explicit and inspectable.
 
 ## Supported Providers
 
@@ -168,10 +170,10 @@ Large full-corpus artifacts are not committed to Git.
 Expected files:
 
 ```text
-data/interim/raw_docs_sample_5666.jsonl
-data/interim/chunks_section_window_sample_5666.jsonl
-data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
-data/interim/chunk_dense_cache_5666_full_e5large.npy
+data/interim/raw_docs.jsonl
+data/interim/chunks.jsonl
+data/interim/doc_dense_cache.npy
+data/interim/chunk_dense_cache.npy
 ```
 
 They are tracked through `docs/full_corpus_manifest.json` and can be downloaded from the release artifacts.
@@ -195,7 +197,7 @@ Known limitations:
 
 - the traceability-first runtime is slower than a one-pass RAG;
 - some narrow BOFiP branches still fail retrieval;
-- query rewriting and source-aware generation add LLM calls;
+- source review and targeted relaunches add LLM calls;
 - BOFiP updates require artifact refresh.
 
 ## Author

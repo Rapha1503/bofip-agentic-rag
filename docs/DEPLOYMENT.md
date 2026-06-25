@@ -11,7 +11,7 @@ GitHub Pages should not host the RAG runtime because it serves static assets and
 
 ## Full-Corpus Requirement
 
-The hosted app is designed for the full 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
+The hosted app is designed for the full 9,048-row BOFiP API snapshot used by the hosted Space.
 
 Optimize the full-corpus runtime instead:
 
@@ -41,10 +41,10 @@ Do not build a browser-only OpenAI-key workflow for this project. API keys in cl
 The live app needs these runtime files:
 
 ```text
-data/interim/raw_docs_sample_5666.jsonl
-data/interim/chunks_section_window_sample_5666.jsonl
-data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
-data/interim/chunk_dense_cache_5666_full_e5large.npy
+data/interim/raw_docs.jsonl
+data/interim/chunks.jsonl
+data/interim/doc_dense_cache.npy
+data/interim/chunk_dense_cache.npy
 data/models/intfloat--multilingual-e5-large/
 ```
 
@@ -58,14 +58,14 @@ The full-corpus file contract is versioned in [full_corpus_manifest.json](full_c
 
 The repository intentionally excludes those large artifacts. A deployment should either:
 
-- download them during startup from the `full-corpus-v1` GitHub release; or
+- download them during startup from the `full-corpus-v2` GitHub release; or
 - mount them into the host environment; or
 - use an external model/cache volume if the host supports it.
 
 The current default artifact URL is:
 
 ```text
-https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v1
+https://github.com/Rapha1503/bofip-agentic-rag/releases/download/full-corpus-v2
 ```
 
 The Docker runtime uses `BOFIP_AUTO_DOWNLOAD_ARTIFACTS=1`.

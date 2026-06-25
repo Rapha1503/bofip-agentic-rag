@@ -23,7 +23,7 @@ The Streamlit app exposes a model dropdown for each provider. Use a model availa
 
 ## 2. Place Full-Corpus Artifacts
 
-The runtime expects the 5,666-document BOFiP commentary corpus observed through `2026-01-28`.
+The runtime expects the 9,048-row BOFiP API snapshot used by the hosted Space.
 
 Recommended path:
 
@@ -34,10 +34,10 @@ python scripts/download_artifacts.py
 Required local files:
 
 ```text
-data/interim/raw_docs_sample_5666.jsonl
-data/interim/chunks_section_window_sample_5666.jsonl
-data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
-data/interim/chunk_dense_cache_5666_full_e5large.npy
+data/interim/raw_docs.jsonl
+data/interim/chunks.jsonl
+data/interim/doc_dense_cache.npy
+data/interim/chunk_dense_cache.npy
 data/models/intfloat--multilingual-e5-large/
 ```
 
@@ -47,7 +47,7 @@ Optional quality layer:
 data/models/BAAI--bge-reranker-v2-m3/
 ```
 
-The optional reranker is not exposed in the public Streamlit UI. Retrieval still covers the full 5,666-document corpus without it.
+The optional reranker is not exposed in the public Streamlit UI. Retrieval still covers the full 9,048-row corpus without it.
 
 ## 3. Check Setup
 
@@ -67,7 +67,7 @@ The script exits non-zero when required artifacts are missing and prints exactly
 
 The versioned artifact contract is tracked in [full_corpus_manifest.json](full_corpus_manifest.json).
 
-The public artifact bundle is published as release assets under `full-corpus-v1`.
+The public artifact bundle is published as release assets under `full-corpus-v2`.
 
 ## 4. Run the App
 
@@ -91,18 +91,18 @@ Expected behavior:
 - retrieval trace available in the technical expander;
 - cited BOFiP chunks;
 - JSON-backed answer rendered as a fiscal reasoning summary;
-- explicit status: `supported`, `partial`, or `insufficient_evidence`.
+- explicit status: `supported` or `insufficient_evidence`.
 
-## 6. Run CLI Smoke Checks
+## 6. Run Local Checks
 
 ```powershell
 $env:PYTHONPATH='src'
-python scripts/evaluate.py --runtime rag --device cpu --limit 5
-python scripts/preview_answer.py --query "Quel taux de TVA pour une pompe a chaleur ?"
+python -m compileall app.py scripts src
+python scripts/check_setup.py --deep --skip-models
 ```
 
 ## Notes
 
 - This is a research prototype, not tax advice.
 - BYOK means the API key is sent to the local or hosted server handling the request.
-- The current corpus observed during audit is fresh through `2026-01-28`; official BOFiP may be newer.
+- The current artifact bundle is generated from the 2026-06-23 BOFiP API snapshot; official BOFiP may be newer.

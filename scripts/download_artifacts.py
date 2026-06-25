@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import sys
@@ -7,7 +7,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from bofip_cleanroom.artifact_download import (  # noqa: E402
+from bofip_agentic.artifact_download import (  # noqa: E402
     download_missing_runtime_artifacts,
     validate_runtime_artifacts,
 )
@@ -29,7 +29,6 @@ def main() -> int:
         return 1
     print("runtime artifacts ok")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
