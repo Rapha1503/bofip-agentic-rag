@@ -1,0 +1,66 @@
+<svg width="1180" height="430" viewBox="0 0 1180 430" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">BOFiP Agentic RAG pipeline</title>
+  <desc id="desc">Pipeline diagram from BOFiP source data to retrieval, source review, targeted relaunch and cited answer.</desc>
+  <rect width="1180" height="430" rx="24" fill="#FBF8F5"/>
+  <rect x="28" y="28" width="1124" height="374" rx="22" fill="#FFFFFF" stroke="#E5DBD2" stroke-width="2"/>
+  <text x="62" y="76" fill="#1F2933" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">Runtime pipeline</text>
+  <text x="62" y="106" fill="#59636F" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16">Full corpus first. Evidence before answer. Limits stay visible.</text>
+
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <g transform="translate(62 156)">
+      <rect width="142" height="104" rx="18" fill="#F8F4EF" stroke="#D9CFC7"/>
+      <text x="20" y="34" fill="#7A1832" font-size="13" font-weight="800">SOURCE</text>
+      <text x="20" y="61" fill="#1F2933" font-size="18" font-weight="800">BOFiP API</text>
+      <text x="20" y="83" fill="#5C6570" font-size="13">9,048 rows</text>
+    </g>
+    <path d="M218 208 H278" stroke="#B8912E" stroke-width="4" stroke-linecap="round"/>
+    <path d="M278 208 L266 200 V216 L278 208Z" fill="#B8912E"/>
+
+    <g transform="translate(294 156)">
+      <rect width="142" height="104" rx="18" fill="#F8F4EF" stroke="#D9CFC7"/>
+      <text x="20" y="34" fill="#7A1832" font-size="13" font-weight="800">PARSE</text>
+      <text x="20" y="61" fill="#1F2933" font-size="18" font-weight="800">Documents</text>
+      <text x="20" y="83" fill="#5C6570" font-size="13">metadata + sections</text>
+    </g>
+    <path d="M450 208 H510" stroke="#B8912E" stroke-width="4" stroke-linecap="round"/>
+    <path d="M510 208 L498 200 V216 L510 208Z" fill="#B8912E"/>
+
+    <g transform="translate(526 156)">
+      <rect width="142" height="104" rx="18" fill="#F8F4EF" stroke="#D9CFC7"/>
+      <text x="20" y="34" fill="#7A1832" font-size="13" font-weight="800">INDEX</text>
+      <text x="20" y="61" fill="#1F2933" font-size="18" font-weight="800">Chunks</text>
+      <text x="20" y="83" fill="#5C6570" font-size="13">BM25 + optional E5</text>
+    </g>
+    <path d="M682 208 H742" stroke="#B8912E" stroke-width="4" stroke-linecap="round"/>
+    <path d="M742 208 L730 200 V216 L742 208Z" fill="#B8912E"/>
+
+    <g transform="translate(758 132)">
+      <rect width="168" height="152" rx="20" fill="#7A1832"/>
+      <text x="22" y="38" fill="#F8F4EF" font-size="13" font-weight="800">AGENT LOOP</text>
+      <text x="22" y="70" fill="#FFFFFF" font-size="18" font-weight="800">Plan</text>
+      <text x="22" y="96" fill="#FFFFFF" font-size="18" font-weight="800">Retrieve</text>
+      <text x="22" y="122" fill="#FFFFFF" font-size="18" font-weight="800">Review</text>
+      <text x="22" y="146" fill="#E9D8DF" font-size="13">targeted relaunch</text>
+    </g>
+    <path d="M940 208 H1000" stroke="#B8912E" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1000 208 L988 200 V216 L1000 208Z" fill="#B8912E"/>
+
+    <g transform="translate(1016 156)">
+      <rect width="110" height="104" rx="18" fill="#F8F4EF" stroke="#D9CFC7"/>
+      <text x="18" y="34" fill="#7A1832" font-size="13" font-weight="800">ANSWER</text>
+      <text x="18" y="61" fill="#1F2933" font-size="18" font-weight="800">Cited</text>
+      <text x="18" y="83" fill="#5C6570" font-size="13">limits shown</text>
+    </g>
+  </g>
+
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="62" y="318" width="220" height="42" rx="12" fill="#F8F4EF" stroke="#E1D7CE"/>
+    <text x="80" y="344" fill="#263238" font-size="14" font-weight="700">No reduced demo corpus</text>
+    <rect x="304" y="318" width="236" height="42" rx="12" fill="#F8F4EF" stroke="#E1D7CE"/>
+    <text x="322" y="344" fill="#263238" font-size="14" font-weight="700">BYOK model providers</text>
+    <rect x="562" y="318" width="252" height="42" rx="12" fill="#F8F4EF" stroke="#E1D7CE"/>
+    <text x="580" y="344" fill="#263238" font-size="14" font-weight="700">50-question evaluation</text>
+    <rect x="836" y="318" width="290" height="42" rx="12" fill="#F8F4EF" stroke="#E1D7CE"/>
+    <text x="854" y="344" fill="#263238" font-size="14" font-weight="700">Docker deployment on HF Spaces</text>
+  </g>
+</svg>

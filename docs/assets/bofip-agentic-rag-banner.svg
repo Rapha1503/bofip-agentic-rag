@@ -1,0 +1,38 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">BOFiP Agentic RAG</title>
+  <desc id="desc">Repository banner for a BOFiP full-corpus retrieval augmented generation project.</desc>
+  <rect width="1200" height="360" rx="28" fill="#F8F4EF"/>
+  <rect x="30" y="30" width="1140" height="300" rx="24" fill="#ffffff" stroke="#E4D9D0" stroke-width="2"/>
+  <rect x="30" y="30" width="1140" height="300" rx="24" fill="url(#wash)" opacity="0.85"/>
+  <path d="M30 252 C170 214 258 300 393 258 C516 220 610 177 754 207 C920 241 1001 163 1170 199 L1170 330 L30 330 Z" fill="#7A1832" opacity="0.08"/>
+  <circle cx="1032" cy="88" r="42" fill="#7A1832" opacity="0.10"/>
+  <circle cx="1088" cy="126" r="22" fill="#B8912E" opacity="0.18"/>
+  <g transform="translate(82 72)">
+    <rect width="96" height="96" rx="22" fill="#7A1832"/>
+    <path d="M31 69 V27 H49 C60 27 67 33 67 43 C67 49 64 54 58 57 C66 60 70 66 70 74 C70 86 61 93 48 93 H31 V81 H47 C53 81 57 78 57 73 C57 68 53 65 46 65 H41 V53 H47 C52 53 55 50 55 45 C55 41 52 38 47 38 H43 V69 H31Z" fill="#F8F4EF"/>
+    <path d="M77 25 L84 34 L74 40 L68 33 L77 25Z" fill="#B8912E"/>
+  </g>
+  <text x="206" y="118" fill="#1F2933" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="54" font-weight="800">BOFiP Agentic RAG</text>
+  <text x="208" y="160" fill="#55606D" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="500">Full-corpus retrieval for French tax doctrine with source review and cited answers</text>
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <rect x="208" y="202" width="166" height="54" rx="14" fill="#F8F4EF" stroke="#E4D9D0"/>
+    <text x="228" y="225" fill="#7A1832" font-size="14" font-weight="800">CORPUS</text>
+    <text x="228" y="246" fill="#1F2933" font-size="18" font-weight="800">9,048 BOFiP rows</text>
+    <rect x="390" y="202" width="172" height="54" rx="14" fill="#F8F4EF" stroke="#E4D9D0"/>
+    <text x="410" y="225" fill="#7A1832" font-size="14" font-weight="800">PASSAGES</text>
+    <text x="410" y="246" fill="#1F2933" font-size="18" font-weight="800">79,160 chunks</text>
+    <rect x="578" y="202" width="180" height="54" rx="14" fill="#F8F4EF" stroke="#E4D9D0"/>
+    <text x="598" y="225" fill="#7A1832" font-size="14" font-weight="800">EVALUATION</text>
+    <text x="598" y="246" fill="#1F2933" font-size="18" font-weight="800">45 / 50 correct</text>
+    <rect x="774" y="202" width="178" height="54" rx="14" fill="#F8F4EF" stroke="#E4D9D0"/>
+    <text x="794" y="225" fill="#7A1832" font-size="14" font-weight="800">DEPLOYMENT</text>
+    <text x="794" y="246" fill="#1F2933" font-size="18" font-weight="800">HF Spaces</text>
+  </g>
+  <defs>
+    <linearGradient id="wash" x1="30" y1="30" x2="1170" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.55" stop-color="#FCFAF7"/>
+      <stop offset="1" stop-color="#F1E6E0"/>
+    </linearGradient>
+  </defs>
+</svg>

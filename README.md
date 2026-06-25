@@ -1,69 +1,86 @@
+<p align="center">
+  <img src="docs/assets/bofip-agentic-rag-banner.svg" alt="BOFiP Agentic RAG banner" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://rapha1503-bofip-agentic-rag.hf.space/">
+    <img src="https://img.shields.io/badge/live%20demo-Hugging%20Face-7A1832?style=for-the-badge" alt="Live demo">
+  </a>
+  <a href="docs/evaluation/official50_portfolio_final_45_2026_06_25.md">
+    <img src="https://img.shields.io/badge/eval-45%2F50%20correct-255E4B?style=for-the-badge" alt="Portfolio benchmark">
+  </a>
+  <a href="docs/full_corpus_manifest.json">
+    <img src="https://img.shields.io/badge/corpus-9048%20BOFiP%20rows-263238?style=for-the-badge" alt="Full BOFiP corpus">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-B8912E?style=for-the-badge" alt="MIT license">
+  </a>
+</p>
+
 # BOFiP Agentic RAG
 
-Agentic RAG prototype for querying the French BOFiP tax doctrine with cited sources, source review, targeted retrieval relaunches, and full-corpus retrieval.
+**Full-corpus RAG assistant for French BOFiP tax doctrine, built by Raphael Ifergan.**
 
-Built by **Raphael Ifergan**.
+The project retrieves and cites BOFiP passages before generating an answer. It is designed as a portfolio-grade demonstration of tax-domain retrieval, source review, evaluation discipline, and deployment of a Python RAG application.
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue)](https://www.python.org/)
-[![Streamlit](https://img.shields.io/badge/UI-Streamlit-7A1832)](https://streamlit.io/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Benchmark](https://img.shields.io/badge/Benchmark-45%2F50%20correct-brightgreen)](docs/evaluation/official50_portfolio_final_45_2026_06_25.md)
-[![Demo](https://img.shields.io/badge/Demo-Hugging%20Face-yellow)](https://rapha1503-bofip-agentic-rag.hf.space/)
+> Research prototype only. It does not provide tax advice and is not affiliated with the French tax administration.
 
-## Live Demo
+## Try It
 
-Try the hosted demo on Hugging Face Spaces:
+Live BYOK demo:
 
 **https://rapha1503-bofip-agentic-rag.hf.space/**
 
-The app uses a BYOK model: bring your own provider API key, enter it in the interface, and query the BOFiP corpus. No API key is committed to this repository.
+The hosted app lets the user enter a provider API key in the interface. No provider key is committed to the repository.
 
-## Why This Project
+## What This Demonstrates
 
-French tax doctrine is dense, fragmented, and sensitive to wording. A generic chatbot can give a plausible answer while missing the relevant BOFiP section, confusing nearby tax regimes, or ignoring exceptions.
+| Capability | Implementation |
+| --- | --- |
+| Full-corpus retrieval | 9,048 BOFiP source rows, 79,160 section-window chunks |
+| Source-grounded answers | Final answers cite retained BOFiP passages |
+| Agentic control loop | Planning, source review, targeted relaunch, final answer |
+| Transparent failure mode | Insufficient evidence is surfaced instead of hidden |
+| Evaluation discipline | 50-question portfolio benchmark with retained failures |
+| Deployment | Dockerized Streamlit app on Hugging Face Spaces |
 
-This project explores a more controlled workflow:
+## Pipeline
 
-```text
-User question
-  -> fiscal planning
-  -> retrieval by tax axis
-  -> source review
-  -> targeted relaunch if evidence is weak
-  -> sourced answer with explicit limits
-```
+<p align="center">
+  <img src="docs/assets/pipeline-overview.svg" alt="BOFiP Agentic RAG pipeline" width="100%">
+</p>
 
-The goal is not to replace tax advice. The goal is to make BOFiP retrieval and answer grounding more transparent.
+The runtime separates fiscal interpretation from retrieval:
 
-## What It Does
+1. **Plan** the question into fiscal axes.
+2. **Retrieve** candidate BOFiP documents and passages.
+3. **Review sources** before answering.
+4. **Relaunch** targeted retrieval when an important axis lacks evidence.
+5. **Answer with citations** and explicit limits.
 
-BOFiP Agentic RAG indexes the BOFiP doctrine corpus and answers French fiscal questions with:
-
-- full-corpus BOFiP retrieval;
-- cited source passages;
-- fiscal-axis planning;
-- source-aware answer generation;
-- structured answer status;
-- visible limitations when the answer is uncertain.
-
-Current corpus:
+## Current Corpus
 
 | Layer | Count |
-|---|---:|
+| --- | ---: |
 | BOFiP source rows | 9,048 |
-| Section-window passages | 79,160 |
-| Embedding dimension | 1,024 |
-| Corpus mode | Full BOFiP API snapshot, no reduced demo |
+| Stable document IDs | 9,048 |
+| Base BOI references | 9,025 |
+| Section-window chunks | 79,160 |
+| Document embeddings | `(9048, 1024)` |
+| Chunk embeddings | `(79160, 1024)` |
+| Latest local publication date observed | 2026-06-17 |
 
-## Benchmark
+The project deliberately avoids a reduced demo corpus. Latency is handled through prebuilt artifacts and caching, not by removing BOFiP coverage.
+
+## Evaluation Snapshot
 
 Latest portfolio evaluation:
 
 | Metric | Result |
-|---|---:|
+| --- | ---: |
 | Questions | 50 |
 | Correct answers | **45 / 50** |
-| Failures kept visible | 5 / 50 |
+| Retained failures | 5 / 50 |
 | Runtime errors | 0 |
 | Average runtime | 174.2s / question |
 
@@ -73,54 +90,24 @@ Reports:
 - [HTML report](docs/evaluation/official50_portfolio_final_45_2026_06_25.html)
 - [CSV report](docs/evaluation/official50_portfolio_final_45_2026_06_25.csv)
 
-The benchmark sends only the user question to the runtime. Expected answers and BOFiP references are used only after generation for evaluation.
+The runtime receives only the user question. Expected answers and BOFiP references are used after generation for evaluation.
 
-## Architecture
+## Repository Map
 
-```text
-BOFiP public API snapshot
-  -> metadata and content normalization
-  -> full BOFiP API snapshot as JSONL documents
-  -> section-window chunking
-  -> BM25 retrieval + optional E5 dense retrieval
-  -> local chunk selection and optional reranking
-  -> agentic source review and targeted relaunch
-  -> sourced answer generation
-  -> Streamlit BYOK demo
-```
-
-Core modules:
-
-| Module | Role |
-|---|---|
-| `src/bofip_agentic/agent_rag.py` | planner, source critic, relaunch loop, final answer |
-| `src/bofip_agentic/rag_runtime.py` | retrieval runtime |
+| Path | Purpose |
+| --- | --- |
+| `app.py` | Streamlit BYOK interface |
+| `src/bofip_agentic/agent_rag.py` | planning, source review, relaunch, final answer |
+| `src/bofip_agentic/rag_runtime.py` | retrieval runtime and result contract |
 | `src/bofip_agentic/lexical_retrieval.py` | BM25 and French tokenization |
-| `src/bofip_agentic/dense_retrieval.py` | E5 dense retrieval |
-| `src/bofip_agentic/direct_chunk_retrieval.py` | local chunk search inside selected documents |
+| `src/bofip_agentic/direct_chunk_retrieval.py` | local section/chunk search |
+| `src/bofip_agentic/dense_retrieval.py` | optional E5 dense retrieval |
 | `src/bofip_agentic/eval_runner.py` | benchmark runner and report generation |
-| `app.py` | Streamlit interface |
-
-## Design Trade-Offs
-
-The current public version prioritizes **source traceability** over raw latency.
-
-Instead of returning the first plausible answer, the pipeline plans the fiscal question, retrieves BOFiP passages, reviews source coverage, and can relaunch targeted searches before generation. This makes the demo slower than a minimal one-pass RAG, but it keeps the answer auditable and preserves full-corpus coverage.
-
-In this repository, "agentic" means an orchestrated RAG workflow: planning, retrieval, source criticism, targeted relaunches, and structured answer control remain explicit and inspectable.
-
-## Supported Providers
-
-The app is provider-agnostic and uses BYOK configuration.
-
-| Provider | Environment variable | Notes |
-|---|---|---|
-| DeepSeek | `DEEPSEEK_API_KEY` | Used for the published benchmark |
-| OpenAI | `OPENAI_API_KEY` | Supported through provider config |
-| Mistral | `MISTRAL_API_KEY` | Supported through provider config |
-| Google Gemini | `GEMINI_API_KEY` | Supported through provider config |
-
-For the hosted Hugging Face demo, enter the provider key directly in the UI.
+| `scripts/sync.py` | full-corpus source refresh pipeline |
+| `scripts/download_artifacts.py` | release artifact downloader |
+| `docs/ARCHITECTURE.md` | technical architecture |
+| `docs/DATA_CARD.md` | corpus scope and data risks |
+| `docs/RESULTS.md` | benchmark summary |
 
 ## Quick Start
 
@@ -128,7 +115,7 @@ For the hosted Hugging Face demo, enter the provider key directly in the UI.
 git clone https://github.com/Rapha1503/bofip-agentic-rag.git
 cd bofip-agentic-rag
 
-python -m venv .venv
+py -3.11 -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env.local
@@ -143,63 +130,57 @@ MISTRAL_API_KEY=
 GEMINI_API_KEY=
 ```
 
-Download runtime artifacts:
+Download and validate runtime artifacts:
 
 ```powershell
 python scripts/download_artifacts.py
 python scripts/check_setup.py --deep --skip-models
 ```
 
-Run the app:
+Run locally:
 
 ```powershell
 streamlit run app.py
 ```
 
-Run tests:
+Run the test suite:
 
 ```powershell
-$env:PYTHONPATH="src"
+$env:PYTHONPATH = "src"
 python -m unittest discover -s tests -v
 ```
 
-## Runtime Artifacts
+Run retrieval only, without LLM calls:
 
-Large full-corpus artifacts are not committed to Git.
-
-Expected files:
-
-```text
-data/interim/raw_docs.jsonl
-data/interim/chunks.jsonl
-data/interim/doc_dense_cache.npy
-data/interim/chunk_dense_cache.npy
+```powershell
+.\bofip-retrieve.cmd "Parle moi de la fiscalite des plus-values en CTO contre PEA"
 ```
 
-They are tracked through `docs/full_corpus_manifest.json` and can be downloaded from the release artifacts.
+## Deployment
 
-## Hugging Face Deployment
+The public app is deployed on Hugging Face Spaces:
 
-The public demo is designed for Hugging Face Spaces. The Space loads full-corpus artifacts at startup and exposes provider/model selection in the UI.
+**https://rapha1503-bofip-agentic-rag.hf.space/**
 
-Deployment principles:
+Deployment design:
 
-- no model API key is hardcoded in the repository;
-- reranking stays off by default on free CPU hosting;
-- prompt/debug views stay hidden unless explicitly enabled;
-- the app keeps full-corpus coverage instead of shipping a reduced demo corpus.
+- Dockerized Streamlit runtime.
+- Full-corpus artifacts downloaded from GitHub Releases.
+- BYOK provider keys entered by the user at runtime.
+- Reranker disabled by default on free CPU hosting.
+- Debug prompt/JSON views hidden unless explicitly enabled locally.
 
-## Limitations
+GitHub Pages is used for static portfolio material only. It cannot run the Python retrieval stack.
 
-This is a research prototype, not tax advice.
+## Known Limits
 
-Known limitations:
-
-- the traceability-first runtime is slower than a one-pass RAG;
-- some narrow BOFiP branches still fail retrieval;
-- source review and targeted relaunches add LLM calls;
-- BOFiP updates require artifact refresh.
+- The traceability-first loop is slower than a one-pass RAG.
+- Some narrow BOFiP branches still fail retrieval.
+- Source review improves auditability but adds LLM calls.
+- BOFiP updates require rebuilding and republishing runtime artifacts.
+- The project is a research prototype, not a legal or tax advisory product.
 
 ## Author
 
 Created and maintained by **Raphael Ifergan**.
+
