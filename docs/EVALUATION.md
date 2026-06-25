@@ -1,83 +1,66 @@
 # Evaluation Methodology
 
-BOFiP Agentic RAG is evaluated as a full pipeline, not as a simple exact-match
-question answering model.
+BOFiP Agentic RAG is evaluated as a full retrieval-and-answer pipeline, not as a simple exact-match chatbot.
 
 ## Principle
 
-The runtime receives only the user question. Evaluation metadata such as expected
-BOFiP references, expected answer core, calculations, and failure signals is used
-only after generation.
+The runtime receives only the user question.
 
-This avoids data leakage while still making the result auditable.
+Evaluation metadata is kept outside the runtime and used only after generation:
 
-## Layers
+- expected BOFiP references;
+- expected answer points;
+- expected calculations;
+- failure signals.
 
-The evaluation separates four layers:
+This prevents evaluation data from leaking into prompts while keeping the result auditable.
 
-1. **Infrastructure checks**: run id, corpus hashes, eval-set hash, provider,
-   model, retrieval mode, timings, resumability, and secret scanning.
-2. **Retrieval checks**: required BOFiP references found in the final selected
-   sources, optional references found, and source snippets exposed for review.
-3. **Agentic trace checks**: presence of planning, retrieval, source review,
-   relaunch or intra-document search when triggered, and final answer step.
-4. **Answer-quality review**: optional LLM-as-judge rubric or human review over
-   the final answer, selected sources, agent trace, expected answer core, and
-   failure signals.
+## What Is Evaluated
+
+| Layer | Question |
+|---|---|
+| Retrieval | Did the system recover at least one useful BOFiP source for the answer? |
+| Source grounding | Is the final answer supported by retained passages? |
+| Agentic trace | Are planning, retrieval, source review, and answer steps visible? |
+| Final answer | Does the response answer the user question without inventing unsupported rules? |
 
 ## Verdicts
 
-Deterministic auto-verdicts are intentionally conservative:
+The public report uses a binary result:
 
-- `candidate_pass`: supported answer, full expected-source recall, sufficient
-  coverage, and complete agentic trace.
-- `needs_review_sources_or_limits`: answer may be useful, but source coverage or
-  limits require review.
-- `status_bug_candidate`: the answer may be good, but the reported status is
-  suspect.
-- `candidate_fail_insufficient_evidence`: the system could not answer from the
-  available excerpts.
-- `runtime_error`: the pipeline crashed or the provider failed.
+- **Correct**: the answer is concrete, useful, and supported by at least one relevant BOFiP source.
+- **Faux**: the answer abstains when it should answer, misses the key source, gives the wrong conclusion, or is not sufficiently supported.
 
-The auto-verdict is not a fiscal truth label. It is a triage label for review.
+Secondary details such as missing optional references are kept as review notes, not automatic failures.
 
-## Artifacts
+## Current Report
 
-Each run writes:
+Latest portfolio evaluation:
 
-- `run_manifest.json`
-- `progress.jsonl`
-- `per_query/<id>.json`
-- `traces/<id>.json`
-- `evidence_cards/<id>.md`
-- `per_query.jsonl`
-- `summary.json`
-- `summary.md`
-- `per_query_public.csv`
+- [Markdown report](evaluation/official50_portfolio_final_45_2026_06_25.md)
+- [HTML report](evaluation/official50_portfolio_final_45_2026_06_25.html)
+- [CSV report](evaluation/official50_portfolio_final_45_2026_06_25.csv)
 
-Raw local artifacts stay under `output/eval-runs/`. Public portfolio summaries
-should be copied to `docs/evaluation/latest/` only after secret scanning and
-human review.
+Score:
 
-## Commands
+| Metric | Result |
+|---|---:|
+| Questions | 50 |
+| Correct answers | **45 / 50** |
+| Failures kept visible | 5 / 50 |
+| Runtime errors | 0 |
 
-Pilot run:
+## Reproducibility Notes
 
-```powershell
-py -3.11 scripts/eval_run.py --question-bank data/eval/chatgpt_50_cases_v1.jsonl --sample 3 --seed 20260624 --provider codex --retrieval-mode lexical --device cpu
-```
+Raw run artifacts are stored under `output/eval-runs/` during local evaluation.
 
-Full public-mode run:
+Public reports are copied into `docs/evaluation/` only after:
 
-```powershell
-$env:DEEPSEEK_API_KEY="<set in shell, never commit>"
-py -3.11 scripts/eval_run.py --question-bank data/eval/chatgpt_50_cases_v1.jsonl --provider deepseek --model deepseek-v4-flash --retrieval-mode lexical --device cuda
-```
+- checking that no API key is present;
+- checking encoding;
+- keeping failed cases visible;
+- documenting replacements or corrected verification runs.
 
-Hybrid benchmark:
+## Limit
 
-```powershell
-$env:DEEPSEEK_API_KEY="<set in shell, never commit>"
-py -3.11 scripts/eval_run.py --question-bank data/eval/chatgpt_50_cases_v1.jsonl --provider deepseek --model deepseek-v4-flash --retrieval-mode hybrid --device cuda
-```
-
+This evaluation is designed for portfolio review and engineering discussion. It is not a legal certification of tax answers.
