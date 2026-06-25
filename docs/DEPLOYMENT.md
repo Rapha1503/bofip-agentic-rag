@@ -79,8 +79,3 @@ Use [DEMO.md](DEMO.md) for local full-corpus testing. The setup checker is:
 ```powershell
 python scripts/check_setup.py --deep
 ```
-
-Next deployment hardening:
-
-- split `app.py` into UI, retrieval, LLM, config, and observability boundaries;
-- add screenshots and evaluation report for the static portfolio page.

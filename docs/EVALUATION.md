@@ -58,9 +58,4 @@ Public reports are copied into `docs/evaluation/` only after:
 
 - checking that no API key is present;
 - checking encoding;
-- keeping failed cases visible;
-- documenting replacements or corrected verification runs.
-
-## Limit
-
-This evaluation is designed for portfolio review and engineering discussion. It is not a legal certification of tax answers.
+- keeping failed cases visible.

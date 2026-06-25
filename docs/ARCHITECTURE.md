@@ -1,90 +1,70 @@
-# BOFiP Agentic RAG Architecture
+# Architecture
 
-This document describes the current cleanroom architecture for the BOFiP RAG prototype by Raphael Ifergan.
+BOFiP Agentic RAG is a full-corpus retrieval and answer-generation prototype for French BOFiP tax doctrine.
 
-## Runtime Flow
+## Global Flow
 
 ```text
 User question
-  -> optional LLM rewrite and facet detection
-  -> per-facet retrieval
-  -> document-stage hybrid retrieval
+  -> provider/model selection (BYOK)
+  -> optional query rewrite
+  -> fiscal facet detection
+  -> document retrieval
   -> local chunk retrieval inside selected documents
-  -> optional cross-encoder reranking
+  -> optional dense retrieval / reranking
   -> diversity-capped context selection
-  -> coverage-aware answer prompt
-  -> cited JSON answer
+  -> source-aware answer prompt
+  -> cited answer with explicit limits
 ```
 
-The shared retrieval engine is `src/bofip_cleanroom/rag_runtime.py`. The Streamlit app currently owns extra orchestration for query rewriting, multi-facet retrieval, computation-aware facets, and post-facet merging. A planned Phase 2 refactor will move that logic into a shared package module so CLI, app, and evaluation use the same RAG contract.
-
-## Data Flow
+## Data Pipeline
 
 ```text
-Local BOFiP export
-  -> discovery.py
-  -> xml_parser.py + html_parser.py
-  -> document_builder.py
+BOFiP XML/HTML export
+  -> metadata and section parsing
   -> RawDocument JSONL
-  -> chunking.py
+  -> section-window chunking
   -> ChunkNode JSONL
-  -> dense_retrieval.py embedding caches
-  -> rag_runtime.py in-memory indexes
+  -> BM25 index
+  -> E5 embedding caches
+  -> Streamlit runtime
 ```
 
-Current full commentary runtime:
+## Runtime Artifacts
 
-| Layer | Artifact |
-| --- | --- |
-| Raw documents | `data/interim/raw_docs_sample_5666.jsonl` |
-| Chunks | `data/interim/chunks_section_window_sample_5666.jsonl` |
-| Document embeddings | `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` |
-| Chunk embeddings | `data/interim/chunk_dense_cache_5666_full_e5large.npy` |
+| Artifact | Role |
+|---|---|
+| `data/interim/raw_docs_sample_5666.jsonl` | parsed BOFiP commentary documents |
+| `data/interim/chunks_section_window_sample_5666.jsonl` | section-window passages used for retrieval |
+| `data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy` | document-level E5 embeddings |
+| `data/interim/chunk_dense_cache_5666_full_e5large.npy` | chunk-level E5 embeddings |
+| `docs/full_corpus_manifest.json` | public artifact contract with counts and checksums |
 
-The active embedding caches use E5-large 1024-dimensional vectors for both document and chunk retrieval.
+The large runtime artifacts are intentionally kept outside Git and downloaded from release assets.
 
-## Core Modules
+## Main Modules
 
 | Module | Responsibility |
-| --- | --- |
-| `models.py` | Dataclasses for raw documents, sections, paragraphs, tables, and chunks. |
-| `discovery.py` | Finds local BOFiP XML/HTML document pairs. |
-| `xml_parser.py` | Extracts metadata, identifiers, BOI references, dates, relations, and source URLs. |
-| `html_parser.py` | Extracts section trees, paragraphs, links, legal refs, and tables. |
-| `document_builder.py` | Combines XML and HTML payloads into `RawDocument`. |
-| `chunking.py` | Builds section-window, paragraph-preserving, and parent-child chunks. |
-| `lexical_retrieval.py` | BM25 indexes and French tokenization/stemming helpers. |
-| `dense_retrieval.py` | E5 encoding and in-memory dense search over precomputed arrays. |
-| `hybrid_retrieval.py` | Reciprocal rank fusion and confidence-weighted source scoring. |
-| `direct_chunk_retrieval.py` | Local chunk retrieval inside selected Stage 1 documents. |
-| `reranker.py` | Optional cross-encoder reranking. |
-| `rag_runtime.py` | Main retrieval runtime and result contract. |
-| `prompt_utils.py` | Coverage-aware answer prompt with citation constraints. |
-| `eval_harness.py` | doc@k, passage@k, MRR, NDCG, and per-query diagnostics. |
+|---|---|
+| `app.py` | Streamlit UI, provider selection, BYOK session handling |
+| `src/bofip_cleanroom/rag_runtime.py` | full retrieval runtime |
+| `src/bofip_cleanroom/lexical_retrieval.py` | BM25 retrieval and French tokenization |
+| `src/bofip_cleanroom/dense_retrieval.py` | E5 encoding and dense search |
+| `src/bofip_cleanroom/direct_chunk_retrieval.py` | chunk search inside selected BOFiP documents |
+| `src/bofip_cleanroom/hybrid_retrieval.py` | reciprocal-rank fusion |
+| `src/bofip_cleanroom/reranker.py` | optional cross-encoder reranking |
+| `src/bofip_cleanroom/llm_preview.py` | answer prompting, parsing, and fallbacks |
+| `src/bofip_cleanroom/eval_harness.py` | evaluation utilities |
 
-## Public Interfaces
+## Design Choices
 
-- `app.py`: Streamlit UI for interactive questions and batch testing.
-- `scripts/preview_answer.py`: CLI answer preview with retrieval plus LLM generation.
-- `scripts/evaluate.py`: standardized retrieval evaluation.
-- `scripts/ablation.py`: retrieval component ablation.
-- `scripts/check_setup.py`: local artifact and model preflight check.
+- **Full corpus, no reduced demo:** latency is handled with prebuilt artifacts and caches, not by shrinking the BOFiP scope.
+- **Traceable answers:** the interface exposes retained BOFiP sources and limitations instead of hiding uncertainty.
+- **BYOK model access:** provider keys are supplied by the user at runtime and are not committed to the repository.
+- **Optional quality layers:** dense retrieval and reranking can improve quality locally, but the public CPU demo keeps latency constraints visible.
 
-Historical phase scripts and notebooks are intentionally excluded from the public cleanroom surface.
+## Known Constraints
 
-## Evaluation Assets
-
-The tracked evaluation set contains 50 questions across direct lookup, paraphrase, cross-document, edge-case, and unsupported categories:
-
-- `data/interim/eval_queries_v1.jsonl`
-- `data/interim/passage_gold_v3.jsonl`
-
-Current evaluation is strongest at retrieval level. Answer-level scoring for citation faithfulness, abstention quality, table-heavy cases, and calculations is planned.
-
-## Known Technical Risks
-
-- Query rewrite/facet logic is not yet shared by all interfaces.
-- Some BOI references are duplicated across distinct documents; retrieval identity should move to stable `document_id`.
-- Tables are parsed but not yet chunked as first-class retrievable evidence.
-- Runtime artifacts are large and must be managed outside Git with a manifest and checksums.
-- The project is a research prototype and must not be presented as tax advice.
+- The hosted demo is slower than a one-pass RAG because it prioritizes source traceability.
+- Some BOFiP tables are parsed but are not yet first-class retrieval units.
+- BOFiP updates require rebuilding the artifact bundle and manifest.

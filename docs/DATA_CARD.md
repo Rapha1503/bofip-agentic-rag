@@ -76,13 +76,6 @@ Chunks preserve:
 - Scope risk: current runtime is commentary-only and excludes some content types available in the broader local export.
 - Licensing and redistribution risk: heavy raw/model artifacts are intentionally not committed to this repository.
 
-## Phase 2 Data Work
-
-- Add checksum validation into the preflight path.
-- Key runtime identity by `document_id`, not only by `boi_reference`.
-- Add table chunks with table IDs, row indices, and headers.
-- Publish a tracked evaluation report that ties metrics to a corpus manifest.
-
 ## Local Artifact Check
 
 The repository includes a preflight script for the current artifact contract:

@@ -50,10 +50,10 @@ Current corpus:
 
 | Layer | Count |
 |---|---:|
-| BOFiP source rows | 9,048 |
-| Section-window passages | 79,160 |
+| BOFiP commentary documents | 5,666 |
+| Section-window passages | 66,289 |
 | Embedding dimension | 1,024 |
-| Corpus mode | Full corpus, no reduced demo |
+| Corpus mode | Full commentary corpus, no reduced demo |
 
 ## Benchmark
 
@@ -78,24 +78,26 @@ The benchmark sends only the user question to the runtime. Expected answers and 
 ## Architecture
 
 ```text
-BOFiP public data
-  -> full-corpus parsing and section chunking
-  -> retrieval over the complete local corpus
-  -> agentic source review and targeted relaunch
-  -> sourced answer with visible limits
-  -> Streamlit BYOK interface
+BOFiP public doctrine
+  -> XML/HTML parsing and metadata normalization
+  -> full commentary corpus as JSONL documents
+  -> section-window chunking
+  -> BM25 retrieval + optional E5 dense retrieval
+  -> local chunk selection and optional reranking
+  -> source-aware answer generation
+  -> Streamlit BYOK demo
 ```
 
 Core modules:
 
 | Module | Role |
 |---|---|
-| `agent_rag.py` | fiscal planner, source review, relaunch, final answer |
-| `rag_runtime.py` | retrieval runtime |
-| `lexical_retrieval.py` | BM25 and French tokenization |
-| `dense_retrieval.py` | optional E5 embeddings |
-| `direct_chunk_retrieval.py` | local section/chunk search |
-| `eval_runner.py` | benchmark runner and report generation |
+| `src/bofip_cleanroom/rag_runtime.py` | retrieval runtime |
+| `src/bofip_cleanroom/lexical_retrieval.py` | BM25 and French tokenization |
+| `src/bofip_cleanroom/dense_retrieval.py` | E5 dense retrieval |
+| `src/bofip_cleanroom/direct_chunk_retrieval.py` | local chunk search inside selected documents |
+| `src/bofip_cleanroom/llm_preview.py` | answer generation and structured output parsing |
+| `src/bofip_cleanroom/eval_harness.py` | retrieval and answer evaluation helpers |
 | `app.py` | Streamlit interface |
 
 ## Design Trade-Offs
@@ -165,10 +167,10 @@ Large full-corpus artifacts are not committed to Git.
 Expected files:
 
 ```text
-data/interim/raw_docs.jsonl
-data/interim/chunks.jsonl
-data/interim/doc_dense_cache.npy
-data/interim/chunk_dense_cache.npy
+data/interim/raw_docs_sample_5666.jsonl
+data/interim/chunks_section_window_sample_5666.jsonl
+data/interim/doc_dense_cache_5666_sections_firstpara_e5large.npy
+data/interim/chunk_dense_cache_5666_full_e5large.npy
 ```
 
 They are tracked through `docs/full_corpus_manifest.json` and can be downloaded from the release artifacts.
@@ -194,13 +196,6 @@ Known limitations:
 - some narrow BOFiP branches still fail retrieval;
 - source review improves traceability but adds LLM calls;
 - BOFiP updates require artifact refresh.
-
-## Roadmap
-
-- Improve source-review latency.
-- Add a faster cited-answer path for interactive demos.
-- Expand evaluation with more cross-domain fiscal cases.
-- Add deployment health checks for Hugging Face.
 
 ## Author
 
